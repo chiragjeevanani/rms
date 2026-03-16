@@ -37,91 +37,152 @@ export default function PosLoginPage() {
 
   return (
     <div 
-      className="min-h-screen bg-charcoal-900 text-white flex flex-col items-center justify-center p-6 selection:bg-brand-500 font-sans"
+      className="h-screen bg-[#0A0A0B] text-white flex items-center justify-center p-4 lg:p-8 selection:bg-brand-500 font-sans overflow-hidden"
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      <div className="w-full max-w-sm">
-        <header className="text-center mb-12">
-          <motion.div 
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-20 h-20 bg-brand-500 rounded-[2rem] mx-auto mb-6 flex items-center justify-center shadow-2xl shadow-brand-500/20"
-          >
-            <Calculator size={36} className="text-charcoal-900" strokeWidth={2.5} />
-          </motion.div>
-          <h1 className="text-3xl font-display font-black tracking-tighter uppercase italic italic">Terminal Login</h1>
-          <div className="flex items-center justify-center gap-2 mt-3 opacity-40">
-            <Shield size={12} />
-            <p className="text-[9px] font-black uppercase tracking-[0.3em]">Secure POS Access v4.2</p>
-          </div>
-        </header>
+      {/* Background Decorative Elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-500/5 blur-[120px] rounded-full pointer-events-none" />
 
-        <main className="space-y-10">
-          {/* PIN Indicators */}
-          <div className="flex justify-center gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div 
-                key={i}
-                className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
-                  pin.length >= i ? 'bg-brand-500 border-brand-500 scale-125 shadow-lg shadow-brand-500/50' : 'border-white/10'
-                }`}
-              />
-            ))}
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10">
+        
+        {/* Left Side: System Information & Branding */}
+        <motion.div 
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="hidden lg:flex flex-col gap-10"
+        >
+          <div>
+            <div className="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-brand-500/20">
+              <Calculator size={32} className="text-charcoal-900" strokeWidth={2.5} />
+            </div>
+            <h1 className="text-6xl font-display font-black tracking-tighter uppercase leading-none mb-4">
+              Terminal <br />
+              <span className="text-brand-500 italic">Access</span>
+            </h1>
+            <p className="text-charcoal-400 font-medium text-lg max-w-md leading-relaxed">
+              Secure Point of Sale Gateway. Authorized personnel only. Please enter your terminal PIN to initiate session.
+            </p>
           </div>
 
-          {/* Keypad */}
-          <div className="grid grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-              <motion.button
-                key={num}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => handleNumberClick(num.toString())}
-                className="h-20 bg-white/5 border border-white/5 rounded-3xl flex items-center justify-center text-2xl font-black hover:bg-white/10 transition-colors"
+          <div className="grid grid-cols-2 gap-6 pt-10 border-t border-white/5">
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Station Status</p>
+              <div className="flex items-center gap-2 text-emerald-500 font-bold">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                Active / Online
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Network</p>
+              <p className="text-white font-bold italic italic font-display">KMS-992-SECURE</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Firmware</p>
+              <p className="text-white font-bold font-display tracking-tight">v4.2.0-stable</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Hardware</p>
+              <p className="text-white font-bold font-display tracking-tight">RTX-900 Terminal</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 w-fit">
+            <Shield size={20} className="text-brand-500" />
+            <span className="text-xs font-bold text-charcoal-300 uppercase tracking-widest">AES-256 Bit Encrypted Connection</span>
+          </div>
+        </motion.div>
+
+        {/* Right Side: Keypad Interface */}
+        <motion.div 
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="w-full max-w-md mx-auto"
+        >
+          <div className="bg-[#141416] p-6 lg:p-10 rounded-[3rem] border border-white/5 shadow-2xl relative">
+            {/* Mobile-only header */}
+            <div className="lg:hidden text-center mb-6">
+              <div className="w-10 h-10 bg-brand-500 rounded-xl mx-auto mb-3 flex items-center justify-center">
+                <Calculator size={20} className="text-charcoal-900" />
+              </div>
+              <h2 className="text-xl font-display font-black tracking-tight uppercase">Terminal Login</h2>
+            </div>
+
+            <div className="space-y-6 lg:space-y-8">
+              {/* PIN Display */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center px-1">
+                  <span className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Enter Access PIN</span>
+                  <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest">{pin.length} / 4</span>
+                </div>
+                <div className="flex justify-center gap-5 p-6 bg-black/40 rounded-2xl border border-white/5">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div 
+                      key={i}
+                      className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
+                        pin.length >= i ? 'bg-brand-500 border-brand-500 scale-125 shadow-lg shadow-brand-500/50' : 'border-white/10'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Keypad */}
+              <div className="grid grid-cols-3 gap-3">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                  <motion.button
+                    key={num}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleNumberClick(num.toString())}
+                    className="h-16 lg:h-20 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center text-2xl font-black hover:bg-brand-500 hover:text-charcoal-900 transition-all duration-300 group"
+                  >
+                    {num}
+                  </motion.button>
+                ))}
+                <div />
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => handleNumberClick('0')}
+                  className="h-16 lg:h-20 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center text-2xl font-black hover:bg-brand-500 hover:text-charcoal-900 transition-all duration-300"
+                >
+                  0
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleDelete}
+                  className="h-16 lg:h-20 flex items-center justify-center text-charcoal-500 hover:text-white transition-colors"
+                >
+                  <Delete size={28} />
+                </motion.button>
+              </div>
+
+              <button 
+                onClick={handleLogin}
+                disabled={isLoading || pin.length !== 4}
+                className="w-full bg-brand-500 text-charcoal-900 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-20 disabled:grayscale transition-all duration-500 overflow-hidden relative group"
               >
-                {num}
-              </motion.button>
-            ))}
-            <div />
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => handleNumberClick('0')}
-              className="h-20 bg-white/5 border border-white/5 rounded-3xl flex items-center justify-center text-2xl font-black hover:bg-white/10 transition-colors"
-            >
-              0
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleDelete}
-              className="h-20 flex items-center justify-center text-charcoal-500 hover:text-white transition-colors"
-            >
-              <Delete size={28} />
-            </motion.button>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <span className="relative z-10 flex items-center gap-2">
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-charcoal-900/30 border-t-charcoal-900 rounded-full animate-spin" />
+                  ) : (
+                    <>Authorize Terminal <ArrowRight size={18} /></>
+                  )}
+                </span>
+              </button>
+            </div>
           </div>
+        </motion.div>
+      </div>
 
-          <button 
-            onClick={handleLogin}
-            disabled={isLoading || pin.length !== 4}
-            className="w-full bg-brand-500 text-charcoal-900 py-6 rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-20 disabled:grayscale transition-all duration-500"
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-charcoal-900/30 border-t-charcoal-900 rounded-full animate-spin" />
-            ) : (
-              <>Authorize Terminal <ArrowRight size={16} /></>
-            )}
-          </button>
-        </main>
-
-        <footer className="mt-12 flex flex-col items-center gap-6">
-           <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-full border border-white/5">
-              <Zap size={14} className="text-brand-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-charcoal-400">Station Active: Main Desk</span>
-           </div>
-           <p className="text-[9px] font-bold text-charcoal-600 uppercase tracking-[0.3em]">
-             Authorized Personnel Only
-           </p>
-        </footer>
+      {/* Footer System Branding for Mobile */}
+      <div className="lg:hidden absolute bottom-8 left-0 w-full text-center">
+        <p className="text-[9px] font-bold text-charcoal-600 uppercase tracking-[0.4em]">
+           RMS-TERMINAL OPERATIONS &copy; 2026
+        </p>
       </div>
     </div>
   );
 }
+
