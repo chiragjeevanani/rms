@@ -14,6 +14,7 @@ export default function TableOrderScreen() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentOrder, setCurrentOrder] = useState([]);
+  const [feedback, setFeedback] = useState(null); // Tracks the last added item ID
   const { createOrder } = useOrders();
 
   const filteredItems = MENU_ITEMS.filter(item => {
@@ -23,6 +24,10 @@ export default function TableOrderScreen() {
   });
 
   const addToOrder = (item) => {
+    // Visual feedback
+    setFeedback(item.id);
+    setTimeout(() => setFeedback(null), 800);
+
     setCurrentOrder(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
@@ -98,10 +103,31 @@ export default function TableOrderScreen() {
              {filteredItems.map((item) => (
                <motion.div
                  key={item.id}
-                 whileTap={{ scale: 0.98 }}
+                 whileTap={{ scale: 0.96 }}
                  onClick={() => addToOrder(item)}
-                 className="bg-slate-50 border border-slate-200 rounded-[2rem] p-4 flex flex-col items-center text-center group cursor-pointer hover:bg-white hover:shadow-xl hover:shadow-slate-900/5 hover:border-slate-300 transition-all"
+                 className="bg-slate-50 border border-slate-200 rounded-[2rem] p-4 flex flex-col items-center text-center group cursor-pointer hover:bg-white hover:shadow-xl hover:shadow-slate-900/5 hover:border-slate-300 transition-all relative overflow-hidden"
                >
+                 <AnimatePresence>
+                   {feedback === item.id && (
+                     <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.1 }}
+                        className="absolute inset-0 z-20 bg-emerald-500/90 backdrop-blur-sm flex flex-col items-center justify-center text-white p-4"
+                     >
+                        <motion.div
+                           initial={{ scale: 0.5 }}
+                           animate={{ scale: 1 }}
+                           transition={{ type: "spring", damping: 12 }}
+                           className="w-10 h-10 bg-white rounded-full flex items-center justify-center mb-2 shadow-lg"
+                        >
+                           <Plus size={20} className="text-emerald-500 stroke-[3px]" />
+                        </motion.div>
+                        <span className="text-[10px] font-black uppercase tracking-widest italic">Added!</span>
+                     </motion.div>
+                   )}
+                 </AnimatePresence>
+
                  <div className="w-full aspect-square rounded-[1.5rem] overflow-hidden mb-4 bg-slate-200">
                     <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />
                  </div>
@@ -109,13 +135,14 @@ export default function TableOrderScreen() {
                  <p className="text-lg font-black text-teal-600">₹{item.price}</p>
                  <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="bg-slate-900 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
-                       Add to Cart
+                       Add to Basket
                     </span>
                  </div>
                </motion.div>
              ))}
           </div>
         </div>
+
 
         {/* Cart Side */}
         <div className="flex-[2] bg-slate-900 flex flex-col h-[40vh] md:h-full shadow-2xl overflow-hidden">

@@ -15,10 +15,10 @@ export function BottomNav() {
   const { itemCount } = useCart();
 
   const navItems = [
-    { icon: UtensilsCrossed, label: 'Feast', path: '/menu' },
-    { icon: ShoppingBag, label: 'Basket', path: '/cart', badge: itemCount },
-    { icon: ClipboardList, label: 'Tracking', path: '/order-tracking' },
-    { icon: User, label: 'Account', path: '/profile' },
+    { icon: UtensilsCrossed, label: 'Menu', path: '/menu' },
+    { icon: ShoppingBag, label: 'Cart', path: '/cart', badge: itemCount },
+    { icon: ClipboardList, label: 'Orders', path: '/my-orders' },
+    { icon: User, label: 'Profile', path: '/profile' },
   ];
 
   return (

@@ -15,43 +15,85 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
 
   const navGroups = [
     {
-      label: 'Operational',
+      label: 'Main',
       items: [
-        { label: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
-        { label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
-        { label: 'Outlets', path: '/admin/outlets', icon: Store },
+        { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
       ]
     },
     {
-      label: 'Management',
+      label: 'Catalog & Items',
       items: [
-        { label: 'Menu Catalog', path: '/admin/menu', icon: Utensils },
-        { label: 'Inventory', path: '/admin/inventory', icon: Box },
-      ]
-    },
-    {
-      label: 'Resources',
-      items: [
-        { label: 'Customers', path: '/admin/customers', icon: Users },
-        { label: 'Staff & Roles', path: '/admin/staff', icon: ShieldCheck },
-        { label: 'Financials', path: '/admin/finance', icon: CreditCard },
-      ]
-    },
-    {
-      label: 'Insights',
-      items: [
-        { label: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
-        { label: 'Audit Logs', path: '/admin/audit', icon: History },
         { 
-          label: 'Settings', 
-          path: '/admin/settings', 
-          icon: Settings,
+          label: 'Menu Management', 
+          path: '/admin/menu', 
+          icon: Utensils,
           subItems: [
-            { label: 'Store Preferences', path: '/admin/settings/general', icon: Sliders },
-            { label: 'Taxation & Billing', path: '/admin/settings/payment', icon: CreditCard },
-            { label: 'Printers & KOT', path: '/admin/settings/printers', icon: Printer },
-            { label: 'Staff Permissions', path: '/admin/settings/security', icon: ShieldCheck },
-            { label: 'Alert Protocols', path: '/admin/settings/notifications', icon: Bell },
+            { label: 'Categories', path: '/admin/menu/categories' },
+            { label: 'Items', path: '/admin/menu/items' },
+            { label: 'Modifiers', path: '/admin/menu/modifiers' },
+            { label: 'Combo Meals', path: '/admin/menu/combos' },
+          ]
+        },
+      ]
+    },
+    {
+      label: 'Supply Chain',
+      items: [
+        { 
+          label: 'Inventory Management', 
+          path: '/admin/inventory', 
+          icon: Box,
+          subItems: [
+            { label: 'Stock Management', path: '/admin/inventory/stock' },
+            { label: 'Vendors', path: '/admin/inventory/vendors' },
+            { label: 'Purchase Orders', path: '/admin/inventory/orders' },
+            { label: 'Wastage', path: '/admin/inventory/wastage' },
+          ]
+        },
+      ]
+    },
+    {
+      label: 'Operations',
+      items: [
+        { 
+          label: 'Order Management', 
+          path: '/admin/orders', 
+          icon: ShoppingCart,
+          subItems: [
+            { label: 'All Orders', path: '/admin/orders/all' },
+            { label: 'Online Orders', path: '/admin/orders/online' },
+            { label: 'Cancelled Orders', path: '/admin/orders/cancelled' },
+          ]
+        },
+      ]
+    },
+    {
+      label: 'Personnel',
+      items: [
+        { 
+          label: 'Staff & User Management', 
+          path: '/admin/staff', 
+          icon: Users,
+          subItems: [
+            { label: 'Staff List', path: '/admin/staff/list' },
+            { label: 'Roles', path: '/admin/staff/roles' },
+            { label: 'Attendance', path: '/admin/staff/attendance' },
+          ]
+        },
+      ]
+    },
+    {
+      label: 'Compliance & Config',
+      items: [
+        { 
+          label: 'Reports & Settings', 
+          path: '/admin/reports', 
+          icon: BarChart3,
+          subItems: [
+            { label: 'Sales Reports', path: '/admin/reports/sales' },
+            { label: 'Inventory Reports', path: '/admin/reports/inventory' },
+            { label: 'Customer Reports', path: '/admin/reports/customers' },
+            { label: 'System Settings', path: '/admin/settings' },
           ]
         },
       ]
@@ -176,9 +218,15 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
 
       {/* Logout Footer */}
       <div className="p-3 border-t border-slate-100 bg-slate-50/50">
-        <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all ${isCollapsed ? 'justify-center' : ''}`}>
+        <button 
+          onClick={() => {
+            localStorage.removeItem('admin_access');
+            navigate('/admin/login');
+          }}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all ${isCollapsed ? 'justify-center' : ''}`}
+        >
           <LogOut size={16} />
-          {!isCollapsed && <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>}
+          {!isCollapsed && <span string="font-black text-[10px] uppercase tracking-widest">Sign Out</span>}
         </button>
       </div>
 

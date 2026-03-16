@@ -105,7 +105,7 @@ export default function PosDashboard() {
     : POS_MENU_ITEMS.filter(item => item.catId === activeCategory);
 
   return (
-    <div className="h-screen bg-[#F4F4F7] flex flex-col overflow-hidden font-sans text-[#1A1C1E]">
+    <div className="h-full bg-[#F4F4F7] flex flex-col overflow-hidden font-sans text-[#1A1C1E]">
       {/* Universal Header - Industrial Style */}
       <header className="h-14 bg-white border-b border-[#E2E4E9] flex items-center justify-between px-4 shrink-0 z-50">
         <div className="flex items-center gap-3">
@@ -113,10 +113,10 @@ export default function PosDashboard() {
               <Receipt size={18} />
            </div>
            <div>
-              <h1 className="text-sm font-bold tracking-tight uppercase">RMS POS</h1>
+              <h1 className="text-sm font-black tracking-tight uppercase">RMS POS</h1>
               <div className="flex items-center gap-2">
                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                 <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Terminal 01 • Active</span>
+                 <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Terminal 01 • Active</span>
               </div>
            </div>
         </div>
@@ -227,7 +227,7 @@ export default function PosDashboard() {
         <main className="flex-1 p-5 flex flex-col overflow-hidden">
            <div className="flex items-center justify-between mb-4 px-1">
               <div className="flex items-center gap-3">
-                 <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Inventory Catalog</h2>
+                 <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Menu Catalog</h2>
                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white border border-[#E2E4E9] rounded-md">
                     <span className="text-[10px] font-bold text-slate-800 uppercase">
                       {activeCategory === 'all' ? 'Full Menu' : POS_CATEGORIES.find(c => c.id === activeCategory).name}
@@ -285,7 +285,7 @@ export default function PosDashboard() {
            <div className="p-4 border-b border-[#E2E4E9] flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-2">
                  <ShoppingCart size={16} className="text-slate-900" />
-                 <h2 className="text-xs font-bold uppercase tracking-wider">Cart Manifest</h2>
+                 <h2 className="text-xs font-bold uppercase tracking-wider">Current Order</h2>
               </div>
               <button 
                 onClick={() => setCart([])}
@@ -341,7 +341,7 @@ export default function PosDashboard() {
                     <span>₹{calculateTotal()}</span>
                  </div>
                  <div className="flex items-center justify-between text-slate-500 font-bold uppercase text-[9px] tracking-widest">
-                    <span>Tax Allocation (5%)</span>
+                    <span>Taxes (5%)</span>
                     <span>₹{(calculateTotal() * 0.05).toFixed(0)}</span>
                  </div>
                  <div className="pt-2 flex items-center justify-between text-slate-900 font-black uppercase text-base border-t border-slate-200 mt-2">
@@ -379,15 +379,15 @@ export default function PosDashboard() {
          <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5 hover:text-slate-900 cursor-pointer">
                <Pause size={10} className="text-orange-500" />
-               Hold System [F2]
+               Hold Order [F2]
             </span>
             <span className="flex items-center gap-1.5 hover:text-slate-900 cursor-pointer">
                <AlertCircle size={10} className="text-red-500" />
-               Void Operation [F4]
+               Cancel Order [F4]
             </span>
             <span className="flex items-center gap-1.5 hover:text-slate-900 cursor-pointer">
                <CheckCircle2 size={10} className="text-emerald-500" />
-               Daily Summary
+               End of Day Summary
             </span>
          </div>
          <div className="flex items-center gap-4">
@@ -422,8 +422,8 @@ export default function PosDashboard() {
              >
                 <div className="flex items-center justify-between mb-8">
                    <div>
-                      <h2 className="text-lg font-black uppercase tracking-widest">Select Operational Area</h2>
-                      <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Floor Layout Management</p>
+                      <h2 className="text-lg font-black uppercase tracking-widest">Select Table / Zone</h2>
+                      <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Floor Layout & Table Availability</p>
                    </div>
                    <button onClick={() => setShowTableSelector(false)} className="p-2 bg-slate-50 rounded-md text-slate-400 hover:text-slate-900 transition-colors">
                       <X size={18} />

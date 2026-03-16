@@ -9,7 +9,8 @@ import {
   ChevronRight,
   ShieldCheck,
   CreditCard,
-  Gift
+  Gift,
+  MessageSquare
 } from 'lucide-react';
 import { LoyaltyCard } from '../components/LoyaltyCard';
 import { BottomNav } from '../components/BottomNav';
@@ -18,12 +19,12 @@ export default function ProfilePage() {
   const navigate = useNavigate();
 
   const menuItems = [
-    { icon: Clock, label: 'Order History', sub: 'View 12 past orders' },
-    { icon: Heart, label: 'Favorites', sub: 'Your 5 most loved items' },
-    { icon: CreditCard, label: 'Payment Methods', sub: 'Manage saved cards' },
-    { icon: Gift, label: 'Gift Cards', sub: 'Check balance or redeem' },
-    { icon: ShieldCheck, label: 'Privacy & Security', sub: 'Data protection settings' },
-    { icon: Settings, label: 'App Settings', sub: 'Notifications & Appearance' },
+    { icon: Clock, label: 'Order History', sub: 'View 12 past orders', path: '/my-orders' },
+    { icon: Gift, label: 'Promos & Offers', sub: 'Active deals & coupons', path: '/offers' },
+    { icon: Heart, label: 'Favorites', sub: 'Your 5 most loved items', path: '/favorites' },
+    { icon: ShieldCheck, label: 'Privacy & Security', sub: 'Data protection settings', path: '/privacy' },
+    { icon: MessageSquare, label: 'Feedback', sub: 'Rate your experience', path: '/feedback' },
+    { icon: Settings, label: 'App Settings', sub: 'Notifications & Appearance', path: '/settings' },
   ];
 
   return (
@@ -39,13 +40,21 @@ export default function ProfilePage() {
                  <p className="text-brand-500 font-black uppercase text-[10px] tracking-[0.2em] mt-1">Prime Member</p>
               </div>
            </div>
-           <button className="w-12 h-12 bg-white border border-charcoal-900/10 dark:bg-white/5 dark:border-white/5 rounded-2xl flex items-center justify-center text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white transition-colors shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
+           <button 
+             onClick={() => {
+               localStorage.removeItem('user_token');
+               navigate('/login');
+             }}
+             className="w-12 h-12 bg-white border border-charcoal-900/10 dark:bg-white/5 dark:border-white/5 rounded-2xl flex items-center justify-center text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white transition-colors shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
+           >
               <LogOut size={20} />
            </button>
         </header>
 
         <main className="space-y-12">
-           <LoyaltyCard points={840} tier="Gold" />
+           <div onClick={() => navigate('/loyalty')} className="cursor-pointer">
+              <LoyaltyCard points={840} tier="Gold" />
+           </div>
 
            <div>
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-500 mb-8 px-2">Account Dashboard</h3>
@@ -54,6 +63,7 @@ export default function ProfilePage() {
                    <motion.button
                      key={item.label}
                      whileHover={{ backgroundColor: 'var(--hover-bg, rgba(0,0,0,0.02))' }}
+                     onClick={() => item.path && navigate(item.path)}
                      className={`group w-full p-6 flex items-center justify-between transition-colors text-left ${
                        idx !== menuItems.length - 1 ? 'border-b border-charcoal-900/10 dark:border-white/5' : ''
                      } hover:bg-charcoal-900/5 dark:hover:bg-white/5`}

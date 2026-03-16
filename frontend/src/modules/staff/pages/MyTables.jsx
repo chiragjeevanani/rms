@@ -6,7 +6,7 @@ import { TABLES } from '../data/staffMockData';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { StaffNotifications } from '../components/StaffNotifications';
 
-export default function TableDashboard() {
+export default function MyTables() {
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 

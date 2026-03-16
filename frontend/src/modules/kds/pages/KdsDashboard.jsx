@@ -34,7 +34,7 @@ export default function KdsDashboard() {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 flex flex-col font-sans overflow-hidden ${
+    <div className={`h-full transition-colors duration-500 flex flex-col font-sans overflow-hidden ${
       isDarkMode ? 'bg-[#020617] text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       {/* KDS Header */}

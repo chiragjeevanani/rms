@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display+SC:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display+SC:wght@400;700&family=Outfit:wght@100..900&display=swap');
 
 @import "tailwindcss";
 
@@ -37,7 +37,7 @@
 
   /* Typography - Fixed font-display mapping */
   --font-family-display: 'Playfair Display SC', serif;
-  --font-family-sans: 'Karla', system-ui, sans-serif;
+  --font-family-sans: 'Outfit', 'Karla', system-ui, sans-serif;
 }
 
 /* ─── Global Reset & UI Polish ─── */
@@ -48,13 +48,14 @@
 
 body {
   @apply bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white transition-colors duration-300;
-  font-family: 'Karla', system-ui, sans-serif;
+  font-family: var(--font-family-sans);
   overflow-x: hidden;
   overscroll-behavior-y: none;
 }
 
 /* ─── Responsive Typography ─── */
-h1, h2, h3 { font-family: 'Playfair Display SC', serif; }
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-family-sans); }
+.font-luxury { font-family: var(--font-family-display); }
 
 /* ─── Custom Layout Utilities ─── */
 .kiosk-container { @apply max-w-7xl mx-auto px-8; }
