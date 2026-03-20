@@ -16,12 +16,6 @@ export default function PosSidebar({ isOpen }) {
 
   const navGroups = [
     {
-      label: 'Main',
-      items: [
-        { label: 'POS Dashboard', path: '/pos', icon: LayoutDashboard },
-      ]
-    },
-    {
       label: 'Operations',
       items: [
         { 

@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import PosLayout from '../components/layout/PosLayout';
-import PosDashboard from '../pages/PosDashboard';
 import PosLoginPage from '../pages/PosLoginPage';
 
 // Orders sub-pages
@@ -21,7 +20,6 @@ export default function PosRoutes() {
       <Route path="/login" element={<PosLoginPage />} />
       <Route element={<PosLayout />}>
         <Route path="/" element={<Navigate to={isPosAuthenticated ? "/pos/tables" : "/pos/login"} replace />} />
-        <Route path="/dashboard" element={<PosDashboard />} />
         
         {/* Orders Routes */}
         <Route path="/orders/active" element={<ActiveOrders />} />
@@ -31,6 +29,9 @@ export default function PosRoutes() {
         {/* Tables Routes */}
         <Route path="/tables" element={<TableView />} />
         <Route path="/order/:tableId" element={<PosOrderPage />} />
+        
+        {/* Fallback for any other /pos/* matching routes */}
+        <Route path="*" element={<Navigate to="/pos/tables" replace />} />
       </Route>
     </Routes>
   );

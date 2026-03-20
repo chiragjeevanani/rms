@@ -33,7 +33,7 @@ export default function PosLoginPage() {
     setTimeout(() => {
       localStorage.setItem('pos_access', 'mock_pos_token');
       setIsLoading(false);
-      navigate('/pos/dashboard');
+      navigate('/pos/tables');
     }, 1500);
   };
 
