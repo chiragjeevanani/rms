@@ -4,11 +4,12 @@ import { motion } from 'framer-motion';
 import PosTopNavbar from '../../components/PosTopNavbar';
 import { TABLE_SECTIONS, TABLE_STATUS_COLORS } from '../../data/tablesMockData';
 import { usePos } from '../../context/PosContext';
+import { Trash2 } from 'lucide-react';
 import { printKOTReceipt } from '../../utils/printKOT';
 
 export default function TableView() {
   const navigate = useNavigate();
-  const { orders } = usePos();
+  const { orders, clearTable } = usePos();
 
   const handleTableClick = (table) => {
     navigate(`/pos/order/${table.id}`);
@@ -17,6 +18,13 @@ export default function TableView() {
   const handlePrintKOT = (e, order, tableName) => {
     e.stopPropagation();
     printKOTReceipt(order, { name: tableName });
+  };
+
+  const handleClearTable = (e, tableId) => {
+    e.stopPropagation();
+    if (window.confirm(`Clear ${tableId} and mark as empty?`)) {
+      clearTable(tableId);
+    }
   };
 
   const getElapsedTime = (startTime) => {
@@ -147,8 +155,17 @@ export default function TableView() {
                              onClick={(e) => { e.stopPropagation(); navigate(`/pos/order/${table.id}`); }}
                              className="p-1 bg-white border border-gray-300 rounded-md shadow-sm text-gray-500 hover:brightness-95 active:scale-95 transition-all outline-none"
                            >
-                              <Eye size={12} strokeWidth={2.5} />
+                               <Eye size={12} strokeWidth={2.5} />
                            </button>
+                           {order.status === 'paid' && (
+                             <button 
+                               onClick={(e) => handleClearTable(e, table.id)}
+                               className="p-1 bg-[#BE123C] border border-rose-900/10 rounded-md shadow-sm text-white hover:brightness-110 active:scale-95 transition-all outline-none"
+                               title="Clear Table"
+                             >
+                                <Trash2 size={12} strokeWidth={2.5} />
+                             </button>
+                           )}
                         </div>
                       </>
                     ) : (

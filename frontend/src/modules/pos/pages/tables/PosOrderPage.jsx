@@ -22,7 +22,10 @@ import { ALL_STAFF as MOCK_WAITERS } from '../../data/staff';
 export default function PosOrderPage() {
   const { tableId } = useParams();
   const navigate = useNavigate();
-  const { placeKOT, saveOrder, settleOrder, holdOrder, orders, isCustomerSectionOpen, toggleCustomerSection } = usePos();
+  const { 
+    placeKOT, saveOrder, settleOrder, holdOrder, clearTable,
+    orders, isCustomerSectionOpen, toggleCustomerSection 
+  } = usePos();
   
   const [selectedCategory, setSelectedCategory] = useState(POS_CATEGORIES[0].id);
   const [searchQuery, setSearchQuery] = useState('');
@@ -244,6 +247,14 @@ export default function PosOrderPage() {
     playClickSound();
     holdOrder(tableId);
     navigate('/pos/tables');
+  };
+
+  const handleClearTable = () => {
+    playClickSound();
+    if (window.confirm("Are you sure you want to mark this table as empty?")) {
+      clearTable(tableId);
+      navigate('/pos/tables');
+    }
   };
 
   return (
@@ -741,6 +752,12 @@ export default function PosOrderPage() {
               <ActionButton onClick={() => handleKOT(false)} label="KOT" color="bg-white" textColor="text-gray-800" />
               <ActionButton onClick={() => handleKOT(true)} label="KOT & Print" color="bg-[#546E7A]" />
               <ActionButton onClick={handleHold} label="Hold" color="bg-white" textColor="text-gray-800" />
+              <ActionButton 
+                onClick={handleClearTable} 
+                label="Clear Table" 
+                color={orders[tableId]?.status === 'paid' ? "bg-emerald-600" : "bg-gray-100"} 
+                textColor={orders[tableId]?.status === 'paid' ? "text-white" : "text-gray-400"} 
+              />
             </div>
           </div>
         </div>
