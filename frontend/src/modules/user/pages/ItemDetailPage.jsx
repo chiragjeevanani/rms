@@ -10,7 +10,7 @@ export default function ItemDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const item = MENU_ITEMS.find((i) => i.id === parseInt(id));
+  const item = MENU_ITEMS.find((i) => i.id === id);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedModifiers, setSelectedModifiers] = useState({});

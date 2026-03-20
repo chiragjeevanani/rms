@@ -46,11 +46,7 @@ export default function PosTopNavbar() {
       </div>
 
       {/* Center Section - Toolbar */}
-      <div className="hidden lg:flex items-center gap-6 px-4">
-        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/tables'); }} icon={<BookOpen size={20} />} />
-        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/tables'); }} icon={<Store size={20} />} />
-        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/dashboard'); }} icon={<Wallet size={20} />} />
-        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/dashboard'); }} icon={<LayoutGrid size={20} />} />
+      <div className="hidden lg:flex items-center gap-6 px-4 flex-1 justify-center">
         <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/active'); }} icon={<Printer size={20} />} />
         <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/active'); }} icon={<ClipboardList size={20} />} />
         <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/completed'); }} icon={<Clock size={20} />} />

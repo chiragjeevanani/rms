@@ -8,31 +8,37 @@ export default function PriorityRules() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <header className={`px-8 py-6 border-b shrink-0 flex items-center justify-between ${
-        isDarkMode ? 'bg-slate-900/50 border-white/5' : 'bg-white border-slate-200'
+      <header className={`px-8 py-4 border-b shrink-0 flex items-center justify-between transition-colors duration-500 ${
+        isDarkMode ? 'bg-[#1a1c1e] border-white/5 shadow-inner' : 'bg-white border-stone-200 shadow-sm'
       }`}>
-        <div>
-          <h1 className={`text-2xl font-black uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-            Priority Rules
-          </h1>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-1">
-            Define Auto-Prioritization Logic for Kitchen Bundles
-          </p>
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col">
+            <h1 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-[#5D4037]'}`}>
+              Priority Rules
+            </h1>
+            <p className="text-[9px] font-black uppercase tracking-widest text-stone-500">
+              Define Auto-Prioritization Logic
+            </p>
+          </div>
         </div>
 
-        <button className="flex items-center gap-2 px-6 py-2.5 bg-teal-500 text-slate-950 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/20">
-          <Save size={16} strokeWidth={3} />
+        <button className="flex items-center gap-2 px-6 py-2 bg-[#5D4037] text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#4E342E] transition-all shadow-lg shadow-[#5D4037]/20">
+          <Save size={14} strokeWidth={3} />
           Deploy Rules
         </button>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-8 no-scrollbar">
+      <main className={`flex-1 overflow-y-auto p-8 no-scrollbar transition-colors ${
+        isDarkMode ? 'bg-[#1a1c1e]' : 'bg-stone-50'
+      }`}>
         <div className="max-w-3xl space-y-8">
-          <div className="bg-blue-500/10 border border-blue-500/20 p-6 rounded-3xl flex items-start gap-4 mb-10">
-            <Info className="text-blue-500 shrink-0" size={24} />
+          <div className={`p-6 rounded-[2rem] border flex items-start gap-4 mb-10 transition-colors ${
+            isDarkMode ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20' : 'bg-[#D4AF37]/10 border-[#D4AF37]/30 shadow-sm'
+          }`}>
+            <Info className="text-[#D4AF37] shrink-0" size={24} />
             <div>
-              <h4 className="text-sm font-black text-blue-500 uppercase tracking-widest mb-1">How rules work</h4>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wide leading-relaxed">
+              <h4 className="text-sm font-black text-[#5D4037] uppercase tracking-widest mb-1">How rules work</h4>
+              <p className={`text-xs font-bold uppercase tracking-wide leading-relaxed ${isDarkMode ? 'text-stone-400' : 'text-stone-600'}`}>
                 Rules are evaluated from top to bottom. The first rule that matches an order will apply the specified priority boost.
               </p>
             </div>
@@ -46,30 +52,32 @@ export default function PriorityRules() {
           ].map((rule) => (
             <div 
               key={rule.id}
-              className={`p-6 rounded-3xl border flex items-center justify-between transition-all ${
-                isDarkMode ? 'bg-slate-900 border-white/5' : 'bg-white border-slate-200 shadow-sm'
+              className={`p-6 rounded-[2rem] border flex items-center justify-between transition-all ${
+                isDarkMode ? 'bg-white/5 border-white/5' : 'bg-white border-stone-100 shadow-sm'
               }`}
             >
               <div className="flex items-center gap-6">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                  rule.active ? 'bg-teal-500/10 text-teal-400' : 'bg-slate-500/10 text-slate-500 opacity-50'
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                  rule.active 
+                    ? (isDarkMode ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'bg-[#5D4037]/10 text-[#5D4037]') 
+                    : 'bg-stone-500/10 text-stone-500 opacity-30 shadow-inner'
                 }`}>
                   <rule.icon size={24} />
                 </div>
                 <div>
-                  <h3 className={`text-lg font-black uppercase tracking-tight mb-1 ${
-                    rule.active ? (isDarkMode ? 'text-white' : 'text-slate-900') : 'text-slate-500'
+                  <h3 className={`text-lg font-black uppercase tracking-tight mb-1 transition-colors ${
+                    rule.active ? (isDarkMode ? 'text-white' : 'text-stone-800') : 'text-stone-400'
                   }`}>
                     {rule.title}
                   </h3>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">
                     {rule.desc}
                   </p>
                 </div>
               </div>
 
-              <div className={`w-14 h-8 rounded-full p-1 cursor-pointer transition-colors relative ${
-                rule.active ? 'bg-teal-500' : 'bg-slate-700'
+              <div className={`w-14 h-8 rounded-full p-1 cursor-pointer transition-all relative ${
+                rule.active ? 'bg-[#D4AF37]' : 'bg-stone-700 shadow-inner'
               }`}>
                 <div className={`w-6 h-6 bg-white rounded-full shadow-lg transition-transform ${
                   rule.active ? 'translate-x-6' : 'translate-x-0'

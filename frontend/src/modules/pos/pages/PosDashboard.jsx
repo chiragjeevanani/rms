@@ -6,7 +6,8 @@ import {
   Smartphone, Trash, Receipt, Send, Pause, Table, 
   X, ChevronRight, User, ShoppingCart, Filter,
   Soup, Utensils, Beer, IceCream, Pizza, LayoutGrid,
-  MoreVertical, Clock, CheckCircle2, AlertCircle
+  MoreVertical, Clock, CheckCircle2, AlertCircle,
+  Star, GlassWater, Wine, CupSoda
 } from 'lucide-react';
 import { POS_CATEGORIES, POS_MENU_ITEMS } from '../data/posMenu';
 import { TABLE_SECTIONS } from '../data/tablesMockData';
@@ -14,7 +15,7 @@ import { useOrders } from '../../../context/OrderContext';
 import { useMemo } from 'react';
 
 const ICON_MAP = {
-  Soup, Utensils, Beer, IceCream, Pizza
+  Soup, Utensils, Beer, IceCream, Pizza, Star, GlassWater, Wine, CupSoda, LayoutGrid
 };
 
 export default function PosDashboard() {
@@ -28,7 +29,8 @@ export default function PosDashboard() {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { createOrder } = useOrders();
+  const { orders, createOrder, updateOrderStatus } = useOrders();
+
   const searchInputRef = useRef(null);
 
   // Derived tables list for selector
@@ -140,7 +142,7 @@ export default function PosDashboard() {
     : POS_MENU_ITEMS.filter(item => item.catId === activeCategory);
 
   return (
-    <div className="h-full bg-[#F4F4F7] flex flex-col overflow-hidden font-sans text-[#1A1C1E]">
+    <div className="h-full bg-[#F4F4F7] flex flex-col overflow-hidden font-sans text-[#1A1C1E] relative">
       {/* Universal Header - Industrial Style */}
       <header className="h-14 bg-white border-b border-[#E2E4E9] flex items-center justify-between px-4 shrink-0 z-50">
         <div className="flex items-center gap-3">
@@ -241,7 +243,7 @@ export default function PosDashboard() {
               <span className="text-[9px] font-bold uppercase mt-2">All Items</span>
            </button>
            {POS_CATEGORIES.map(cat => {
-             const Icon = ICON_MAP[cat.icon];
+             const Icon = ICON_MAP[cat.icon] || LayoutGrid;
              return (
                <button 
                  key={cat.id}
@@ -413,31 +415,33 @@ export default function PosDashboard() {
         </section>
       </div>
 
-      {/* Industrial Status Bar */}
-      <footer className="h-10 bg-white border-t border-[#E2E4E9] px-4 flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-slate-400">
-         <div className="flex items-center gap-6">
-            <span className="flex items-center gap-1.5 hover:text-slate-900 cursor-pointer">
-               <Pause size={10} className="text-orange-500" />
-               Hold Order [F2]
+      {/* Premium Dark Status Bar */}
+      <footer className="h-9 bg-[#1a1c1e] text-white/50 px-6 flex items-center justify-between text-[8px] font-black uppercase tracking-[0.15em] shrink-0">
+         <div className="flex items-center gap-8">
+            <span className="flex items-center gap-2 hover:text-orange-400 transition-colors cursor-pointer group">
+               <Pause size={12} className="text-orange-500 group-hover:scale-110 transition-transform" />
+               Hold [F2]
             </span>
-            <span className="flex items-center gap-1.5 hover:text-slate-900 cursor-pointer">
-               <AlertCircle size={10} className="text-red-500" />
-               Cancel Order [F4]
+            <span className="flex items-center gap-2 hover:text-red-400 transition-colors cursor-pointer group">
+               <AlertCircle size={12} className="text-red-500 group-hover:scale-110 transition-transform" />
+               Cancel [F4]
             </span>
-            <span className="flex items-center gap-1.5 hover:text-slate-900 cursor-pointer">
-               <CheckCircle2 size={10} className="text-emerald-500" />
-               End of Day Summary
+            <span className="flex items-center gap-2 hover:text-emerald-400 transition-colors cursor-pointer group">
+               <CheckCircle2 size={12} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+               Reports
             </span>
          </div>
-         <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-               <Clock size={10} />
-               {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+         
+         <div className="flex items-center gap-6 text-white/40">
+            <div className="flex items-center gap-2 bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
+               <Clock size={12} className="text-blue-400" />
+               <span className="tabular-nums">
+                 {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+               </span>
             </div>
-            <div className="h-4 w-px bg-[#E2E4E9]" />
-            <div className="flex items-center gap-1.5 text-emerald-600">
+            <div className="flex items-center gap-2 text-emerald-500/80 bg-emerald-500/5 px-2 py-1 rounded-md border border-emerald-500/10">
                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-               Sync Online
+               Connected
             </div>
          </div>
       </footer>

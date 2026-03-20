@@ -122,10 +122,13 @@ export default function TableView() {
                   >
                     {isRunningKOT ? (
                       <>
-                        <div className="absolute top-0 left-0 right-0 bg-[#FDD835] py-1 text-[10px] font-black text-gray-700 text-center">
-                          {getElapsedTime(order.sessionStartTime)}
+                        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 bg-black/30 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/20 z-20">
+                          <Clock size={8} className="text-white" />
+                          <span className="text-[8px] font-black text-white whitespace-nowrap uppercase tracking-tighter">
+                            {getElapsedTime(order.sessionStartTime)}
+                          </span>
                         </div>
-                        <div className="flex flex-col items-center mt-3">
+                        <div className="flex flex-col items-center mt-6">
                           <span className="font-black text-[12px] tracking-tight" style={{ color: statusConfig.textColor }}>
                             {table.name}
                           </span>

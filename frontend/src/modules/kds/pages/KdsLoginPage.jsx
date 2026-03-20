@@ -36,12 +36,12 @@ export default function KdsLoginPage() {
 
   return (
     <div 
-      className="h-screen bg-[#0A0A0B] text-white flex items-center justify-center p-4 lg:p-12 selection:bg-brand-500 font-sans overflow-hidden relative"
+      className="h-screen bg-[#1a1c1e] text-white flex items-center justify-center p-4 lg:p-12 selection:bg-[#D4AF37] font-sans overflow-hidden relative"
     >
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-500/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/5 blur-[120px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#5D4037]/20 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#D4AF37]/5 blur-[120px] rounded-full" />
       </div>
 
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10">
@@ -53,14 +53,14 @@ export default function KdsLoginPage() {
           className="hidden lg:flex flex-col gap-10"
         >
           <div>
-            <div className="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-brand-500/20">
-              <ChefHat size={32} className="text-charcoal-900" strokeWidth={2.5} />
+            <div className="w-16 h-16 bg-[#5D4037] rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-[#5D4037]/20">
+              <ChefHat size={32} className="text-[#D4AF37]" strokeWidth={2.5} />
             </div>
             <h1 className="text-6xl font-display font-black tracking-tighter uppercase leading-none mb-4">
               Kitchen <br />
-              <span className="text-brand-500 italic">Systems</span>
+              <span className="text-[#D4AF37] italic">Systems</span>
             </h1>
-            <p className="text-charcoal-400 font-medium text-lg max-w-md leading-relaxed">
+            <p className="text-stone-400 font-medium text-lg max-w-md leading-relaxed">
               Real-time Order Management & KDS Terminal. Please select your station and authenticate to begin processing.
             </p>
           </div>
@@ -102,18 +102,18 @@ export default function KdsLoginPage() {
           animate={{ y: 0, opacity: 1 }}
           className="w-full max-w-md mx-auto"
         >
-          <div className="bg-[#141416] p-8 lg:p-10 rounded-[3rem] border border-white/5 shadow-2xl relative">
+          <div className="bg-[#2a2c2e] p-8 lg:p-10 rounded-[3rem] border border-white/5 shadow-2xl relative">
             {/* Mobile-only header */}
             <div className="lg:hidden text-center mb-6">
-              <div className="w-10 h-10 bg-brand-500 rounded-xl mx-auto mb-3 flex items-center justify-center">
-                <ChefHat size={20} className="text-charcoal-900" />
+              <div className="w-10 h-10 bg-[#5D4037] rounded-xl mx-auto mb-3 flex items-center justify-center">
+                <ChefHat size={20} className="text-[#D4AF37]" />
               </div>
               <h2 className="text-2xl font-display font-black tracking-tight uppercase">KDS Login</h2>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6 lg:space-y-8">
               <div className="space-y-3 px-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-charcoal-500">Select Operating Station</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-500">Select Operating Station</label>
                 <div className="grid grid-cols-1 gap-2">
                   {stations.map((s) => (
                     <button
@@ -122,12 +122,12 @@ export default function KdsLoginPage() {
                       onClick={() => setStationId(s.id)}
                       className={`p-4 rounded-xl flex items-center justify-between border transition-all duration-300 ${
                         stationId === s.id 
-                        ? 'bg-brand-500 border-brand-500 text-charcoal-900 shadow-lg shadow-brand-500/20' 
-                        : 'bg-black/40 border-white/5 text-charcoal-400 hover:border-white/20'
+                        ? 'bg-[#5D4037] border-[#D4AF37]/50 text-white shadow-lg shadow-[#5D4037]/20' 
+                        : 'bg-black/40 border-white/5 text-stone-400 hover:border-white/20'
                       }`}
                     >
                       <span className="text-xs font-black uppercase tracking-widest">{s.name}</span>
-                      <span className={`text-[9px] font-bold ${stationId === s.id ? 'text-charcoal-900/60' : 'text-charcoal-600'}`}>{s.id}</span>
+                      <span className={`text-[9px] font-bold ${stationId === s.id ? 'text-white/60' : 'text-stone-600'}`}>{s.id}</span>
                     </button>
                   ))}
                 </div>
@@ -152,12 +152,12 @@ export default function KdsLoginPage() {
               <button 
                 type="submit"
                 disabled={isLoading || !stationId || pin.length < 4}
-                className="w-full bg-brand-500 text-charcoal-900 py-6 rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-20 disabled:grayscale transition-all duration-500 overflow-hidden relative group"
+                className="w-full bg-[#D4AF37] text-[#5D4037] py-6 rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-[#D4AF37]/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-20 disabled:grayscale transition-all duration-500 overflow-hidden relative group"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 <span className="relative z-10 flex items-center gap-2">
                   {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-charcoal-900/30 border-t-charcoal-900 rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-[#5D4037]/30 border-t-[#5D4037] rounded-full animate-spin" />
                   ) : (
                     <>Authorize Terminal <ArrowRight size={16} /></>
                   )}
@@ -167,10 +167,10 @@ export default function KdsLoginPage() {
 
             <footer className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between opacity-30">
               <div className="flex items-center gap-2">
-                <Cpu size={10} className="text-brand-500" />
+                <Cpu size={10} className="text-[#D4AF37]" />
                 <span className="text-[8px] font-black uppercase tracking-tighter">Terminal ID: KMS-992</span>
               </div>
-              <p className="text-[8px] font-bold text-charcoal-600 uppercase tracking-widest">
+              <p className="text-[8px] font-bold text-stone-600 uppercase tracking-widest">
                 Kitchen Ops Hub &copy; 2026
               </p>
             </footer>

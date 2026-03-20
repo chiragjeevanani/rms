@@ -36,6 +36,7 @@ export default function CheckoutPage() {
         note: item.notes || '',
         status: 'new'
       })),
+      type: orderType || 'Dine-In',
       total: grandTotal
     };
 

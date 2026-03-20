@@ -7,6 +7,19 @@ export const OrderProvider = ({ children }) => {
     const saved = localStorage.getItem('rms_orders');
     return saved ? JSON.parse(saved) : [
       {
+        id: 'ORD-1024',
+        orderNum: '1024',
+        table: 'Table 7',
+        source: 'Home Website',
+        items: [
+          { id: 'i1', name: 'Paneer Tikka', quantity: 2, status: 'new' },
+          { id: 'i4', name: 'Paneer Butter Masala', quantity: 1, status: 'new' }
+        ],
+        status: 'new',
+        startTime: new Date().toISOString(),
+        total: 780
+      },
+      {
         id: 'ORD-1023',
         orderNum: '1023',
         table: '7',
@@ -25,6 +38,17 @@ export const OrderProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('rms_orders', JSON.stringify(orders));
   }, [orders]);
+
+  // Handle cross-tab synchronization
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'rms_orders' && e.newValue) {
+        setOrders(JSON.parse(e.newValue));
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const createOrder = (orderData) => {
     const newOrder = {

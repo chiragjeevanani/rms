@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTheme } from '../../user/context/ThemeContext';
-import KdsSidebar from '../components/KdsSidebar';
+import KdsTopNavbar from './KdsTopNavbar';
 
 export default function KdsLayout() {
   const { isDarkMode } = useTheme();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className={`min-h-screen flex ${isDarkMode ? 'bg-[#020617] text-white' : 'bg-slate-50 text-slate-900'}`}>
-      <KdsSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <main className={`flex-1 transition-all duration-300 flex flex-col h-screen overflow-hidden ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
+    <div className={`min-h-screen flex flex-col transition-colors duration-500 ${isDarkMode ? 'bg-[#1a1c1e] text-white' : 'bg-stone-50 text-stone-900'}`}>
+      <KdsTopNavbar />
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <Outlet />
       </main>
     </div>
