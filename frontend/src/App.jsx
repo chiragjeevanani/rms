@@ -7,21 +7,24 @@ import KdsRoutes from './modules/kds/routes/KdsRoutes';
 import PosRoutes from './modules/pos/routes/PosRoutes';
 import AdminRoutes from './modules/admin/routes/AdminRoutes';
 import { OrderProvider } from './context/OrderContext';
+import { PosProvider } from './modules/pos/context/PosContext';
 
 function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
         <CartProvider>
-          <OrderProvider>
-            <Routes>
-              <Route path="/staff/*" element={<StaffRoutes />} />
-              <Route path="/kds/*" element={<KdsRoutes />} />
-              <Route path="/pos/*" element={<PosRoutes />} />
-              <Route path="/admin/*" element={<AdminRoutes />} />
-              <Route path="/*" element={<UserRoutes />} />
-            </Routes>
-          </OrderProvider>
+          <PosProvider>
+            <OrderProvider>
+              <Routes>
+                <Route path="/staff/*" element={<StaffRoutes />} />
+                <Route path="/kds/*" element={<KdsRoutes />} />
+                <Route path="/pos/*" element={<PosRoutes />} />
+                <Route path="/admin/*" element={<AdminRoutes />} />
+                <Route path="/*" element={<UserRoutes />} />
+              </Routes>
+            </OrderProvider>
+          </PosProvider>
         </CartProvider>
       </ThemeProvider>
     </BrowserRouter>

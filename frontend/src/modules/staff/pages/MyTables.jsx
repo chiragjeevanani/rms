@@ -2,15 +2,31 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Search, Map, Users, Clock, Plus, Filter, Sparkles } from 'lucide-react';
-import { TABLES } from '../data/staffMockData';
+import { usePos } from '../../../modules/pos/context/PosContext';
+import { TABLE_SECTIONS } from '../../../modules/pos/data/tablesMockData';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { StaffNotifications } from '../components/StaffNotifications';
 
 export default function MyTables() {
+  const { orders } = usePos();
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 
-  const filteredTables = filter === 'all' ? TABLES : TABLES.filter(t => t.status === filter);
+  // Flatten all tables from all sections for the staff app display
+  const displayTables = useMemo(() => {
+    const allTables = TABLE_SECTIONS.flatMap(section => section.tables);
+    return allTables.map(t => {
+      const order = orders[t.id];
+      let status = t.status === 'blank' ? 'available' : t.status;
+      if (order) {
+        if (order.status === 'running-kot') status = 'occupied';
+        if (order.status === 'printed') status = 'occupied'; 
+      }
+      return { ...t, status, order };
+    });
+  }, [orders]);
+
+  const filteredTables = filter === 'all' ? displayTables : displayTables.filter(t => t.status === filter);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -95,29 +111,33 @@ export default function MyTables() {
               >
                 <div className="flex justify-between items-start mb-6">
                    <div className="flex flex-col">
-                      <span className="text-3xl font-black text-slate-900 leading-none mb-1">#{table.number}</span>
+                      <span className="text-2xl font-black text-slate-900 leading-none mb-1">{table.name}</span>
                       <div className="flex items-center gap-1.5 opacity-60">
                          <Users size={12} className="text-slate-400" />
-                         <span className="text-[10px] font-bold text-slate-500 uppercase">{table.capacity} Pax</span>
+                         <span className="text-[10px] font-bold text-slate-500 uppercase">{table.capacity || 4} Pax</span>
                       </div>
                    </div>
                    <div className={`w-3 h-3 rounded-full ${getStatusColor(table.status)} shadow-lg shadow-current/20`} />
                 </div>
 
-                {table.currentOrder ? (
+                {table.order ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active Order</span>
-                       <span className="text-[9px] font-black text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full uppercase italic animate-pulse">
-                         {table.currentOrder.status}
+                       <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase italic animate-pulse ${table.order.status === 'printed' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'}`}>
+                         {table.order.status}
                        </span>
                     </div>
                     <div className="flex items-end justify-between">
                        <div className="flex flex-col">
-                          <span className="text-lg font-black text-slate-900 tracking-tighter">₹{table.currentOrder.amount}</span>
+                          <span className="text-lg font-black text-slate-900 tracking-tighter">
+                            ₹{table.order.kots?.reduce((acc, k) => acc + k.total, 0) || 0}
+                          </span>
                           <div className="flex items-center gap-1 text-slate-400">
                              <Clock size={10} />
-                             <span className="text-[9px] font-bold">{table.currentOrder.startTime}</span>
+                             <span className="text-[9px] font-bold">
+                               {new Date(table.order.sessionStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                             </span>
                           </div>
                        </div>
                     </div>

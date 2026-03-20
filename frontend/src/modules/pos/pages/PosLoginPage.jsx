@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Calculator, Delete, ArrowRight, UserCheck, Shield, Zap } from 'lucide-react';
@@ -7,6 +7,15 @@ export default function PosLoginPage() {
   const [pin, setPin] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    document.body.style.backgroundColor = '#0A0A0B';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.backgroundColor = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const handleNumberClick = (num) => {
     if (pin.length < 4) setPin(prev => prev + num);

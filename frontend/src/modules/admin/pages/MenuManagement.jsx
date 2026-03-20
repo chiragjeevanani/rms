@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { POS_CATEGORIES, POS_MENU_ITEMS as INITIAL_ITEMS } from '../../pos/data/posMenu';
+import { playClickSound } from '../../pos/utils/sounds';
 
 export default function MenuManagement() {
   const [viewMode, setViewMode] = useState('grid');
@@ -121,16 +122,16 @@ export default function MenuManagement() {
            <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900">Catalog Management</h1>
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Configure menu items, categories, and modifiers</p>
         </div>
-        <div className="flex bg-white p-1 border border-slate-200 rounded-sm">
+        <div className="flex bg-white p-1 border border-slate-200 rounded-sm shadow-sm">
            <button 
-             onClick={() => setActiveTab('items')}
-             className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'items' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-900'}`}
+             onClick={() => { playClickSound(); setActiveTab('items'); }}
+             className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'items' ? 'bg-[#5D4037] text-white shadow-md shadow-stone-100' : 'text-slate-400 hover:text-slate-900'}`}
            >
               Menu Items
            </button>
            <button 
-             onClick={() => setActiveTab('categories')}
-             className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'categories' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-900'}`}
+             onClick={() => { playClickSound(); setActiveTab('categories'); }}
+             className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'categories' ? 'bg-[#5D4037] text-white shadow-md shadow-stone-100' : 'text-slate-400 hover:text-slate-900'}`}
            >
               Categories
            </button>
@@ -157,27 +158,27 @@ export default function MenuManagement() {
          </div>
 
          <div className="flex items-center gap-3">
-            <div className="flex items-center border border-slate-100 rounded-sm p-1 mr-4">
-               <button 
-                 onClick={() => setViewMode('grid')}
-                 className={`p-1.5 rounded-sm transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-950'}`}
-               >
-                  <LayoutGrid size={12} />
-               </button>
-               <button 
-                 onClick={() => setViewMode('list')}
-                 className={`p-1.5 rounded-sm transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-950'}`}
-               >
-                  <List size={12} />
-               </button>
-            </div>
-            <button 
-              onClick={() => activeTab === 'items' ? handleOpenModal() : handleOpenCategoryModal()}
-              className="h-9 px-4 bg-slate-900 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
-            >
-               <Plus size={14} />
-               Add New {activeTab === 'items' ? 'Item' : 'Category'}
-            </button>
+             <div className="flex items-center border border-slate-100 rounded-sm p-1 mr-4 bg-white shadow-sm">
+                <button 
+                  onClick={() => { playClickSound(); setViewMode('grid'); }}
+                  className={`p-1.5 rounded-sm transition-all ${viewMode === 'grid' ? 'bg-[#424242] text-white' : 'text-slate-400 hover:text-slate-950'}`}
+                >
+                   <LayoutGrid size={12} />
+                </button>
+                <button 
+                  onClick={() => { playClickSound(); setViewMode('list'); }}
+                  className={`p-1.5 rounded-sm transition-all ${viewMode === 'list' ? 'bg-[#424242] text-white' : 'text-slate-400 hover:text-slate-950'}`}
+                >
+                   <List size={12} />
+                </button>
+             </div>
+             <button 
+               onClick={() => { playClickSound(); activeTab === 'items' ? handleOpenModal() : handleOpenCategoryModal(); }}
+               className="h-9 px-6 bg-[#5D4037] text-white rounded-sm text-[10px] font-bold uppercase tracking-[0.1em] flex items-center gap-2 shadow-lg shadow-stone-900/10 active:scale-95 transition-all"
+             >
+                <Plus size={14} strokeWidth={3} />
+                Add New {activeTab === 'items' ? 'Item' : 'Category'}
+             </button>
          </div>
       </div>
 
@@ -200,18 +201,18 @@ export default function MenuManagement() {
                        )}
                    </div>
                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-1">
-                         <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-tight line-clamp-1">{item.name}</h4>
-                         <span className="text-[10px] font-black text-blue-600 tracking-tighter">₹{item.price}</span>
-                      </div>
+                       <div className="flex items-start justify-between mb-1">
+                          <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-tight line-clamp-1">{item.name}</h4>
+                          <span className="text-[10px] font-black text-[#5D4037] tracking-tighter">₹{item.price}</span>
+                       </div>
                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-4">
                         {categories.find(c => c.id === item.catId)?.name}
                       </p>
                       <div className="flex items-center gap-2 border-t border-slate-50 pt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button 
-                           onClick={() => handleOpenModal(item)}
-                           className="flex-1 py-1.5 bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest rounded-sm hover:bg-slate-800 transition-all"
-                         >Edit Item</button>
+                          <button 
+                            onClick={() => { playClickSound(); handleOpenModal(item); }}
+                            className="flex-1 py-1.5 bg-[#424242] text-white text-[8px] font-black uppercase tracking-widest rounded-sm hover:bg-black transition-all shadow-sm"
+                          >Edit Item</button>
                          <button 
                            onClick={() => handleDelete(item.id)}
                            className="p-1.5 bg-slate-50 text-slate-400 hover:text-red-600 rounded-sm transition-colors border border-slate-100"
@@ -299,19 +300,19 @@ export default function MenuManagement() {
               className="bg-white w-full max-w-lg rounded-sm shadow-2xl relative overflow-hidden flex flex-col"
             >
                {/* Modal Header */}
-               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+               <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#333333]">
                   <div className="flex items-center gap-3">
-                     <div className="w-8 h-8 bg-slate-900 text-white rounded-sm flex items-center justify-center">
+                     <div className="w-8 h-8 bg-[#5D4037] text-white rounded-sm flex items-center justify-center shadow-lg shadow-stone-900/20">
                         {editingItem ? <Edit3 size={16} /> : <Plus size={16} />}
                      </div>
                      <div>
-                        <h3 className="text-[13px] font-black uppercase tracking-tight text-slate-900">
+                        <h3 className="text-[13px] font-black uppercase tracking-tight text-white">
                            {editingItem ? 'Update Catalog Record' : 'Initialize New Record'}
                         </h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Catalog Protocol v2.4.0</p>
+                        <p className="text-[9px] font-black text-[#FFC107] uppercase tracking-widest mt-0.5">Catalog Protocol v2.5.0</p>
                      </div>
                   </div>
-                  <button onClick={handleCloseModal} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
+                  <button onClick={() => { playClickSound(); handleCloseModal(); }} className="p-2 text-white/40 hover:text-white transition-colors"><X size={18} /></button>
                </div>
 
                {/* Modal Body */}
@@ -432,16 +433,17 @@ export default function MenuManagement() {
                   <div className="pt-6 flex items-center gap-3">
                      <button 
                         type="button"
-                        onClick={handleCloseModal}
-                        className="flex-1 py-3 bg-white border border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-sm hover:text-slate-900 hover:bg-slate-50 transition-all"
-                     >Cancel</button>
-                     <button 
-                        type="submit"
-                        className="flex-1 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-sm shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
-                     >
-                        <Save size={14} />
-                        {editingItem ? 'Update Protocol' : 'Commit Record'}
-                     </button>
+                         onClick={() => { playClickSound(); handleCloseModal(); }}
+                         className="flex-1 py-3 bg-white border border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-sm hover:text-slate-900 hover:bg-slate-50 transition-all shadow-sm"
+                      >Cancel</button>
+                      <button 
+                         type="submit"
+                         onClick={playClickSound}
+                         className="flex-1 py-3 bg-[#5D4037] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-sm shadow-xl shadow-stone-900/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                      >
+                         <Save size={14} />
+                         {editingItem ? 'Update Protocol' : 'Commit Record'}
+                      </button>
                   </div>
                </form>
             </motion.div>
@@ -467,7 +469,7 @@ export default function MenuManagement() {
              >
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-slate-900 text-white rounded-sm flex items-center justify-center">
+                      <div className="w-8 h-8 bg-[#5D4037] text-white rounded-sm flex items-center justify-center">
                          {editingCategory ? <Edit3 size={16} /> : <Plus size={16} />}
                       </div>
                       <div>
@@ -518,7 +520,7 @@ export default function MenuManagement() {
                       >Abort</button>
                       <button 
                          type="submit"
-                         className="flex-1 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-sm shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-all"
+                         className="flex-1 py-3 bg-[#5D4037] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-sm shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-all"
                       >
                          <Save size={14} />
                          {editingCategory ? 'Update' : 'Establish'}

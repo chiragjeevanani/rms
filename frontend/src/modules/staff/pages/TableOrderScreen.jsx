@@ -2,23 +2,30 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Search, Plus, Minus, ShoppingCart, Trash2, Send } from 'lucide-react';
-import { MENU_ITEMS, CATEGORIES } from '../../user/data/mockData';
-import { TABLES } from '../data/staffMockData';
-import { useOrders } from '../../../context/OrderContext';
+import { usePos } from '../../../modules/pos/context/PosContext';
+import { POS_MENU_ITEMS as MENU_ITEMS, POS_CATEGORIES as CATEGORIES } from '../../../modules/pos/data/posMenu';
+import { useEffect } from 'react';
 
 export default function TableOrderScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const table = TABLES.find(t => t.id === parseInt(id));
+  // Sync ID with POS format (t1, t2 etc)
+  const tableId = id;
   
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]?.id || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentOrder, setCurrentOrder] = useState([]);
-  const [feedback, setFeedback] = useState(null); // Tracks the last added item ID
-  const { createOrder } = useOrders();
+  const [feedback, setFeedback] = useState(null);
+  const [staff, setStaff] = useState(null);
+  const { placeKOT } = usePos();
+
+  useEffect(() => {
+    const savedStaff = localStorage.getItem('staff_access');
+    if (savedStaff) setStaff(JSON.parse(savedStaff));
+  }, []);
 
   const filteredItems = MENU_ITEMS.filter(item => {
-    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+    const matchesCategory = activeCategory === 'all' || item.catId === activeCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -64,7 +71,7 @@ export default function TableOrderScreen() {
                  <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
               </button>
               <div>
-                <h2 className="text-xl font-black text-slate-900">Table #{table?.number}</h2>
+                <h2 className="text-xl font-black text-slate-900 uppercase">{tableId.replace('t', 'Table ')}</h2>
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Add Items to Order</p>
               </div>
             </div>
@@ -224,20 +231,8 @@ export default function TableOrderScreen() {
                 whileTap={{ scale: 0.95 }}
                 disabled={currentOrder.length === 0}
                 onClick={() => {
-                  const newOrder = {
-                    table: table?.number || '?',
-                    source: 'Staff App',
-                    items: currentOrder.map(item => ({
-                      id: item.id || `i-${Math.random()}`,
-                      name: item.name,
-                      quantity: item.quantity,
-                      note: '',
-                      status: 'new'
-                    })),
-                    total: total
-                  };
-                  createOrder(newOrder);
-                  alert('Sent to Kitchen!');
+                  placeKOT(tableId, currentOrder, total, staff);
+                  alert(`KOT Sent for Table ${id}!`);
                   navigate(-1);
                 }}
                 className="w-full bg-teal-500 text-slate-900 py-5 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl hover:bg-teal-400 transition-all disabled:opacity-30 disabled:grayscale"

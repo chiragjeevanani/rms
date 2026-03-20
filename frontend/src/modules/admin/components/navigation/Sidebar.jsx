@@ -8,6 +8,7 @@ import {
   ShieldCheck, Bell, History, Sliders, Printer
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { playClickSound } from '../../../pos/utils/sounds';
 
 export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
@@ -111,20 +112,20 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   };
 
   return (
-    <aside className={`fixed left-0 top-0 h-full bg-white border-r border-slate-200 z-50 transition-all duration-300 shadow-sm hidden lg:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`fixed left-0 top-0 h-full bg-[#424242] border-r border-white/5 z-50 transition-all duration-300 shadow-xl hidden lg:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'}`}>
       {/* Brand Header */}
-      <div className="h-14 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
+      <div className="h-14 flex items-center justify-between px-6 border-b border-white/5 shrink-0 bg-[#333333]">
         {!isCollapsed ? (
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-slate-900 rounded-sm flex items-center justify-center text-white font-black text-sm">R</div>
+            <div className="w-7 h-7 bg-[#5D4037] rounded-sm flex items-center justify-center text-white font-black text-sm shadow-lg shadow-stone-900/20">R</div>
             <div className="flex flex-col">
-              <span className="font-black text-[13px] tracking-tight uppercase">RMS System</span>
-              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Administrator</span>
+              <span className="font-black text-[13px] tracking-tight uppercase text-white">RMS System</span>
+              <span className="text-[8px] font-black text-[#FFC107] uppercase tracking-widest mt-0.5">Administrator</span>
             </div>
           </div>
         ) : (
           <div className="w-full flex justify-center">
-            <div className="w-7 h-7 bg-slate-900 rounded-sm flex items-center justify-center text-white font-black text-sm">R</div>
+            <div className="w-7 h-7 bg-[#5D4037] rounded-sm flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-900/40">R</div>
           </div>
         )}
       </div>
@@ -135,7 +136,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
           <div key={idx} className="space-y-1">
             {!isCollapsed && (
               <div className="px-3 mb-2">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{group.label}</span>
+                <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.25em]">{group.label}</span>
               </div>
             )}
             {group.items.map((item) => {
@@ -152,13 +153,13 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                         navigate(item.path);
                       }
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm transition-all relative group ${
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all relative group h-11 ${
                       isActive 
-                      ? 'bg-slate-900 text-white shadow-md' 
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-[#5D4037] text-white shadow-lg shadow-stone-900/20' 
+                      : 'text-white/60 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <item.icon size={16} className={isActive ? 'text-white' : 'group-hover:text-slate-900'} />
+                    <item.icon size={16} className={isActive ? 'text-white' : 'group-hover:text-white transition-colors'} />
                     {!isCollapsed && (
                       <>
                         <span className={`text-[11px] font-bold uppercase tracking-wider ${isActive ? 'opacity-100' : 'opacity-80'}`}>
@@ -192,14 +193,14 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                           return (
                             <button
                               key={subItem.label}
-                              onClick={() => navigate(subItem.path)}
+                              onClick={() => { playClickSound(); navigate(subItem.path); }}
                               className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-sm transition-all group ${
                                 isSubActive 
-                                ? 'text-slate-900 bg-slate-50' 
-                                : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50/50'
+                                ? 'text-white bg-[#5D4037]/20' 
+                                : 'text-white/40 hover:text-white hover:bg-white/5'
                               }`}
                             >
-                              <div className={`w-1 h-1 rounded-full ${isSubActive ? 'bg-slate-900' : 'bg-slate-200 group-hover:bg-slate-400'}`} />
+                              <div className={`w-1 h-1 rounded-full ${isSubActive ? 'bg-[#5D4037]' : 'bg-white/20 group-hover:bg-white/40'}`} />
                               <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
                                 {subItem.label}
                               </span>
@@ -217,23 +218,24 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       </nav>
 
       {/* Logout Footer */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+      <div className="p-3 border-t border-white/5 bg-black/10">
         <button 
           onClick={() => {
+            playClickSound();
             localStorage.removeItem('admin_access');
             navigate('/admin/login');
           }}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all ${isCollapsed ? 'justify-center' : ''}`}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-white/40 hover:text-white hover:bg-[#5D4037] transition-all ${isCollapsed ? 'justify-center' : ''}`}
         >
           <LogOut size={16} />
-          {!isCollapsed && <span string="font-black text-[10px] uppercase tracking-widest">Sign Out</span>}
+          {!isCollapsed && <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>}
         </button>
       </div>
 
       {/* Toggle Button */}
       <button 
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white z-50 hover:scale-110 active:scale-95 transition-all"
+        onClick={() => { playClickSound(); setIsCollapsed(!isCollapsed); }}
+        className="absolute -right-3 top-20 w-6 h-6 bg-[#5D4037] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-[#424242] z-50 hover:scale-110 active:scale-95 transition-all"
       >
         {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>

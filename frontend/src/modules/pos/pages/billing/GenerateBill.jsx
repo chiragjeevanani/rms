@@ -16,6 +16,21 @@ const MOCK_BILLING_PENDING = [
 
 export default function GenerateBill() {
   const [selectedTable, setSelectedTable] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleFinalize = () => {
+    if (!selectedTable) return;
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setIsSuccess(true);
+      setTimeout(() => {
+        setSelectedTable(null);
+        setIsSuccess(false);
+      }, 2000);
+    }, 1500);
+  };
 
   return (
     <div className="h-full flex flex-col bg-[#F8F9FB] animate-in fade-in duration-500 overflow-hidden">

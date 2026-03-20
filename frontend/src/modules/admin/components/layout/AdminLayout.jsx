@@ -9,7 +9,7 @@ export default function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F8FAFD] text-slate-900 font-sans selection:bg-blue-100">
+    <div className="flex h-screen overflow-hidden bg-[#F5F5F5] text-slate-800 font-sans selection:bg-red-50">
       {/* Structural Sidebar */}
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
@@ -19,7 +19,7 @@ export default function AdminLayout() {
         <main className="flex-1 overflow-y-auto overflow-x-hidden relative no-scrollbar">
           <Suspense fallback={
             <div className="h-full w-full flex items-center justify-center">
-              <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-[3px] border-[#5D4037] border-t-transparent rounded-full animate-spin shadow-sm" />
             </div>
           }>
             <Outlet />

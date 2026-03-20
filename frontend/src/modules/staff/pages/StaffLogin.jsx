@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { ALL_STAFF as STAFF_USERS } from '../../pos/data/staff';
 
 export default function StaffLogin() {
   const [staffId, setStaffId] = useState('');
@@ -17,11 +18,12 @@ export default function StaffLogin() {
 
     // Simulate auth
     setTimeout(() => {
-      if (staffId && pin === '1234') {
-        localStorage.setItem('staff_access', 'mock_staff_token');
+      const foundStaff = STAFF_USERS.find(s => s.id === staffId || s.name.toLowerCase().includes(staffId.toLowerCase()));
+      if (foundStaff && pin === foundStaff.pin) {
+        localStorage.setItem('staff_access', JSON.stringify(foundStaff));
         navigate('/staff/dashboard');
       } else {
-        setError('Invalid Staff ID or PIN. Try 1234.');
+        setError('Invalid Staff ID or PIN.');
         setIsLoading(false);
       }
     }, 1500);

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function PosSidebar({ isCollapsed, setIsCollapsed }) {
+export default function PosSidebar({ isOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -94,37 +94,27 @@ export default function PosSidebar({ isCollapsed, setIsCollapsed }) {
   };
 
   return (
-    <aside className={`fixed left-0 top-0 h-full bg-[#1A1C1E] text-slate-400 z-50 transition-all duration-300 shadow-2xl flex flex-col ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`fixed left-0 top-0 h-full bg-[#1A1C1E] text-slate-400 z-50 transition-all duration-300 shadow-2xl flex flex-col w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* POS Brand Header */}
       <div className="h-14 flex items-center justify-between px-6 border-b border-white/5 shrink-0 bg-[#141517]">
-        {!isCollapsed ? (
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 bg-blue-600 rounded flex items-center justify-center text-white">
-              <Monitor size={16} />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-[13px] tracking-tight text-white uppercase">RMS POS</span>
-              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest leading-none">Terminal 01</span>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 bg-blue-600 rounded flex items-center justify-center text-white">
+            <Monitor size={16} />
           </div>
-        ) : (
-          <div className="w-full flex justify-center">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white">
-              <Monitor size={18} />
-            </div>
+          <div className="flex flex-col">
+            <span className="font-extrabold text-[13px] tracking-tight text-white uppercase">RMS POS</span>
+            <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest leading-none">Terminal 01</span>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Navigation Groups */}
       <nav className="flex-1 overflow-y-auto py-6 px-3 no-scrollbar space-y-6">
         {navGroups.map((group, idx) => (
           <div key={idx} className="space-y-1">
-            {!isCollapsed && (
-              <div className="px-3 mb-2">
-                <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">{group.label}</span>
-              </div>
-            )}
+            <div className="px-3 mb-2">
+              <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">{group.label}</span>
+            </div>
             {group.items.map((item) => {
               const isActive = location.pathname === item.path || (item.subItems && location.pathname.startsWith(item.path));
               const isExpanded = expandedMenus.includes(item.label);
@@ -133,7 +123,7 @@ export default function PosSidebar({ isCollapsed, setIsCollapsed }) {
                 <div key={item.label} className="space-y-1">
                   <button
                     onClick={() => {
-                      if (item.subItems && !isCollapsed) {
+                      if (item.subItems) {
                         toggleSubmenu(item.label);
                       } else {
                         navigate(item.path);
@@ -146,28 +136,21 @@ export default function PosSidebar({ isCollapsed, setIsCollapsed }) {
                     }`}
                   >
                     <item.icon size={18} className={isActive ? 'text-white' : 'group-hover:text-blue-400'} />
-                    {!isCollapsed && (
-                      <>
-                        <span className={`text-[11px] font-bold uppercase tracking-wider ${isActive ? 'opacity-100' : 'opacity-80'}`}>
-                          {item.label}
-                        </span>
-                        {item.subItems && (
-                          <motion.div
-                            animate={{ rotate: isExpanded ? 90 : 0 }}
-                            className="ml-auto"
-                          >
-                            <ChevronRight size={12} />
-                          </motion.div>
-                        )}
-                      </>
-                    )}
-                    {isActive && isCollapsed && (
-                      <div className="absolute left-0 w-1 h-6 bg-blue-600 rounded-r-full" />
+                    <span className={`text-[11px] font-bold uppercase tracking-wider ${isActive ? 'opacity-100' : 'opacity-80'}`}>
+                      {item.label}
+                    </span>
+                    {item.subItems && (
+                      <motion.div
+                        animate={{ rotate: isExpanded ? 90 : 0 }}
+                        className="ml-auto"
+                      >
+                        <ChevronRight size={12} />
+                      </motion.div>
                     )}
                   </button>
 
                   <AnimatePresence>
-                    {item.subItems && isExpanded && !isCollapsed && (
+                    {item.subItems && isExpanded && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
@@ -204,26 +187,18 @@ export default function PosSidebar({ isCollapsed, setIsCollapsed }) {
       </nav>
 
       {/* Logout Footer */}
-      <div className="p-3 border-t border-white/5 bg-[#141517]">
+      <div className="p-4 border-t border-white/5 bg-[#141517]">
         <button 
           onClick={() => {
             localStorage.removeItem('pos_access');
             navigate('/pos/login');
           }}
-          className={`w-full flex items-center gap-3 px-3 py-3 rounded text-slate-500 hover:text-rose-500 hover:bg-rose-500/5 transition-all ${isCollapsed ? 'justify-center' : ''}`}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded text-slate-500 hover:text-rose-500 hover:bg-rose-500/5 transition-all"
         >
           <LogOut size={16} />
-          {!isCollapsed && <span className="font-black text-[10px] uppercase tracking-widest">Log Out</span>}
+          <span className="font-black text-[10px] uppercase tracking-widest">Log Out</span>
         </button>
       </div>
-
-      {/* Toggle Button */}
-      <button 
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-[#1A1C1E] z-50 hover:scale-110 active:scale-95 transition-all"
-      >
-        {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-      </button>
     </aside>
   );
 }

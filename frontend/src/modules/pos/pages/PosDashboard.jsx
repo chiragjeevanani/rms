@@ -8,8 +8,10 @@ import {
   Soup, Utensils, Beer, IceCream, Pizza, LayoutGrid,
   MoreVertical, Clock, CheckCircle2, AlertCircle
 } from 'lucide-react';
-import { POS_CATEGORIES, POS_MENU_ITEMS, POS_TABLES } from '../data/posMenu';
+import { POS_CATEGORIES, POS_MENU_ITEMS } from '../data/posMenu';
+import { TABLE_SECTIONS } from '../data/tablesMockData';
 import { useOrders } from '../../../context/OrderContext';
+import { useMemo } from 'react';
 
 const ICON_MAP = {
   Soup, Utensils, Beer, IceCream, Pizza
@@ -22,8 +24,15 @@ export default function PosDashboard() {
   const [showTableSelector, setShowTableSelector] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const { createOrder } = useOrders();
   const searchInputRef = useRef(null);
+
+  // Derived tables list for selector
+  const allTables = useMemo(() => TABLE_SECTIONS.flatMap(s => s.tables), []);
 
   // Keyboard shortcut logic
   useEffect(() => {
@@ -37,7 +46,7 @@ export default function PosDashboard() {
       // Function Keys for POS actions
       if (e.key === 'F8') handleSendKOT();
       if (e.key === 'F9') alert('Printing Bill...');
-      if (e.key === 'F10') alert('Opening Payment Terminal...');
+      if (e.key === 'F10') handleCheckout();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -98,6 +107,32 @@ export default function PosDashboard() {
     createOrder(orderData);
     setCart([]);
     setSelectedTable(null);
+  };
+
+  const handleCheckout = () => {
+    if (cart.length === 0) return;
+    setShowCheckoutModal(true);
+  };
+
+  const completeTransaction = () => {
+    setIsProcessing(true);
+    // Simulate payment processing
+    setTimeout(() => {
+      setIsProcessing(false);
+      setIsSuccess(true);
+      
+      // Update Table Status if needed (Mock)
+      if (selectedTable) {
+        // In a real app we'd call an API to free the table
+      }
+
+      setTimeout(() => {
+        setCart([]);
+        setSelectedTable(null);
+        setShowCheckoutModal(false);
+        setIsSuccess(false);
+      }, 2000);
+    }, 1500);
   };
 
   const filteredItems = activeCategory === 'all' 
@@ -365,10 +400,14 @@ export default function PosDashboard() {
                        Bill [F9]
                     </button>
                  </div>
-                 <button className="h-12 w-full flex items-center justify-center gap-3 bg-blue-600 text-white rounded font-bold uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/10">
+                  <button 
+                    onClick={handleCheckout}
+                    disabled={cart.length === 0}
+                    className="h-12 w-full flex items-center justify-center gap-3 bg-blue-600 text-white rounded font-bold uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/10 active:scale-95 disabled:opacity-50"
+                  >
                     <CreditCard size={16} />
                     Finalize Checkout [F10]
-                 </button>
+                  </button>
               </div>
            </div>
         </section>
@@ -431,7 +470,7 @@ export default function PosDashboard() {
                 </div>
 
                 <div className="grid grid-cols-4 gap-4">
-                   {POS_TABLES.map(table => (
+                   {allTables.map(table => (
                       <button 
                         key={table.id}
                         onClick={() => {
@@ -473,6 +512,111 @@ export default function PosDashboard() {
              </motion.div>
            </>
          )}
+      </AnimatePresence>
+
+      {/* Checkout Modal - Industrial Finish */}
+      <AnimatePresence>
+        {showCheckoutModal && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200]"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl w-full max-w-lg z-[201] shadow-2xl overflow-hidden border border-slate-200"
+            >
+              {isSuccess ? (
+                <div className="p-12 text-center animate-in zoom-in duration-500">
+                  <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 size={48} />
+                  </div>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 mb-2">Checkout Complete</h2>
+                  <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Recipt Printed Successfully • Table {selectedTable?.name || 'T/W'}</p>
+                </div>
+              ) : (
+                <div className="flex flex-col h-full">
+                  <header className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <div>
+                      <h2 className="text-lg font-black uppercase tracking-widest text-slate-900">Finalize Checkout</h2>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Process Payment for {selectedTable?.name || 'Takeaway'}</p>
+                    </div>
+                    <button onClick={() => !isProcessing && setShowCheckoutModal(false)} className="p-2 text-slate-400 hover:text-slate-900">
+                      <X size={20} />
+                    </button>
+                  </header>
+
+                  <div className="p-8 space-y-8">
+                    {/* Bill Summary */}
+                    <div className="p-6 bg-[#F8F9FA] rounded-xl border border-slate-100 space-y-3">
+                       <div className="flex justify-between text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                          <span>Subtotal</span>
+                          <span>₹{calculateTotal()}</span>
+                       </div>
+                       <div className="flex justify-between text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                          <span>Taxes & Fees</span>
+                          <span>₹{(calculateTotal() * 0.05).toFixed(0)}</span>
+                       </div>
+                       <div className="pt-4 border-t-2 border-dashed border-slate-200 flex justify-between">
+                          <span className="text-lg font-black text-slate-950 uppercase tracking-tighter">Amount Payable</span>
+                          <span className="text-3xl font-black text-blue-600 tracking-tighter">₹{(calculateTotal() * 1.05).toFixed(0)}</span>
+                       </div>
+                    </div>
+
+                    {/* Payment Selection */}
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Select Payment Mode</label>
+                       <div className="grid grid-cols-3 gap-4">
+                          {[
+                            { id: 'cash', icon: Banknote, label: 'Cash' },
+                            { id: 'card', icon: CreditCard, label: 'Card' },
+                            { id: 'upi', icon: Smartphone, label: 'UPI / Scan' }
+                          ].map(mode => (
+                            <button
+                              key={mode.id}
+                              onClick={() => setPaymentMethod(mode.id)}
+                              className={`p-5 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${
+                                paymentMethod === mode.id 
+                                ? 'bg-blue-50 border-blue-600 text-blue-600 shadow-lg shadow-blue-600/10' 
+                                : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
+                              }`}
+                            >
+                              <mode.icon size={28} />
+                              <span className="text-[10px] font-black uppercase tracking-widest">{mode.label}</span>
+                            </button>
+                          ))}
+                       </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <button 
+                        onClick={() => setShowCheckoutModal(false)}
+                        className="flex-1 py-5 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+                      >
+                        Go Back
+                      </button>
+                      <button 
+                        onClick={completeTransaction}
+                        disabled={isProcessing}
+                        className="flex-[2] py-5 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all flex items-center justify-center gap-3"
+                      >
+                        {isProcessing ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>Confirm & Settle Bill <ArrowRight size={16} /></>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
       </AnimatePresence>
     </div>
   );

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { STAFF_USERS } from '../../staff/data/staffMockData';
+import { playClickSound } from '../../pos/utils/sounds';
 
 const INITIAL_STAFF = STAFF_USERS.map(u => ({
   id: u.id,
@@ -77,16 +78,19 @@ export default function StaffManagement() {
            <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900">Personnel & Permissions</h1>
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Manage staff accounts, roles, and access protocol</p>
         </div>
-        <div className="flex items-center gap-3">
-           <button className="h-9 px-4 bg-slate-100 text-slate-400 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-100">Role Config</button>
-           <button 
-             onClick={() => handleOpenModal()}
-             className="h-9 px-4 bg-slate-900 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
-           >
-              <UserPlus size={14} />
-              Add Member
-           </button>
-        </div>
+         <div className="flex items-center gap-3">
+            <button 
+              onClick={playClickSound}
+              className="h-9 px-4 bg-white text-slate-400 rounded-sm text-[10px] font-black uppercase tracking-widest hover:text-slate-900 transition-all border border-slate-200 shadow-sm"
+            >Role Config</button>
+            <button 
+              onClick={() => { playClickSound(); handleOpenModal(); }}
+              className="h-9 px-4 bg-[#5D4037] text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-stone-900/10 active:scale-95 transition-all"
+            >
+               <UserPlus size={14} />
+               Add Member
+            </button>
+         </div>
       </div>
 
       {/* Security Context Info */}
@@ -128,16 +132,16 @@ export default function StaffManagement() {
                </div>
                
                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-slate-50 rounded-sm flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all">
-                     <Users size={24} />
-                  </div>
-                  <div>
-                     <h4 className="text-[13px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{member.name}</h4>
-                     <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-1.5 py-0.5 rounded-sm">{member.role}</span>
-                        <div className={`w-1.5 h-1.5 rounded-full ${member.status === 'on-duty' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-200'}`} />
-                     </div>
-                  </div>
+                   <div className="w-12 h-12 bg-gray-50 rounded-sm flex items-center justify-center text-gray-300 group-hover:bg-[#424242] group-hover:text-white transition-all shadow-inner">
+                      <Users size={24} />
+                   </div>
+                   <div>
+                      <h4 className="text-[13px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{member.name}</h4>
+                      <div className="flex items-center gap-2">
+                         <span className="text-[9px] font-black text-[#5D4037] uppercase tracking-widest bg-stone-50 px-1.5 py-0.5 rounded-sm">{member.role}</span>
+                         <div className={`w-1.5 h-1.5 rounded-full ${member.status === 'on-duty' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-200'}`} />
+                      </div>
+                   </div>
                </div>
 
                <div className="space-y-3 border-t border-slate-50 pt-4">
@@ -155,22 +159,22 @@ export default function StaffManagement() {
                   </div>
                </div>
 
-               <div className="grid grid-cols-2 gap-2 mt-6">
-                  <button 
-                    onClick={() => handleOpenModal(member)}
-                    className="py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-sm hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
-                  >
-                     <Edit3 size={12} />
-                     Edit Profile
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(member.id)}
-                    className="py-2 bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-sm hover:bg-red-50 hover:text-red-600 transition-all border border-slate-100 flex items-center justify-center gap-2"
-                  >
-                     <Trash2 size={12} />
-                     Suspend
-                  </button>
-               </div>
+                <div className="grid grid-cols-2 gap-2 mt-6">
+                   <button 
+                     onClick={() => { playClickSound(); handleOpenModal(member); }}
+                     className="py-2 bg-[#424242] text-white text-[9px] font-black uppercase tracking-widest rounded-sm hover:bg-black transition-all flex items-center justify-center gap-2 shadow-sm"
+                   >
+                      <Edit3 size={12} />
+                      Edit Profile
+                   </button>
+                   <button 
+                     onClick={() => { playClickSound(); handleDelete(member.id); }}
+                     className="py-2 bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-sm hover:bg-stone-100 hover:text-[#5D4037] transition-all border border-slate-100 flex items-center justify-center gap-2 shadow-sm"
+                   >
+                      <Trash2 size={12} />
+                      Suspend
+                   </button>
+                </div>
             </div>
          ))}
       </div>
@@ -192,20 +196,20 @@ export default function StaffManagement() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white w-full max-w-lg rounded-sm shadow-2xl relative overflow-hidden flex flex-col"
             >
-               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                  <div className="flex items-center gap-3">
-                     <div className="w-8 h-8 bg-slate-900 text-white rounded-sm flex items-center justify-center">
-                        <Users size={16} />
-                     </div>
-                     <div>
-                        <h3 className="text-[13px] font-black uppercase tracking-tight text-slate-900">
-                           {editingMember ? 'Update Personnel Registry' : 'Initialize Personnel Access'}
-                        </h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Access Control Protocol v2.4.0</p>
-                     </div>
-                  </div>
-                  <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
-               </div>
+                <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#333333]">
+                   <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-[#5D4037] text-white rounded-sm flex items-center justify-center shadow-lg shadow-stone-900/20">
+                         <Users size={16} />
+                      </div>
+                      <div>
+                         <h3 className="text-[13px] font-black uppercase tracking-tight text-white">
+                            {editingMember ? 'Update Personnel Registry' : 'Initialize Personnel Access'}
+                         </h3>
+                         <p className="text-[9px] font-black text-[#FFC107] uppercase tracking-widest mt-0.5">Access Control Protocol v2.5.0</p>
+                      </div>
+                   </div>
+                   <button onClick={() => { playClickSound(); setIsModalOpen(false); }} className="p-2 text-white/40 hover:text-white transition-colors"><X size={18} /></button>
+                </div>
 
                <form onSubmit={handleSave} className="p-8 space-y-6">
                   <div className="grid grid-cols-2 gap-6">
@@ -273,20 +277,21 @@ export default function StaffManagement() {
                      </div>
                   </div>
 
-                  <div className="pt-6 flex items-center gap-3">
-                     <button 
-                        type="button"
-                        onClick={() => setIsModalOpen(false)}
-                        className="flex-1 py-3 bg-white border border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-sm"
-                     >Cancel</button>
-                     <button 
-                        type="submit"
-                        className="flex-1 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-sm shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95"
-                     >
-                        <Save size={14} />
-                        {editingMember ? 'Update Protocol' : 'Onboard Member'}
-                     </button>
-                  </div>
+                   <div className="pt-6 flex items-center gap-3">
+                      <button 
+                         type="button"
+                         onClick={() => { playClickSound(); setIsModalOpen(false); }}
+                         className="flex-1 py-3 bg-white border border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-sm hover:text-slate-900 hover:bg-slate-50 transition-all shadow-sm"
+                      >Cancel</button>
+                      <button 
+                         type="submit"
+                         onClick={playClickSound}
+                         className="flex-1 py-3 bg-[#5D4037] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-sm shadow-xl shadow-stone-900/10 flex items-center justify-center gap-2 transition-all active:scale-95"
+                      >
+                         <Save size={14} />
+                         {editingMember ? 'Update Protocol' : 'Onboard Member'}
+                      </button>
+                   </div>
                </form>
             </motion.div>
           </div>
