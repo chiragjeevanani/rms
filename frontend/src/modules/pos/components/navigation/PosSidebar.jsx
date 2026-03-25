@@ -88,33 +88,33 @@ export default function PosSidebar({ isOpen }) {
   };
 
   return (
-    <aside className={`fixed left-0 top-0 h-full bg-[#1A1C1E] text-slate-400 z-50 transition-all duration-300 shadow-2xl flex flex-col w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside className={`fixed left-0 top-0 h-full bg-[#161820] text-slate-300 z-50 transition-all duration-300 shadow-2xl flex flex-col w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* POS Brand Header */}
-      <div className="h-14 flex items-center justify-between px-6 border-b border-white/5 shrink-0 bg-[#141517]">
+      <div className="h-14 flex items-center justify-between px-5 border-b border-white/8 shrink-0 bg-[#0F1012]">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-blue-600 rounded flex items-center justify-center text-white">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
             <Monitor size={16} />
           </div>
           <div className="flex flex-col">
             <span className="font-extrabold text-[13px] tracking-tight text-white uppercase">RMS POS</span>
-            <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest leading-none">Terminal 01</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Terminal 01</span>
           </div>
         </div>
       </div>
 
       {/* Navigation Groups */}
-      <nav className="flex-1 overflow-y-auto py-6 px-3 no-scrollbar space-y-6">
+      <nav className="flex-1 overflow-y-auto py-4 px-2 no-scrollbar space-y-5">
         {navGroups.map((group, idx) => (
-          <div key={idx} className="space-y-1">
+          <div key={idx} className="space-y-0.5">
             <div className="px-3 mb-2">
-              <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">{group.label}</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{group.label}</span>
             </div>
             {group.items.map((item) => {
               const isActive = location.pathname === item.path || (item.subItems && location.pathname.startsWith(item.path));
               const isExpanded = expandedMenus.includes(item.label);
               
               return (
-                <div key={item.label} className="space-y-1">
+                <div key={item.label} className="space-y-0.5">
                   <button
                     onClick={() => {
                       if (item.subItems) {
@@ -123,22 +123,21 @@ export default function PosSidebar({ isOpen }) {
                         navigate(item.path);
                       }
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded transition-all relative group ${
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all relative group h-12 ${
                       isActive 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                      : 'hover:bg-white/5 hover:text-white'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
+                      : 'text-slate-300 hover:bg-white/6 hover:text-white'
                     }`}
                   >
-                    <item.icon size={18} className={isActive ? 'text-white' : 'group-hover:text-blue-400'} />
-                    <span className={`text-[11px] font-bold uppercase tracking-wider ${isActive ? 'opacity-100' : 'opacity-80'}`}>
+                    <item.icon size={17} className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-blue-400 transition-colors'} />
+                    <span className={`text-[11px] font-bold uppercase tracking-wider flex-1 text-left ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
                       {item.label}
                     </span>
                     {item.subItems && (
                       <motion.div
                         animate={{ rotate: isExpanded ? 90 : 0 }}
-                        className="ml-auto"
                       >
-                        <ChevronRight size={12} />
+                        <ChevronRight size={12} className={isActive ? 'text-white/70' : 'text-slate-500'} />
                       </motion.div>
                     )}
                   </button>
@@ -149,7 +148,7 @@ export default function PosSidebar({ isOpen }) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden pl-4 space-y-1 pt-1"
+                        className="overflow-hidden pl-3 space-y-0.5 pt-0.5 pb-1"
                       >
                         {item.subItems.map((subItem) => {
                           const isSubActive = location.pathname === subItem.path;
@@ -157,14 +156,14 @@ export default function PosSidebar({ isOpen }) {
                             <button
                               key={subItem.label}
                               onClick={() => navigate(subItem.path)}
-                              className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-all group ${
+                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group ${
                                 isSubActive 
-                                ? 'text-blue-400 bg-blue-400/5' 
-                                : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                ? 'text-blue-300 bg-blue-500/12 border-l-2 border-blue-400' 
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
                               }`}
                             >
-                              {subItem.icon && <subItem.icon size={14} className={isSubActive ? 'text-blue-400' : 'text-slate-600 group-hover:text-slate-400'} />}
-                              <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
+                              {subItem.icon && <subItem.icon size={13} className={isSubActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-300'} />}
+                              <span className={`text-[10px] font-bold uppercase tracking-widest leading-none ${isSubActive ? 'text-blue-300' : ''}`}>
                                 {subItem.label}
                               </span>
                             </button>
@@ -181,13 +180,13 @@ export default function PosSidebar({ isOpen }) {
       </nav>
 
       {/* Logout Footer */}
-      <div className="p-4 border-t border-white/5 bg-[#141517]">
+      <div className="p-2 border-t border-white/8 bg-[#0F1012]">
         <button 
           onClick={() => {
             localStorage.removeItem('pos_access');
             navigate('/pos/login');
           }}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded text-slate-500 hover:text-rose-500 hover:bg-rose-500/5 transition-all"
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/8 transition-all"
         >
           <LogOut size={16} />
           <span className="font-black text-[10px] uppercase tracking-widest">Log Out</span>

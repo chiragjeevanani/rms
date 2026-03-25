@@ -9,7 +9,7 @@ export default function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F5F5F5] text-slate-800 font-sans selection:bg-red-50">
+    <div className="flex h-screen overflow-hidden bg-[#F0EBE3] text-stone-800 font-sans selection:bg-amber-50">
       {/* Structural Sidebar */}
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 

@@ -14,73 +14,74 @@ export default function PosTopNavbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 h-14 flex items-center px-4 justify-between shadow-sm">
+    <nav className="sticky top-0 z-50 bg-[#1C1E22] border-b border-white/8 h-14 flex items-center px-4 justify-between shadow-lg">
       {/* Left Section */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <button 
           onClick={() => { playClickSound(); toggleSidebar(); }}
-          className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2.5 hover:bg-white/8 rounded-lg transition-colors"
         >
-          <Menu size={20} className="text-gray-600" />
+          <Menu size={20} className="text-slate-300" />
         </button>
         
         <div className="flex items-center gap-2">
-          <span className="text-[#5D4037] font-bold text-xl italic tracking-tighter">RMS</span>
+          <div className="w-7 h-7 bg-[#5D4037] rounded flex items-center justify-center text-white font-black text-sm">R</div>
+          <span className="text-white font-bold text-sm uppercase tracking-tight">RMS</span>
         </div>
 
         <button 
           onClick={() => { playClickSound(); navigate('/pos/tables'); }}
-          className="bg-[#5D4037] text-white px-4 py-1.5 rounded-md text-sm font-bold hover:bg-[#4E342E] transition-colors shadow-sm uppercase tracking-tight ml-2"
+          className="bg-[#5D4037] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#4E342E] transition-colors shadow-md shadow-stone-900/30 uppercase tracking-tight ml-1"
         >
-          New Order
+          + New Order
         </button>
 
-        <div className="relative ml-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={15} />
           <input 
             type="text" 
             placeholder="Bill No" 
-            className="pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#5D4037] w-32"
+            className="pl-9 pr-3 py-2 bg-white/6 border border-white/10 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5D4037]/60 focus:border-[#5D4037]/50 w-28 transition-all"
           />
         </div>
       </div>
 
       {/* Center Section - Toolbar */}
-      <div className="hidden lg:flex items-center gap-6 px-4 flex-1 justify-center">
-        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/active'); }} icon={<Printer size={20} />} />
-        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/active'); }} icon={<ClipboardList size={20} />} />
-        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/completed'); }} icon={<Clock size={20} />} />
+      <div className="hidden lg:flex items-center gap-3 px-4 flex-1 justify-center">
+        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/active'); }} label="Print" icon={<Printer size={18} />} />
+        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/active'); }} label="Orders" icon={<ClipboardList size={18} />} />
+        <ToolbarIcon onClick={() => { playClickSound(); navigate('/pos/orders/completed'); }} label="History" icon={<Clock size={18} />} />
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         <div 
           onClick={() => handleAction('Notifications')}
-          className="relative p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer group"
+          className="relative p-2.5 hover:bg-white/8 rounded-lg transition-colors cursor-pointer group"
         >
-          <Bell size={20} className="text-gray-600 group-hover:text-[#5D4037] transition-colors" />
-          <span className="absolute top-1 right-1 bg-[#5D4037] text-white text-[10px] font-bold px-1 rounded-full min-w-[16px] text-center border-2 border-white">
+          <Bell size={19} className="text-slate-300 group-hover:text-white transition-colors" />
+          <span className="absolute top-1.5 right-1.5 bg-[#5D4037] text-white text-[9px] font-bold px-1 rounded-full min-w-[14px] text-center border border-[#1C1E22]">
             22
           </span>
         </div>
         
         <div 
           onClick={() => { playClickSound(); toggleCustomerSection(); }}
-          className="p-2 hover:bg-stone-50 rounded-lg transition-colors cursor-pointer group border border-transparent hover:border-[#5D4037]/20"
+          className="p-2.5 hover:bg-white/8 rounded-lg transition-colors cursor-pointer group border border-transparent hover:border-blue-500/20"
         >
-          <User size={22} className="text-[#5D4037] transition-colors" />
+          <User size={20} className="text-slate-300 group-hover:text-blue-400 transition-colors" />
         </div>
         
-        <ToolbarIcon onClick={() => handleAction('Help')} icon={<HelpCircle size={20} />} />
-        <ToolbarIcon onClick={() => { playClickSound(); navigate('/login'); }} icon={<Power size={20} />} />
+        <ToolbarIcon onClick={() => handleAction('Help')} icon={<HelpCircle size={18} />} />
+        <ToolbarIcon onClick={() => { playClickSound(); navigate('/login'); }} icon={<Power size={18} />} />
 
-        <div className="hidden xl:flex items-center gap-3 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100 hover:bg-stone-100 transition-colors cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#5D4037] shadow-sm">
-            <Phone size={16} />
+        <div className="hidden xl:flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/8 hover:bg-white/8 transition-colors cursor-pointer ml-1">
+          <div className="w-7 h-7 rounded-full bg-[#5D4037]/30 border border-[#5D4037]/50 flex items-center justify-center text-[#5D4037]">
+            <Phone size={14} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] text-stone-800 font-bold uppercase leading-none">Call For Support</span>
-            <span className="text-sm font-black text-[#5D4037] tabular-nums">07969 223344</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase leading-none">Call For Support</span>
+            <span className="text-sm font-black text-white tabular-nums">07969 223344</span>
           </div>
         </div>
       </div>
@@ -88,11 +89,12 @@ export default function PosTopNavbar() {
   );
 }
 
-function ToolbarIcon({ icon, onClick }) {
+function ToolbarIcon({ icon, onClick, label }) {
   return (
     <button 
       onClick={onClick}
-      className="text-gray-500 hover:text-[#5D4037] transition-colors p-1 rounded-md active:scale-90"
+      title={label}
+      className="text-slate-400 hover:text-white transition-colors p-2.5 rounded-lg hover:bg-white/8 active:scale-90"
     >
       {icon}
     </button>

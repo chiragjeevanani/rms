@@ -112,31 +112,31 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   };
 
   return (
-    <aside className={`fixed left-0 top-0 h-full bg-[#424242] border-r border-white/5 z-50 transition-all duration-300 shadow-xl hidden lg:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`fixed left-0 top-0 h-full bg-[#2C2C2C] border-r border-white/8 z-50 transition-all duration-300 shadow-xl hidden lg:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'}`}>
       {/* Brand Header */}
-      <div className="h-14 flex items-center justify-between px-6 border-b border-white/5 shrink-0 bg-[#333333]">
+      <div className="h-14 flex items-center justify-between px-4 border-b border-white/8 shrink-0 bg-[#222222]">
         {!isCollapsed ? (
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-[#5D4037] rounded-sm flex items-center justify-center text-white font-black text-sm shadow-lg shadow-stone-900/20">R</div>
+            <div className="w-8 h-8 bg-[#5D4037] rounded flex items-center justify-center text-white font-black text-sm shadow-lg shadow-stone-900/30">R</div>
             <div className="flex flex-col">
               <span className="font-black text-[13px] tracking-tight uppercase text-white">RMS System</span>
-              <span className="text-[8px] font-black text-[#FFC107] uppercase tracking-widest mt-0.5">Administrator</span>
+              <span className="text-[9px] font-black text-[#FFC107] uppercase tracking-widest mt-0.5">Administrator</span>
             </div>
           </div>
         ) : (
           <div className="w-full flex justify-center">
-            <div className="w-7 h-7 bg-[#5D4037] rounded-sm flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-900/40">R</div>
+            <div className="w-8 h-8 bg-[#5D4037] rounded flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-900/40">R</div>
           </div>
         )}
       </div>
 
       {/* Navigation Groups */}
-      <nav className="flex-1 overflow-y-auto py-6 px-3 no-scrollbar space-y-6">
+      <nav className="flex-1 overflow-y-auto py-4 px-2 no-scrollbar space-y-5">
         {navGroups.map((group, idx) => (
           <div key={idx} className="space-y-1">
             {!isCollapsed && (
-              <div className="px-3 mb-2">
-                <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.25em]">{group.label}</span>
+              <div className="px-3 mb-1.5">
+                <span className="text-[9px] font-black text-white/55 uppercase tracking-[0.22em]">{group.label}</span>
               </div>
             )}
             {group.items.map((item) => {
@@ -144,7 +144,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
               const isExpanded = expandedMenus.includes(item.label);
               
               return (
-                <div key={item.label} className="space-y-1">
+                <div key={item.label} className="space-y-0.5">
                   <button
                     onClick={() => {
                       if (item.subItems && !isCollapsed) {
@@ -153,30 +153,29 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                         navigate(item.path);
                       }
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all relative group h-11 ${
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded transition-all relative group h-12 ${
                       isActive 
-                      ? 'bg-[#5D4037] text-white shadow-lg shadow-stone-900/20' 
-                      : 'text-white/60 hover:bg-white/5 hover:text-white'
+                      ? 'bg-[#5D4037] text-white shadow-lg shadow-stone-900/30' 
+                      : 'text-white/80 hover:bg-white/8 hover:text-white'
                     }`}
                   >
-                    <item.icon size={16} className={isActive ? 'text-white' : 'group-hover:text-white transition-colors'} />
+                    <item.icon size={16} className={isActive ? 'text-white' : 'text-white/70 group-hover:text-white transition-colors'} />
                     {!isCollapsed && (
                       <>
-                        <span className={`text-[11px] font-bold uppercase tracking-wider ${isActive ? 'opacity-100' : 'opacity-80'}`}>
+                        <span className={`text-[11px] font-bold uppercase tracking-wider flex-1 text-left ${isActive ? 'text-white' : 'text-white/80 group-hover:text-white'}`}>
                           {item.label}
                         </span>
                         {item.subItems && (
                           <motion.div
                             animate={{ rotate: isExpanded ? 90 : 0 }}
-                            className="ml-auto"
                           >
-                            <ChevronRight size={12} />
+                            <ChevronRight size={12} className={isActive ? 'text-white/80' : 'text-white/40'} />
                           </motion.div>
                         )}
                       </>
                     )}
                     {isActive && isCollapsed && (
-                      <div className="absolute left-0 w-1 h-6 bg-slate-900 rounded-r-full" />
+                      <div className="absolute left-0 w-1 h-7 bg-[#FFC107] rounded-r-full" />
                     )}
                   </button>
 
@@ -186,7 +185,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden pl-4 space-y-1"
+                        className="overflow-hidden pl-3 space-y-0.5 pb-1"
                       >
                         {item.subItems.map((subItem) => {
                           const isSubActive = location.pathname === subItem.path;
@@ -194,14 +193,14 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                             <button
                               key={subItem.label}
                               onClick={() => { playClickSound(); navigate(subItem.path); }}
-                              className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-sm transition-all group ${
+                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded transition-all group ${
                                 isSubActive 
-                                ? 'text-white bg-[#5D4037]/20' 
-                                : 'text-white/40 hover:text-white hover:bg-white/5'
+                                ? 'text-white bg-[#5D4037]/30 border-l-2 border-[#FFC107]' 
+                                : 'text-white/60 hover:text-white hover:bg-white/6'
                               }`}
                             >
-                              <div className={`w-1 h-1 rounded-full ${isSubActive ? 'bg-[#5D4037]' : 'bg-white/20 group-hover:bg-white/40'}`} />
-                              <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
+                              <div className={`w-1.5 h-1.5 rounded-full ${isSubActive ? 'bg-[#FFC107]' : 'bg-white/25 group-hover:bg-white/50'}`} />
+                              <span className={`text-[10px] font-bold uppercase tracking-widest leading-none ${isSubActive ? 'text-white' : 'text-white/65 group-hover:text-white'}`}>
                                 {subItem.label}
                               </span>
                             </button>
@@ -218,14 +217,14 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       </nav>
 
       {/* Logout Footer */}
-      <div className="p-3 border-t border-white/5 bg-black/10">
+      <div className="p-2 border-t border-white/8 bg-black/15">
         <button 
           onClick={() => {
             playClickSound();
             localStorage.removeItem('admin_access');
             navigate('/admin/login');
           }}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-white/40 hover:text-white hover:bg-[#5D4037] transition-all ${isCollapsed ? 'justify-center' : ''}`}
+          className={`w-full flex items-center gap-3 px-3 py-3 rounded text-white/55 hover:text-white hover:bg-[#5D4037] transition-all ${isCollapsed ? 'justify-center' : ''}`}
         >
           <LogOut size={16} />
           {!isCollapsed && <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>}
@@ -235,7 +234,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       {/* Toggle Button */}
       <button 
         onClick={() => { playClickSound(); setIsCollapsed(!isCollapsed); }}
-        className="absolute -right-3 top-20 w-6 h-6 bg-[#5D4037] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-[#424242] z-50 hover:scale-110 active:scale-95 transition-all"
+        className="absolute -right-3 top-20 w-6 h-6 bg-[#5D4037] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-[#2C2C2C] z-50 hover:scale-110 active:scale-95 transition-all"
       >
         {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>

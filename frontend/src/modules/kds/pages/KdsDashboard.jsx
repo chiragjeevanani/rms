@@ -17,7 +17,7 @@ export default function KdsDashboard() {
 
   const filteredOrders = activeStation === 'all' 
     ? activeOrders 
-    : activeOrders.filter(o => o.station === activeStation || !o.station); // Default to all if no station
+    : activeOrders.filter(o => o.station === activeStation || !o.station);
 
   const summary = {
     total: activeOrders.length,
@@ -35,188 +35,186 @@ export default function KdsDashboard() {
 
   return (
     <div className={`h-full transition-colors duration-500 flex flex-col font-sans overflow-hidden ${
-      isDarkMode ? 'bg-[#1a1c1e] text-stone-100' : 'bg-stone-50 text-stone-900'
+      isDarkMode ? 'bg-[#181a1c] text-stone-100' : 'bg-stone-50 text-stone-900'
     }`}>
-      {/* Control Bar - Using as main page subheader */}
-      <div className={`border-b transition-colors duration-500 px-4 md:px-10 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0 font-display ${
-        isDarkMode ? 'bg-black/20 border-white/5' : 'bg-white border-stone-100 shadow-sm'
+      {/* Control Bar */}
+      <div className={`border-b transition-colors duration-500 px-5 py-2.5 flex items-center justify-between gap-4 shrink-0 ${
+        isDarkMode ? 'bg-black/20 border-white/6' : 'bg-white border-stone-100 shadow-sm'
       }`}>
-         <div className="flex items-center gap-3 w-full md:w-auto overflow-hidden">
-            <Filter size={16} className="text-[#D4AF37] shrink-0 hidden sm:block" />
-            <div className={`flex p-1 rounded-2xl border transition-all overflow-x-auto no-scrollbar w-full md:w-auto ${
-              isDarkMode ? 'bg-black/40 border-white/5' : 'bg-white border-stone-200'
-            }`}>
-                {KDS_STATIONS.map((station) => (
-                   <button
-                     key={station.id}
-                     onClick={() => setActiveStation(station.id)}
-                     className={`px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                       activeStation === station.id 
-                       ? (isDarkMode ? 'bg-white text-stone-950 shadow-xl' : 'bg-[#5D4037] text-white shadow-lg') 
-                       : (isDarkMode ? 'text-stone-500 hover:text-stone-300' : 'text-stone-400 hover:text-stone-600')
-                     }`}
-                   >
-                     {station.name}
-                   </button>
-                ))}
-            </div>
-         </div>
+        {/* Station Filter */}
+        <div className="flex items-center gap-2 overflow-hidden">
+          <Filter size={14} className="text-[#D4AF37] shrink-0 hidden sm:block" />
+          <div className={`flex p-1 rounded-xl border transition-all overflow-x-auto no-scrollbar ${
+            isDarkMode ? 'bg-black/30 border-white/6' : 'bg-stone-100 border-stone-200'
+          }`}>
+            {KDS_STATIONS.map((station) => (
+              <button
+                key={station.id}
+                onClick={() => setActiveStation(station.id)}
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  activeStation === station.id 
+                  ? (isDarkMode ? 'bg-[#5D4037] text-white shadow-md' : 'bg-[#5D4037] text-white shadow-md') 
+                  : (isDarkMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-700')
+                }`}
+              >
+                {station.name}
+              </button>
+            ))}
+          </div>
+        </div>
          
-         <div className={`hidden md:flex items-center gap-8`}>
-            {/* Queue Summary moved from deleted header */}
-            <div className="flex items-center gap-6">
-               <div className="flex flex-col items-center">
-                  <span className="text-[8px] font-black uppercase text-stone-500 tracking-widest">New</span>
-                  <span className="text-sm font-black text-blue-500">{summary.new}</span>
-               </div>
-               <div className="flex flex-col items-center">
-                  <span className="text-[8px] font-black uppercase text-stone-500 tracking-widest">Late</span>
-                  <span className="text-sm font-black text-rose-500">{summary.delayed}</span>
-               </div>
+        {/* Summary Stats */}
+        <div className="hidden md:flex items-center gap-6">
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>New</span>
+              <span className="text-base font-black text-blue-500 tabular-nums">{summary.new}</span>
             </div>
-            
-            <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>
-               <RefreshCw size={12} className="animate-spin mr-1 text-[#D4AF37]" />
-               Sync Live
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>Late</span>
+              <span className="text-base font-black text-rose-500 tabular-nums">{summary.delayed}</span>
             </div>
-         </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>Total</span>
+              <span className={`text-base font-black tabular-nums ${isDarkMode ? 'text-stone-300' : 'text-stone-700'}`}>{summary.total}</span>
+            </div>
+          </div>
+          
+          <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>
+            <RefreshCw size={11} className="animate-spin text-[#D4AF37]" />
+            Sync Live
+          </div>
+        </div>
       </div>
 
       {/* Order Grid */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-10 no-scrollbar">
-         {filteredOrders.length === 0 ? (
-           <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
-              <ChefHat size={80} strokeWidth={1} className="mb-4 md:mb-6 md:w-[120px] text-[#5D4037]" />
-              <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-[#5D4037]">Kitchen Clear</h2>
-              <p className="text-xs md:text-sm font-bold mt-2">All orders have been fulfilled.</p>
-           </div>
-         ) : (
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-8">
-              <AnimatePresence mode="popLayout">
-                {filteredOrders.map((order) => (
-                   <KdsOrderCard 
-                     key={order.id} 
-                     order={order} 
-                     onClick={setSelectedOrder} 
-                   />
-                ))}
-              </AnimatePresence>
-           </div>
-         )}
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar">
+        {filteredOrders.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
+            <ChefHat size={64} strokeWidth={1} className="mb-4 text-[#5D4037]" />
+            <h2 className="text-2xl font-black uppercase tracking-tighter text-[#5D4037]">Kitchen Clear</h2>
+            <p className="text-xs font-bold mt-2">All orders have been fulfilled.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-4">
+            <AnimatePresence mode="popLayout">
+              {filteredOrders.map((order) => (
+                <KdsOrderCard 
+                  key={order.id} 
+                  order={order} 
+                  onClick={setSelectedOrder} 
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </main>
 
       {/* Order Details Drawer */}
       <AnimatePresence>
-         {selectedOrder && (
-            <>
-               <motion.div 
-                 initial={{ opacity: 0 }}
-                 animate={{ opacity: 1 }}
-                 exit={{ opacity: 0 }}
-                 onClick={() => setSelectedOrder(null)}
-                 className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
-               />
-               <motion.div 
-                 initial={{ x: '100%' }}
-                 animate={{ x: 0 }}
-                 exit={{ x: '100%' }}
-                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                 className={`fixed top-0 right-0 h-full w-full sm:max-w-xl md:max-w-2xl lg:max-w-xl transition-colors duration-500 border-l z-[101] flex flex-col shadow-[0_0_80px_rgba(0,0,0,0.6)] ${
-                   isDarkMode ? 'bg-[#1a1c1e] border-white/10' : 'bg-white border-stone-200'
-                 }`}
-               >
-                  <div className={`p-6 md:p-8 border-b transition-colors ${
-                    isDarkMode ? 'border-white/5' : 'border-stone-100'
-                  }`}>
-                     <div className="flex items-center justify-between mb-6 md:mb-8">
-                        <button 
-                          onClick={() => setSelectedOrder(null)}
-                          className={`p-2.5 md:p-3 rounded-xl transition-all border ${
-                            isDarkMode ? 'bg-white/5 border-white/5 text-stone-400 hover:bg-white/10' : 'bg-stone-100 border-stone-200 text-stone-500 hover:bg-stone-200'
-                          }`}
-                        >
-                           <RefreshCw size={18} md:size={20} className="rotate-45" />
-                        </button>
-                        <div className="text-right">
-                           <span className="text-[9px] md:text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-1 block">Detail Analysis</span>
-                           <h2 className={`text-2xl md:text-3xl font-black tracking-tighter uppercase transition-colors ${
-                             isDarkMode ? 'text-white' : 'text-[#5D4037]'
-                           }`}>Order #{selectedOrder.orderNum}</h2>
-                        </div>
-                     </div>
-
-                     <div className="grid grid-cols-3 gap-3 md:gap-4">
-                        <div className={`p-3 md:p-4 rounded-2xl border transition-colors ${
-                          isDarkMode ? 'bg-black/20 border-white/5' : 'bg-stone-50 border-stone-100'
-                        }`}>
-                           <span className="text-[8px] md:text-[9px] font-black uppercase text-stone-500 mb-0.5 block tracking-widest">Table</span>
-                           <span className={`text-lg md:text-xl font-black transition-colors ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>#{selectedOrder.table}</span>
-                        </div>
-                        <div className={`p-3 md:p-4 rounded-2xl border transition-colors ${
-                          isDarkMode ? 'bg-black/20 border-white/5' : 'bg-stone-50 border-stone-100'
-                        }`}>
-                           <span className="text-[8px] md:text-[9px] font-black uppercase text-stone-500 mb-0.5 block tracking-widest">Channel</span>
-                           <span className={`text-sm md:text-xl font-black capitalize truncate transition-colors ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>{selectedOrder.source}</span>
-                        </div>
-                        <div className={`p-3 md:p-4 rounded-2xl border transition-colors ${
-                          isDarkMode ? 'bg-black/20 border-white/5' : 'bg-stone-50 border-stone-100'
-                        }`}>
-                           <span className="text-[8px] md:text-[9px] font-black uppercase text-stone-500 mb-0.5 block tracking-widest">Station</span>
-                           <span className={`text-lg md:text-xl font-black uppercase tracking-tight truncate transition-colors ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>{selectedOrder.station || 'Mains'}</span>
-                        </div>
-                     </div>
+        {selectedOrder && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedOrder(null)}
+              className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[100]"
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className={`fixed top-0 right-0 h-full w-full sm:max-w-lg transition-colors duration-500 border-l z-[101] flex flex-col shadow-2xl ${
+                isDarkMode ? 'bg-[#1a1c1e] border-white/8' : 'bg-white border-stone-200'
+              }`}
+            >
+              {/* Drawer Header */}
+              <div className={`p-5 border-b transition-colors ${
+                isDarkMode ? 'border-white/6' : 'border-stone-100'
+              }`}>
+                <div className="flex items-center justify-between mb-4">
+                  <button 
+                    onClick={() => setSelectedOrder(null)}
+                    className={`p-2 rounded-lg transition-all border ${
+                      isDarkMode ? 'bg-white/5 border-white/6 text-stone-400 hover:bg-white/10' : 'bg-stone-100 border-stone-200 text-stone-500 hover:bg-stone-200'
+                    }`}
+                  >
+                    <RefreshCw size={16} className="rotate-45" />
+                  </button>
+                  <div className="text-right">
+                    <span className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-0.5 block">Detail View</span>
+                    <h2 className={`text-xl font-black tracking-tighter uppercase transition-colors ${
+                      isDarkMode ? 'text-white' : 'text-[#5D4037]'
+                    }`}>Order #{selectedOrder.orderNum}</h2>
                   </div>
+                </div>
 
-                  <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 no-scrollbar">
-                      <div>
-                         <h3 className="text-[9px] md:text-[10px] font-black text-stone-500 uppercase tracking-widest mb-4 px-1">Active Item List</h3>
-                         <div className="space-y-3">
-                            {selectedOrder.items.map((item) => (
-                               <div key={item.id} className={`border p-4 md:p-5 rounded-[1.5rem] flex items-center justify-between group transition-all ${
-                                 isDarkMode ? 'bg-[#2a2c2e] border-white/5 hover:bg-[#3a3c3e]' : 'bg-stone-50 border-stone-100 hover:bg-stone-100'
-                               }`}>
-                                  <div className="flex items-center gap-4 md:gap-5">
-                                     <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-lg md:text-xl font-black border group-hover:scale-105 transition-all ${
-                                       isDarkMode ? 'bg-stone-900 text-[#D4AF37] border-white/5' : 'bg-white text-[#5D4037] border-stone-200 shadow-sm'
-                                     }`}>
-                                        {item.quantity}
-                                     </div>
-                                     <div className="min-w-0">
-                                        <h4 className={`text-sm md:text-lg font-bold uppercase tracking-tight leading-none mb-1 md:mb-1.5 truncate transition-colors ${
-                                          isDarkMode ? 'text-white' : 'text-stone-800'
-                                        }`}>{item.name}</h4>
-                                        {item.note && (
-                                          <div className="flex items-center gap-1.5 text-red-400">
-                                             <AlertTriangle size={12} className="shrink-0" />
-                                             <span className="text-[10px] md:text-[11px] font-bold uppercase italic tracking-wide truncate">{item.note}</span>
-                                          </div>
-                                        )}
-                                     </div>
-                                  </div>
-                                  <button className={`p-2.5 md:p-3 rounded-lg md:rounded-xl transition-all border shrink-0 ${
-                                    isDarkMode ? 'bg-stone-900 text-stone-500 hover:text-[#D4AF37] border-white/5' : 'bg-white text-stone-400 hover:text-[#5D4037] border-stone-200'
-                                  }`}>
-                                     <RefreshCw size={16} md:size={18} />
-                                  </button>
-                               </div>
-                            ))}
-                         </div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { label: 'Table', value: `#${selectedOrder.table}` },
+                    { label: 'Channel', value: selectedOrder.source },
+                    { label: 'Station', value: selectedOrder.station || 'Mains' },
+                  ].map(({ label, value }) => (
+                    <div key={label} className={`p-3 rounded-xl border transition-colors ${
+                      isDarkMode ? 'bg-black/20 border-white/6' : 'bg-stone-50 border-stone-100'
+                    }`}>
+                      <span className={`text-[9px] font-black uppercase mb-1 block tracking-widest ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>{label}</span>
+                      <span className={`text-base font-black transition-colors truncate block ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Items List */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-3 no-scrollbar">
+                <h3 className={`text-[9px] font-black uppercase tracking-widest mb-3 ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>Item List</h3>
+                {selectedOrder.items.map((item) => (
+                  <div key={item.id} className={`border p-3.5 rounded-xl flex items-center justify-between group transition-all ${
+                    isDarkMode ? 'bg-[#252729] border-white/6 hover:bg-[#2e3032]' : 'bg-stone-50 border-stone-100 hover:bg-stone-100'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-black border ${
+                        isDarkMode ? 'bg-stone-900 text-[#D4AF37] border-white/6' : 'bg-white text-[#5D4037] border-stone-200 shadow-sm'
+                      }`}>
+                        {item.quantity}
                       </div>
+                      <div className="min-w-0">
+                        <h4 className={`text-sm font-bold uppercase tracking-tight leading-none mb-1 truncate transition-colors ${
+                          isDarkMode ? 'text-white' : 'text-stone-800'
+                        }`}>{item.name}</h4>
+                        {item.note && (
+                          <div className="flex items-center gap-1.5 text-red-400">
+                            <AlertTriangle size={11} className="shrink-0" />
+                            <span className="text-[10px] font-bold uppercase italic tracking-wide truncate">{item.note}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <button className={`p-2 rounded-lg transition-all border shrink-0 ${
+                      isDarkMode ? 'bg-stone-900 text-stone-500 hover:text-[#D4AF37] border-white/6' : 'bg-white text-stone-400 hover:text-[#5D4037] border-stone-200'
+                    }`}>
+                      <RefreshCw size={14} />
+                    </button>
                   </div>
+                ))}
+              </div>
 
-                  <div className={`p-6 md:p-8 border-t transition-colors ${
-                    isDarkMode ? 'border-white/5 bg-black/40 backdrop-blur-xl' : 'border-stone-100 bg-stone-50/80'
-                  }`}>
-                     <button 
-                       onClick={() => handleComplete(selectedOrder.id)}
-                       className="w-full bg-[#5D4037] text-white py-5 md:py-6 rounded-2xl font-black text-base md:text-lg uppercase tracking-widest shadow-2xl shadow-[#5D4037]/20 hover:bg-[#4E342E] transition-all active:scale-[0.98]"
-                     >
-                        Finalize Order
-                     </button>
-                  </div>
-                </motion.div>
-            </>
-         )}
+              {/* Action Footer */}
+              <div className={`p-5 border-t transition-colors ${
+                isDarkMode ? 'border-white/6 bg-black/30' : 'border-stone-100 bg-stone-50'
+              }`}>
+                <button 
+                  onClick={() => handleComplete(selectedOrder.id)}
+                  className="w-full bg-[#5D4037] text-white py-4 rounded-xl font-black text-base uppercase tracking-widest shadow-xl shadow-[#5D4037]/25 hover:bg-[#4E342E] transition-all active:scale-[0.98]"
+                >
+                  ✓ Mark as Complete
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
       </AnimatePresence>
     </div>
   );
