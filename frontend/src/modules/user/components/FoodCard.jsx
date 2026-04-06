@@ -7,10 +7,11 @@ import { Plus, Star, Leaf, Flame, Clock, ArrowRight } from 'lucide-react';
 export function FoodCard({ item }) {
   const [isAdding, setIsAdding] = useState(false);
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, isOrderOnline } = useCart();
 
   const handleQuickAdd = (e) => {
     e.stopPropagation();
+    if (!isOrderOnline) return;
     setIsAdding(true);
     addToCart(item, 1, [], 0);
     setTimeout(() => setIsAdding(false), 900);
@@ -18,9 +19,11 @@ export function FoodCard({ item }) {
 
   return (
     <motion.div 
-      whileHover={{ y: -4 }}
-      onClick={() => navigate(`/item/${item.id}`)}
-      className="bg-white border-charcoal-900/10 hover:border-brand-500/30 dark:bg-white/5 backdrop-blur-md rounded-[2.5rem] p-5 border dark:border-white/5 dark:hover:border-white/10 transition-all duration-300 cursor-pointer group shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl"
+      whileHover={isOrderOnline ? { y: -4 } : {}}
+      onClick={() => isOrderOnline && navigate(`/item/${item.id}`)}
+      className={`bg-white border-charcoal-900/10 dark:bg-white/5 backdrop-blur-md rounded-[2.5rem] p-5 border dark:border-white/5 transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl ${
+        isOrderOnline ? 'hover:border-brand-500/30 dark:hover:border-white/10 cursor-pointer group' : 'cursor-default grayscale-[0.3]'
+      }`}
     >
       <div className="flex gap-5">
         {/* Image Area */}
@@ -51,42 +54,40 @@ export function FoodCard({ item }) {
             </h3>
           </div>
 
-          <p className="text-xs text-charcoal-500 font-medium line-clamp-2 mb-4 leading-relaxed italic opacity-80">
-            {item.description}
-          </p>
-
-          <div className="mt-auto flex items-center justify-between">
-            <div>
-               <div className="flex items-center gap-3 text-charcoal-500 dark:text-white/40 mb-1">
-                  <div className="flex items-center gap-1">
-                    <Star size={10} className="text-brand-500 fill-brand-500" />
-                    <span className="text-[10px] font-black">{item.rating}</span>
+          <div className="mt-auto">
+             <div className="flex items-center gap-3 text-charcoal-500 dark:text-white/40 mb-3 flex-wrap">
+                <div className="flex items-center gap-1 bg-brand-500/10 px-2 py-0.5 rounded-lg border border-brand-500/10 shrink-0">
+                  <Star size={10} className="text-brand-500 fill-brand-500" />
+                  <span className="text-[10px] font-black text-brand-500 flex items-center gap-1">
+                    {item.reviews > 0 
+                      ? (item.reviews.reduce((acc, r) => acc + r.rating, 0) / item.reviews.length).toFixed(1)
+                      : (item.rating || 0)}
+                    <span className="opacity-50 text-[8px] font-medium">({item.reviews?.length || 0})</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Clock size={10} />
+                  <span className="text-[10px] font-black uppercase tracking-tight">{item.prepTime}</span>
+                </div>
+                {item.originalPrice > item.price && (
+                  <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border border-emerald-500/10">
+                    {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock size={10} />
-                    <span className="text-[10px] font-black">{item.prepTime}</span>
-                  </div>
-               </div>
-               <span className="text-2xl font-display font-bold text-brand-500">
-                 ₹{item.price}
-               </span>
-            </div>
-
-            <motion.button
-              onClick={handleQuickAdd}
-              whileTap={{ scale: 0.8 }}
-              className="w-12 h-12 rounded-[1.25rem] bg-brand-500 text-charcoal-900 flex items-center justify-center shadow-lg shadow-brand-500/20 active:bg-white"
-            >
-              <AnimatePresence mode="wait">
-                {isAdding ? (
-                  <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="font-black text-xs">✓</motion.div>
-                ) : (
-                  <motion.div key="plus" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                    <Plus size={22} strokeWidth={3} />
-                  </motion.div>
                 )}
-              </AnimatePresence>
-            </motion.button>
+             </div>
+             <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-2xl font-display font-bold text-brand-500 text-nowrap">
+                  ₹{item.price}
+                </span>
+                {item.originalPrice && (
+                  <span className="text-[13px] font-bold text-charcoal-400/60 line-through text-nowrap">
+                    ₹{item.originalPrice}
+                  </span>
+                )}
+             </div>
+             <p className="text-xs text-charcoal-500 font-medium line-clamp-2 mt-2 leading-relaxed italic opacity-80">
+               {item.description}
+             </p>
           </div>
         </div>
       </div>

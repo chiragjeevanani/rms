@@ -63,7 +63,7 @@ export default function InventoryManagement() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('INVENTORY PROTOCOL: Purge this ingredient record? This cannot be undone.')) {
+    if (window.confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
       setInventory(inventory.filter(i => i.id !== id));
     }
   };
@@ -72,8 +72,8 @@ export default function InventoryManagement() {
     <div className="p-8 space-y-8 animate-in fade-in duration-500 overflow-y-auto no-scrollbar max-h-full">
        <div className="flex items-center justify-between">
         <div>
-           <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900">Inventory Control Center</h1>
-           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Stock monitoring, wastage tracking, and recipe mapping</p>
+           <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900">Inventory Management</h1>
+           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Manage and track your restaurant's stock levels</p>
         </div>
         <div className="flex bg-white p-1 border border-slate-200 rounded-sm">
            <button 
@@ -220,9 +220,9 @@ export default function InventoryManagement() {
                      </div>
                      <div>
                         <h3 className="text-[13px] font-black uppercase tracking-tight text-slate-900">
-                           {editingItem ? 'Update Stock Registry' : 'Initialize Stock Item'}
+                           {editingItem ? 'Edit Item' : 'Add New Item'}
                         </h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Control Protocol v2.4.0</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Manage stock details</p>
                      </div>
                   </div>
                   <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
@@ -231,7 +231,7 @@ export default function InventoryManagement() {
                <form onSubmit={handleSave} className="p-8 space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                      <div className="space-y-2 col-span-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ingredient Designation</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Item Name</label>
                         <input 
                            type="text" 
                            required
@@ -243,7 +243,7 @@ export default function InventoryManagement() {
                      </div>
                      
                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category Unit</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Item Category</label>
                         <select 
                            className="w-full bg-slate-50 border border-slate-100 p-2 text-[11px] font-bold uppercase outline-none focus:ring-1 focus:ring-slate-900/10 rounded-sm"
                            value={formData.category}
@@ -273,7 +273,7 @@ export default function InventoryManagement() {
                      </div>
 
                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Hand Stock</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">In-Hand Stock</label>
                         <div className="relative">
                            <Scale size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                            <input 
@@ -289,7 +289,7 @@ export default function InventoryManagement() {
                      </div>
 
                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Minimum Threshold</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Min stock for alert</label>
                         <input 
                            type="number" 
                            step="0.1"
@@ -305,7 +305,7 @@ export default function InventoryManagement() {
                   <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-sm flex items-center gap-3">
                      <CheckCircle2 size={16} className="text-emerald-500" />
                      <p className="text-[9px] font-bold text-emerald-700 uppercase tracking-widest leading-relaxed">
-                        Automatic reconciliation policy is active for this stock item.
+                        Item status is live and being tracked.
                      </p>
                   </div>
 

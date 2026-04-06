@@ -1,9 +1,8 @@
 import React from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  ChefHat, LayoutGrid, ListOrdered, 
-  History, Settings, Timer, ShieldAlert,
-  LogOut, Bell, Clock, Sun, Moon, Search
+  LayoutGrid, Bell, Clock, CheckCircle, 
+  Settings2, LogOut, Search, Activity, User, Sun, Moon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../user/context/ThemeContext';
@@ -17,13 +16,11 @@ export default function KdsTopNavbar() {
     { path: "/kds/dashboard", icon: LayoutGrid, label: "Dashboard" },
     { path: "/kds/incoming", icon: Bell, label: "Incoming" },
     { path: "/kds/preparing", icon: Clock, label: "Preparing" },
-    { path: "/kds/completed", icon: History, label: "Completed" },
+    { path: "/kds/completed", icon: CheckCircle, label: "Completed" },
   ];
 
   const settingsNav = [
-    { path: "/kds/settings/stations", icon: ListOrdered, label: "Stations" },
-    { path: "/kds/settings/prep-time", icon: Timer, label: "SLOs" },
-    { path: "/kds/settings/priority", icon: ShieldAlert, label: "Rules" },
+    { path: "/kds/settings/stations", icon: Settings2, label: "Settings" },
   ];
 
   const handleLogout = () => {
@@ -37,9 +34,6 @@ export default function KdsTopNavbar() {
     }`}>
       {/* Left: Brand */}
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 bg-[#5D4037] rounded-xl flex items-center justify-center text-[#D4AF37] shadow-md shadow-[#5D4037]/20">
-          <ChefHat size={18} />
-        </div>
         <div className="hidden sm:flex flex-col">
           <span className={`font-black text-sm uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-[#5D4037]'}`}>Kitchen Display</span>
           <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${isDarkMode ? 'text-stone-400' : 'text-stone-400'}`}>NODE_KDS_01</span>

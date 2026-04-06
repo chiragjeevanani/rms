@@ -4,21 +4,26 @@ import { useKdsTimer } from '../hooks/useKdsTimer';
 import { useTheme } from '../../user/context/ThemeContext';
 
 export function KdsOrderCard({ order, onClick }) {
-  const { formatTime, isDelayed } = useKdsTimer(order.startTime);
+  const maxPrepTimeEst = order.items.reduce((max, item) => Math.max(max, item.prepTimeEst || 0), 0);
+  const { elapsed, totalDuration, formatTime, isDelayed, isNegative } = useKdsTimer(order.startTime, order.status, order.prepTime, order.readyTime, maxPrepTimeEst);
   const { isDarkMode } = useTheme();
 
   const getStatusInfo = (status) => {
     switch (status) {
       case 'new': return { color: 'bg-blue-600', text: 'New', border: 'border-blue-600/30' };
-      case 'preparing': return { color: 'bg-[#5D4037]', text: 'Preparing', border: 'border-[#5D4037]/30' };
+      case 'preparing': return { color: 'bg-orange-600', text: 'Preparing', border: 'border-orange-600/30' };
       case 'delayed': return { color: 'bg-red-700', text: 'Delayed', border: 'border-red-700/40' };
-      case 'ready': return { color: 'bg-emerald-700', text: 'Ready', border: 'border-emerald-700/30' };
+      case 'ready': 
+      case 'completed':
+      case 'served':
+        return { color: 'bg-emerald-600', text: 'Ready', border: 'border-emerald-600/30' };
       default: return { color: 'bg-stone-600', text: status, border: 'border-stone-600/20' };
     }
   };
 
   const statusInfo = getStatusInfo(order.status);
   const effectiveStatusColor = isDelayed ? 'bg-red-700' : statusInfo.color;
+  const isFinalized = ['ready', 'completed', 'served'].includes(order.status);
 
   return (
     <motion.div
@@ -52,24 +57,44 @@ export function KdsOrderCard({ order, onClick }) {
       </div>
 
       {/* Body — compact typography */}
-      <div className="p-4 flex-1 space-y-3">
+      <div className="p-4 flex-1 space-y-4">
         {order.items.map((item) => (
-          <div key={item.id} className="flex items-start gap-3">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-black text-xs border transition-colors shrink-0 ${
-              isDarkMode ? 'bg-[#2e3032] text-[#D4AF37] border-white/8' : 'bg-stone-100 text-[#5D4037] border-stone-200'
-            }`}>
-              {item.quantity}x
+          <div key={item.id} className="flex items-center gap-4">
+            <div className="relative shrink-0">
+               <div className={`w-12 h-12 rounded-xl overflow-hidden border ${isDarkMode ? 'bg-stone-900 border-white/5' : 'bg-stone-100 border-stone-200'}`}>
+                 {item.image ? (
+                   <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                 ) : (
+                   <div className="w-full h-full flex items-center justify-center text-stone-500">
+                     <ShoppingBag size={18} />
+                   </div>
+                 )}
+               </div>
+               <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px] border shadow-sm ${
+                 isDarkMode ? 'bg-black border-white/10 text-[#D4AF37]' : 'bg-white border-stone-200 text-[#5D4037]'
+               }`}>
+                 {item.quantity}
+               </div>
             </div>
+            
             <div className="flex-1 min-w-0">
-              <h4 className={`text-sm font-bold leading-tight uppercase tracking-tight transition-colors ${
+              <h4 className={`text-sm font-bold leading-tight uppercase tracking-tight transition-colors truncate ${
                 isDarkMode ? 'text-stone-100' : 'text-stone-800'
               }`}>{item.name}</h4>
-              {item.note && (
-                <div className="mt-1 flex items-start gap-1.5 text-red-500">
-                  <AlertCircle size={11} className="mt-0.5 shrink-0" />
-                  <p className="text-[10px] font-bold uppercase italic leading-tight">{item.note}</p>
-                </div>
-              )}
+              
+              <div className="flex items-center gap-2 mt-1">
+                {item.prepTimeEst && (
+                  <span className="text-[9px] font-black text-stone-500 uppercase tracking-widest bg-stone-500/10 px-1.5 py-0.5 rounded-md">
+                     Est. {item.prepTimeEst}m
+                  </span>
+                )}
+                {item.note && (
+                  <div className="flex items-start gap-1.5 text-red-500">
+                    <AlertCircle size={11} className="shrink-0" />
+                    <p className="text-[10px] font-bold uppercase italic leading-tight truncate">{item.note}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -91,7 +116,9 @@ export function KdsOrderCard({ order, onClick }) {
           isDelayed ? 'text-red-400' : (isDarkMode ? 'text-[#D4AF37]' : 'text-[#8D6E63]')
         }`}>
           <Clock size={13} />
-          <span>{formatTime}</span>
+          <span className="uppercase whitespace-nowrap">
+            {isFinalized ? `Ready in ${Math.ceil(totalDuration / 60)} min` : formatTime}
+          </span>
         </div>
       </div>
     </motion.div>

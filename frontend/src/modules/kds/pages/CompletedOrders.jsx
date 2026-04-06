@@ -5,7 +5,7 @@ export default function CompletedOrders() {
   return (
     <KdsOrderQueueTemplate 
       title="Completed Orders" 
-      statusFilter="ready" 
+      statusFilter={['ready', 'served', 'completed']} 
       emptyMessage="No completed orders today"
       accentColor="emerald"
     />

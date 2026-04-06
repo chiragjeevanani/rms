@@ -5,19 +5,27 @@ import MyTables from '../pages/MyTables';
 import ActiveOrders from '../pages/ActiveOrders';
 import ReadyOrders from '../pages/ReadyOrders';
 import CreateOrder from '../pages/CreateOrder';
-import AddCustomer from '../pages/AddCustomer';
-import CustomerList from '../pages/CustomerList';
 import MyProfile from '../pages/MyProfile';
 import Attendance from '../pages/Attendance';
 import TableOrderScreen from '../pages/TableOrderScreen';
 import AlertsPage from '../pages/AlertsPage';
+import StaffItemDetail from '../pages/StaffItemDetail';
 
 export default function StaffRoutes() {
-  const isStaffAuthenticated = localStorage.getItem('staff_access'); // Mock auth check
+  const isStaffAuthenticated = localStorage.getItem('staff_access');
+
+  if (!isStaffAuthenticated && window.location.pathname !== '/staff/login') {
+    return (
+      <Routes>
+        <Route path="/login" element={<StaffLogin />} />
+        <Route path="*" element={<Navigate to="/staff/login" replace />} />
+      </Routes>
+    );
+  }
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={isStaffAuthenticated ? "/staff/dashboard" : "/staff/login"} replace />} />
+      <Route path="/" element={<Navigate to="/staff/dashboard" replace />} />
       <Route path="/login" element={<StaffLogin />} />
       <Route path="/dashboard" element={<StaffDashboard />} />
       <Route path="/tables" element={<MyTables />} />
@@ -27,10 +35,8 @@ export default function StaffRoutes() {
       <Route path="/ready-orders" element={<ReadyOrders />} />
       <Route path="/create-order" element={<CreateOrder />} />
       <Route path="/table/:id" element={<TableOrderScreen />} />
+      <Route path="/item/:id" element={<StaffItemDetail />} />
       
-      {/* Customer Routes */}
-      <Route path="/customers" element={<CustomerList />} />
-      <Route path="/customers/add" element={<AddCustomer />} />
       
       {/* Profile Routes */}
       <Route path="/profile" element={<MyProfile />} />

@@ -4,7 +4,6 @@ import {
   LayoutGrid, 
   Map, 
   ClipboardList, 
-  Users, 
   UserCircle 
 } from 'lucide-react';
 
@@ -15,7 +14,6 @@ export function StaffNavbar({ activeTab }) {
     { id: 'dashboard', icon: LayoutGrid, label: 'Home', path: '/staff/dashboard' },
     { id: 'tables', icon: Map, label: 'Tables', path: '/staff/tables' },
     { id: 'orders', icon: ClipboardList, label: 'Orders', path: '/staff/active-orders' },
-    { id: 'customers', icon: Users, label: 'Guests', path: '/staff/customers' },
     { id: 'profile', icon: UserCircle, label: 'Me', path: '/staff/profile' },
   ];
 

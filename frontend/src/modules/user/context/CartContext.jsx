@@ -9,6 +9,7 @@ const initialState = {
   orderType: 'dine-in', // 'dine-in' | 'takeaway'
   tableNumber: '7',
   specialInstructions: '',
+  isOrderOnline: true, // Master toggle for ordering
 };
 
 function cartReducer(state, action) {
@@ -67,6 +68,8 @@ function cartReducer(state, action) {
       return { ...state, tableNumber: action.payload };
     case 'SET_INSTRUCTIONS':
       return { ...state, specialInstructions: action.payload };
+    case 'SET_ORDERING_MODE':
+      return { ...state, isOrderOnline: action.payload };
     default:
       return state;
   }
@@ -82,8 +85,11 @@ export function CartProvider({ children }) {
   const itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
 
   const addToCart = (item, quantity = 1, modifiers = [], modifierPrice = 0) => {
+    if (!state.isOrderOnline) return; // Block if ordering is disabled
     dispatch({ type: 'ADD_ITEM', payload: { item, quantity, modifiers, modifierPrice } });
   };
+  const setOrderingMode = (val) => dispatch({ type: 'SET_ORDERING_MODE', payload: val });
+  
   const removeFromCart = (cartId) => dispatch({ type: 'REMOVE_ITEM', payload: { cartId } });
   const updateQuantity = (cartId, quantity) =>
     dispatch({ type: 'UPDATE_QUANTITY', payload: { cartId, quantity } });
@@ -105,6 +111,7 @@ export function CartProvider({ children }) {
         total,
         itemCount,
         addToCart,
+        setOrderingMode,
         removeFromCart,
         updateQuantity,
         clearCart,

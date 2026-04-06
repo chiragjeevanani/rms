@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Calculator, Delete, ArrowRight, UserCheck, Shield, Zap } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Zap, RefreshCcw } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function PosLoginPage() {
-  const [pin, setPin] = useState('');
+  const [formData, setFormData] = useState({
+    email: 'admin@pos.com',
+    password: '123456'
+  });
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
@@ -17,39 +22,39 @@ export default function PosLoginPage() {
     };
   }, []);
 
-  const handleNumberClick = (num) => {
-    if (pin.length < 4) setPin(prev => prev + num);
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleDelete = () => {
-    setPin(prev => prev.slice(0, -1));
-  };
-
-  const handleLogin = (e) => {
-    if (e) e.preventDefault();
-    if (pin.length !== 4) return;
-
+  const handleLogin = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      localStorage.setItem('pos_access', 'mock_pos_token');
-      setIsLoading(false);
-      navigate('/pos/tables');
-    }, 1500);
-  };
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/staff/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
 
-  // Keyboard support
-  const handleKeyDown = (e) => {
-    if (/[0-9]/.test(e.key)) handleNumberClick(e.key);
-    if (e.key === 'Backspace') handleDelete();
-    if (e.key === 'Enter') handleLogin();
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('pos_access', data.token);
+        localStorage.setItem('staff_info', JSON.stringify(data));
+        toast.success(`Welcome, ${data.name}`);
+        navigate('/pos/tables');
+      } else {
+        toast.error(`${data.message || 'Login Failed'}`);
+      }
+    } catch (err) {
+      console.error('POS Login Error:', err);
+      toast.error('Network Error: Communication failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div 
-      className="h-screen bg-[#0A0A0B] text-white flex items-center justify-center p-4 lg:p-8 selection:bg-brand-500 font-sans overflow-hidden"
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-    >
+    <div className="h-screen bg-[#0A0A0B] text-white flex items-center justify-center p-4 lg:p-8 selection:bg-brand-500 font-sans overflow-hidden">
       {/* Background Decorative Elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-500/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-500/5 blur-[120px] rounded-full pointer-events-none" />
@@ -64,32 +69,32 @@ export default function PosLoginPage() {
         >
           <div>
             <div className="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-brand-500/20">
-              <Calculator size={32} className="text-charcoal-900" strokeWidth={2.5} />
+              <Zap size={32} className="text-charcoal-900" strokeWidth={2.5} />
             </div>
             <h1 className="text-6xl font-display font-black tracking-tighter uppercase leading-none mb-4">
-              Terminal <br />
-              <span className="text-brand-500 italic">Access</span>
+              Staff <br />
+              <span className="text-brand-500 italic text-7xl">Login</span>
             </h1>
             <p className="text-charcoal-400 font-medium text-lg max-w-md leading-relaxed">
-              Secure Point of Sale Gateway. Authorized personnel only. Please enter your terminal PIN to initiate session.
+              Authorized access only. Please enter your credentials to continue.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-6 pt-10 border-t border-white/5">
             <div className="space-y-1">
-              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Station Status</p>
+              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Status</p>
               <div className="flex items-center gap-2 text-emerald-500 font-bold">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                Active / Online
+                Online
               </div>
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Network</p>
-              <p className="text-white font-bold italic italic font-display">KMS-992-SECURE</p>
+              <p className="text-white font-bold italic font-display">KMS-992-SECURE</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Firmware</p>
-              <p className="text-white font-bold font-display tracking-tight">v4.2.0-stable</p>
+              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Protocol</p>
+              <p className="text-white font-bold font-display tracking-tight">HTTPS/TLS 1.3</p>
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Hardware</p>
@@ -99,87 +104,85 @@ export default function PosLoginPage() {
 
           <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 w-fit">
             <Shield size={20} className="text-brand-500" />
-            <span className="text-xs font-bold text-charcoal-300 uppercase tracking-widest">AES-256 Bit Encrypted Connection</span>
+            <span className="text-xs font-bold text-charcoal-300 uppercase tracking-widest">SECURE CONNECTION</span>
           </div>
         </motion.div>
 
-        {/* Right Side: Keypad Interface */}
+        {/* Right Side: Login Interface */}
         <motion.div 
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="w-full max-w-md mx-auto"
         >
-          <div className="bg-[#141416] p-6 lg:p-10 rounded-[3rem] border border-white/5 shadow-2xl relative">
-            {/* Mobile-only header */}
-            <div className="lg:hidden text-center mb-6">
-              <div className="w-10 h-10 bg-brand-500 rounded-xl mx-auto mb-3 flex items-center justify-center">
-                <Calculator size={20} className="text-charcoal-900" />
+          <div className="bg-[#141416]/80 backdrop-blur-xl p-8 lg:p-12 rounded-[3.5rem] border border-white/5 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+            {/* Glossy Overlay */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-brand-500/5 rotate-45 blur-3xl pointer-events-none" />
+
+            <div className="text-center mb-10">
+              <div className="lg:hidden w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Shield size={24} className="text-charcoal-900" />
               </div>
-              <h2 className="text-xl font-display font-black tracking-tight uppercase">Terminal Login</h2>
+              <h2 className="text-2xl font-display font-black tracking-tight uppercase">Login</h2>
+              <p className="text-[10px] font-black text-charcoal-500 uppercase tracking-[0.3em] mt-2">Credentials Required</p>
             </div>
 
-            <div className="space-y-6 lg:space-y-8">
-              {/* PIN Display */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center px-1">
-                  <span className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest">Enter Access PIN</span>
-                  <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest">{pin.length} / 4</span>
-                </div>
-                <div className="flex justify-center gap-5 p-6 bg-black/40 rounded-2xl border border-white/5">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div 
-                      key={i}
-                      className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
-                        pin.length >= i ? 'bg-brand-500 border-brand-500 scale-125 shadow-lg shadow-brand-500/50' : 'border-white/10'
-                      }`}
+            <form onSubmit={handleLogin} className="space-y-8">
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest ml-1">Email</label>
+                  <div className="relative group/input">
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-charcoal-500 group-focus-within/input:text-brand-500 transition-colors" size={18} />
+                    <input 
+                      type="email" name="email" required
+                      value={formData.email} onChange={handleInputChange}
+                      placeholder="id@rms-portal.com"
+                      className="w-full bg-[#0A0A0B] border border-white/5 rounded-2xl py-5 pl-14 pr-6 outline-none focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/5 transition-all font-bold text-white placeholder:text-charcoal-600"
                     />
-                  ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-charcoal-500 uppercase tracking-widest ml-1">Password</label>
+                  <div className="relative group/input">
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-charcoal-500 group-focus-within/input:text-brand-500 transition-colors" size={18} />
+                    <input 
+                      type={showPassword ? 'text' : 'password'} 
+                      name="password" required
+                      value={formData.password} onChange={handleInputChange}
+                      placeholder="••••••••"
+                      className={`w-full bg-[#0A0A0B] border border-white/5 rounded-2xl py-5 pl-14 pr-14 outline-none focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/5 transition-all font-bold text-white placeholder:text-charcoal-600 ${!showPassword ? 'tracking-widest' : ''}`}
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-5 top-1/2 -translate-y-1/2 text-charcoal-500 hover:text-brand-500 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Keypad */}
-              <div className="grid grid-cols-3 gap-3">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                  <motion.button
-                    key={num}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleNumberClick(num.toString())}
-                    className="h-16 lg:h-20 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center text-2xl font-black hover:bg-brand-500 hover:text-charcoal-900 transition-all duration-300 group"
-                  >
-                    {num}
-                  </motion.button>
-                ))}
-                <div />
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => handleNumberClick('0')}
-                  className="h-16 lg:h-20 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center text-2xl font-black hover:bg-brand-500 hover:text-charcoal-900 transition-all duration-300"
-                >
-                  0
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleDelete}
-                  className="h-16 lg:h-20 flex items-center justify-center text-charcoal-500 hover:text-white transition-colors"
-                >
-                  <Delete size={28} />
-                </motion.button>
-              </div>
-
-              <button 
-                onClick={handleLogin}
-                disabled={isLoading || pin.length !== 4}
-                className="w-full bg-brand-500 text-charcoal-900 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-20 disabled:grayscale transition-all duration-500 overflow-hidden relative group"
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isLoading}
+                className="w-full bg-brand-500 text-charcoal-900 py-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.25em] flex items-center justify-center gap-4 shadow-2xl shadow-brand-500/20 hover:bg-brand-400 transition-all disabled:opacity-50"
               >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                <span className="relative z-10 flex items-center gap-2">
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-charcoal-900/30 border-t-charcoal-900 rounded-full animate-spin" />
-                  ) : (
-                    <>Authorize Terminal <ArrowRight size={18} /></>
-                  )}
-                </span>
-              </button>
+                {isLoading ? (
+                  <RefreshCcw size={18} className="animate-spin" />
+                ) : (
+                  <>Login <ArrowRight size={18} /></>
+                ) }
+              </motion.button>
+            </form>
+
+            <div className="mt-8 pt-8 border-t border-white/5 text-center">
+              <p className="text-[9px] font-black text-charcoal-600 uppercase tracking-[0.2em] leading-relaxed">
+                By accessing this portal, you agree to the <br /> 
+                <span className="text-charcoal-400">Security & Operational Guidelines</span>
+              </p>
             </div>
           </div>
         </motion.div>
@@ -194,4 +197,3 @@ export default function PosLoginPage() {
     </div>
   );
 }
-

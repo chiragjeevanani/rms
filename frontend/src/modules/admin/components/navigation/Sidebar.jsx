@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Store, Utensils, Box, Users, 
   ShoppingCart, BarChart3, Settings, LogOut, 
   ChevronLeft, ChevronRight, Truck, CreditCard,
-  ShieldCheck, Bell, History, Sliders, Printer
+  ShieldCheck, Bell, History, Sliders, Printer, Grid
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playClickSound } from '../../../pos/utils/sounds';
@@ -66,6 +66,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
             { label: 'Cancelled Orders', path: '/admin/orders/cancelled' },
           ]
         },
+        { 
+          label: 'Table Management', 
+          path: '/admin/tables', 
+          icon: Grid
+        },
       ]
     },
     {
@@ -93,8 +98,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
           subItems: [
             { label: 'Sales Reports', path: '/admin/reports/sales' },
             { label: 'Inventory Reports', path: '/admin/reports/inventory' },
-            { label: 'Customer Reports', path: '/admin/reports/customers' },
-            { label: 'System Settings', path: '/admin/settings' },
+            { label: 'System Settings', path: '/admin/settings/profile' },
           ]
         },
       ]

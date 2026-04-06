@@ -3,90 +3,125 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const OrderContext = createContext();
 
 export const OrderProvider = ({ children }) => {
-  const [orders, setOrders] = useState(() => {
-    const saved = localStorage.getItem('rms_orders');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: 'ORD-1024',
-        orderNum: '1024',
-        table: 'Table 7',
-        source: 'Home Website',
-        items: [
-          { id: 'i1', name: 'Paneer Tikka', quantity: 2, status: 'new' },
-          { id: 'i4', name: 'Paneer Butter Masala', quantity: 1, status: 'new' }
-        ],
-        status: 'new',
-        startTime: new Date().toISOString(),
-        total: 780
-      },
-      {
-        id: 'ORD-1023',
-        orderNum: '1023',
-        table: '7',
-        source: 'QR Ordering',
-        items: [
-          { id: 'i1', name: 'Paneer Tikka', quantity: 2, note: 'Extra spicy', status: 'preparing' },
-          { id: 'i2', name: 'Dal Makhani', quantity: 1, note: 'Less butter', status: 'preparing' }
-        ],
-        status: 'preparing',
-        startTime: new Date(Date.now() - 5 * 60000).toISOString(),
-        total: 780
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch all orders on mount
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`);
+      if (response.ok) {
+        const result = await response.json();
+        setOrders(result.data.map(o => ({
+          id: o._id, 
+          status: (o.status || 'new').toLowerCase(), 
+          table: o.tableName || 'N/A',
+          source: o.source || o.orderType || 'POS',
+          startTime: o.createdAt, 
+          prepTime: o.prepStartedAt,
+          readyTime: o.readyAt,
+          total: o.grandTotal, 
+          items: (o.items || []).map(i => ({ 
+            ...i, 
+            id: i._id,
+            price: i.price,
+            image: i.image || (i.itemId?.image ? i.itemId.image : ''),
+            name: i.name || i.itemId?.name || 'Unknown Item',
+            prepTimeEst: i.itemId?.preparationTime
+          })), 
+          orderNum: (o.orderNumber || '').split('-').pop() 
+        })));
       }
-    ];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('rms_orders', JSON.stringify(orders));
-  }, [orders]);
-
-  // Handle cross-tab synchronization
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'rms_orders' && e.newValue) {
-        setOrders(JSON.parse(e.newValue));
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  const createOrder = (orderData) => {
-    const newOrder = {
-      ...orderData,
-      id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-      orderNum: Math.floor(1000 + Math.random() * 9000).toString(),
-      status: 'new',
-      startTime: new Date().toISOString(),
-    };
-    setOrders(prev => [newOrder, ...prev]);
-    return newOrder;
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateOrderStatus = (orderId, status) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status } : order
-    ));
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 30000); 
+    return () => clearInterval(interval);
+  }, []);
+
+  const createOrder = async (orderData) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      if (response.ok) {
+        fetchOrders(); 
+        return await response.json();
+      }
+    } catch (error) {
+      console.error('Order creation failed:', error);
+    }
+  };
+
+  const getOrderById = async (orderId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`);
+      if (response.ok) {
+        const result = await response.json();
+        const order = result.data.find(o => o._id === orderId);
+         if (order) {
+            return {
+              id: order._id,
+              status: (order.status || 'new').toLowerCase(), 
+              table: order.tableName || 'N/A',
+              source: order.source || order.orderType || 'POS',
+              startTime: order.createdAt,
+              prepTime: order.prepStartedAt,
+              readyTime: order.readyAt,
+              total: order.grandTotal,
+              items: (order.items || []).map(i => ({ 
+                ...i, 
+                id: i._id,
+                price: i.price,
+                image: i.image || (i.itemId?.image ? i.itemId.image : ''),
+                name: i.name || i.itemId?.name || 'Unknown Item',
+                prepTimeEst: i.itemId?.preparationTime
+              })), 
+              orderNum: (order.orderNumber || '').split('-').pop()
+            };
+         }
+      }
+    } catch (error) {
+       console.error('Failed to find order:', error);
+    }
+    return null;
+  };
+
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (response.ok) {
+        await fetchOrders(); 
+      }
+    } catch (error) {
+      console.error('Status update failed:', error);
+    }
   };
 
   const cancelOrder = (orderId) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status: 'cancelled' } : order
-    ));
+    updateOrderStatus(orderId, 'cancelled');
   };
 
-  const updateItemStatus = (orderId, itemId, status) => {
-    setOrders(prev => prev.map(order => {
+  const updateItemStatus = async (orderId, itemId, status) => {
+     setOrders(prev => prev.map(order => {
       if (order.id === orderId) {
         const updatedItems = order.items.map(item => 
           item.id === itemId ? { ...item, status } : item
         );
-        // If all items are ready, set order to ready
-        const allReady = updatedItems.every(i => i.status === 'ready');
-        return { 
-          ...order, 
-          items: updatedItems,
-          status: allReady ? 'ready' : order.status 
-        };
+        return { ...order, items: updatedItems };
       }
       return order;
     }));
@@ -95,6 +130,9 @@ export const OrderProvider = ({ children }) => {
   return (
     <OrderContext.Provider value={{ 
       orders, 
+      isLoading,
+      fetchOrders,
+      getOrderById,
       createOrder, 
       updateOrderStatus, 
       updateItemStatus,

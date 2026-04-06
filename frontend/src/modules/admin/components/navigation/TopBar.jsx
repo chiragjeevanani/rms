@@ -1,11 +1,39 @@
 
-import React, { useState } from 'react';
-import { Search, Bell, UserCircle, RefreshCw, X, ShoppingBag } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Bell, UserCircle, RefreshCw, X, ShoppingBag, User, Settings, LogOut, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playClickSound } from '../../../pos/utils/sounds';
+import { useNavigate } from 'react-router-dom';
 
 export default function TopBar() {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [adminData, setAdminData] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/profile`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+          }
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setAdminData(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch admin data');
+      }
+    };
+    fetchAdmin();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_access');
+    navigate('/admin/login');
+  };
 
   return (
     <header className="h-14 bg-[#2C2C2C] border-b border-white/8 flex items-center justify-between px-6 shrink-0 relative z-40 shadow-md">
@@ -26,7 +54,7 @@ export default function TopBar() {
       <div className="flex items-center gap-5">
         <div className="flex items-center gap-2">
            <button 
-             onClick={() => { playClickSound(); setShowNotifications(!showNotifications); }}
+             onClick={() => { playClickSound(); setShowNotifications(!showNotifications); setShowUserMenu(false); }}
              className={`p-2 transition-colors relative rounded ${showNotifications ? 'text-white bg-white/12' : 'text-white/70 hover:text-white hover:bg-white/8'}`}
            >
               <Bell size={18} />
@@ -57,17 +85,58 @@ export default function TopBar() {
  
         <div className="h-6 w-px bg-white/15" />
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative">
            <div className="text-right hidden sm:block">
-              <p className="text-[11px] font-black uppercase tracking-tight leading-none text-white">Chiraag J.</p>
-              <p className="text-[9px] text-[#FFC107] font-bold uppercase tracking-widest mt-1">Super Admin</p>
+              <p className="text-[11px] font-black uppercase tracking-tight leading-none text-white">
+                {adminData?.name || 'Administrator'}
+              </p>
+              <p className="text-[9px] text-[#FFC107] font-bold uppercase tracking-widest mt-1">
+                {adminData?.role || 'Admin'}
+              </p>
            </div>
            <div 
-             className="w-8 h-8 rounded bg-[#5D4037]/40 border border-[#5D4037]/60 flex items-center justify-center text-white/80 shadow-inner cursor-pointer hover:bg-[#5D4037]/60 transition-all"
-             onClick={playClickSound}
+             className={`w-9 h-9 rounded-xl border transition-all flex items-center justify-center cursor-pointer overflow-hidden ${showUserMenu ? 'bg-[#5D4037] border-[#FFC107] text-white shadow-[0_0_15px_rgba(255,193,7,0.3)]' : 'bg-[#5D4037]/40 border-white/10 text-white/80 hover:bg-[#5D4037]/60'}`}
+             onClick={() => { playClickSound(); setShowUserMenu(!showUserMenu); setShowNotifications(false); }}
            >
-              <UserCircle size={20} />
+              {adminData?.profileImg ? (
+                <img src={adminData.profileImg} alt="Admin" className="w-full h-full object-cover" />
+              ) : (
+                <UserCircle size={20} />
+              )}
            </div>
+
+           <AnimatePresence>
+             {showUserMenu && (
+               <motion.div
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: 10 }}
+                 className="absolute top-full right-0 mt-2 w-48 bg-[#2C2C2C] border border-white/12 shadow-2xl rounded overflow-hidden"
+               >
+                 <div className="p-2 border-b border-white/8 bg-[#222222]">
+                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-2 py-1">Admin Account</p>
+                 </div>
+                 <div className="p-1">
+                   <button 
+                     onClick={() => { navigate('/admin/settings/profile'); setShowUserMenu(false); }}
+                     className="w-full flex items-center gap-3 px-3 py-2.5 text-[11px] font-bold text-white/70 hover:text-white hover:bg-white/8 rounded transition-all group"
+                   >
+                     <User size={14} className="text-white/40 group-hover:text-[#FFC107]" />
+                     <span className="uppercase tracking-widest">Profile</span>
+                   </button>
+                  
+                   <div className="h-px bg-white/8 my-1 mx-2" />
+                   <button 
+                     onClick={handleLogout}
+                     className="w-full flex items-center gap-3 px-3 py-2.5 text-[11px] font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded transition-all group"
+                   >
+                     <LogOut size={14} className="text-rose-400/60 group-hover:text-rose-400" />
+                     <span className="uppercase tracking-widest">Logout</span>
+                   </button>
+                 </div>
+               </motion.div>
+             )}
+           </AnimatePresence>
         </div>
       </div>
     </header>

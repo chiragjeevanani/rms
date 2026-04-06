@@ -6,12 +6,11 @@ import { Trash2, ArrowRight, ShoppingBag, ArrowLeft, Tag, AlertCircle } from 'lu
 import { BottomNav } from '../components/BottomNav';
 
 export default function CartPage() {
-  const { items, total, removeFromCart, updateQuantity, itemCount } = useCart();
+  const { items, subtotal, tax, total, removeFromCart, updateQuantity, itemCount } = useCart();
   const navigate = useNavigate();
 
-  const subtotal = total;
-  const taxes = Math.floor(subtotal * 0.18);
-  const grandTotal = subtotal + taxes;
+  const taxes = tax;
+  const grandTotal = total;
 
   if (items.length === 0) {
     return (

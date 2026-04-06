@@ -27,8 +27,8 @@ export default function TableLayout() {
       <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">Table Layout & Occupancy</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time Dashboard for Table Status & Service Flow</p>
+            <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">Table Layout</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time Table Status & Availability</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex bg-slate-50 p-1 border border-slate-100 rounded">
@@ -59,11 +59,11 @@ export default function TableLayout() {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded bg-blue-500 shadow-sm" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Billing in Progress</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Billing</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded bg-rose-500 shadow-sm" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Out of Service</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Closed</span>
           </div>
         </div>
       </header>
@@ -118,12 +118,12 @@ export default function TableLayout() {
           {/* Environmental Elements */}
           <div className="absolute left-[85%] top-[10%] w-24 h-40 bg-slate-100/50 border border-slate-200 rounded-lg flex flex-col items-center justify-center gap-2">
             <Monitor size={24} className="text-slate-300" />
-            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">KITCHEN STATION</span>
+            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Kitchen</span>
           </div>
 
           <div className="absolute left-[10%] top-[85%] w-32 h-12 bg-[#5D4037] text-white rounded flex items-center justify-center gap-2 shadow-xl shadow-slate-900/20">
             <LayoutGrid size={16} />
-            <span className="text-[9px] font-black uppercase tracking-widest">BILLING COUNTER</span>
+            <span className="text-[9px] font-black uppercase tracking-widest">Reception</span>
           </div>
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function TableLayout() {
       <footer className="h-20 bg-white border-t border-slate-200 px-8 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-8">
            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Live Occupancy</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Occupancy</span>
               <div className="flex items-center gap-2">
                 <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className="w-[62%] h-full bg-blue-600 rounded-full" />
@@ -143,9 +143,9 @@ export default function TableLayout() {
            <div className="w-px h-8 bg-slate-100" />
            <div className="flex items-center gap-6">
               {[
-                { icon: Coffee, label: 'Table Turn' },
-                { icon: Utensils, label: 'Avg Pacing' },
-                { icon: Wine, label: 'VIP Presence' }
+                { icon: Coffee, label: 'Tables' },
+                { icon: Utensils, label: 'Pacing' },
+                { icon: Wine, label: 'Waitlist' }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-400">
@@ -153,7 +153,7 @@ export default function TableLayout() {
                   </div>
                   <div>
                     <p className="text-[9px] font-black text-slate-900 uppercase leading-none mb-1">{item.label}</p>
-                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">Healthy Flow</span>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">Normal</span>
                   </div>
                 </div>
               ))}

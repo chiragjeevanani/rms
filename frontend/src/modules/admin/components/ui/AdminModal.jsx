@@ -29,62 +29,54 @@ export default function AdminModal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className={`bg-white w-full ${maxWidth} rounded-sm shadow-2xl relative overflow-hidden flex flex-col`}
+            className={`bg-white w-full ${maxWidth} rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] relative overflow-hidden flex flex-col`}
           >
              {/* Modal Header */}
-             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 underline decoration-transparent">
-                <div className="flex items-center gap-3">
-                   <div className="w-8 h-8 bg-slate-900 text-white rounded-sm flex items-center justify-center">
-                      <Icon size={16} />
+             <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white underline decoration-transparent">
+                <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 bg-[#2C2C2C] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/10">
+                      <Icon size={20} />
                    </div>
                    <div>
-                      <h3 className="text-[13px] font-black uppercase tracking-tight text-slate-900">
+                      <h3 className="text-sm font-black uppercase tracking-tight text-slate-900">
                          {title}
                       </h3>
                       {subtitle && (
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 underline decoration-transparent">{subtitle}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 underline decoration-transparent">{subtitle}</p>
                       )}
                    </div>
                 </div>
-                <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
+                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all"><X size={18} /></button>
              </div>
 
-             {/* Modal Body */}
-             <div className="overflow-y-auto max-h-[75vh] no-scrollbar underline decoration-transparent">
-                {onSubmit ? (
-                  <form onSubmit={onSubmit} className="p-8 space-y-6">
-                    {children}
-                    
-                    {/* Validation Footer */}
-                    <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-sm flex items-start gap-3 underline decoration-transparent">
-                       <AlertCircle size={14} className="text-blue-500 mt-0.5 shrink-0" />
-                       <p className="text-[9px] font-bold text-blue-700 uppercase tracking-widest leading-relaxed">
-                          Validation: Changes will be synchronized across all modules upon commitment.
-                       </p>
-                    </div>
-
-                    {/* Footer Actions */}
-                    <div className="pt-2 flex items-center gap-3 underline decoration-transparent">
-                       <button 
-                          type="button"
+              {/* Modal Body */}
+              <div className="overflow-y-auto max-h-[70vh] no-scrollbar">
+                 {onSubmit ? (
+                   <form onSubmit={onSubmit}>
+                     <div className="p-8 pb-4 underline decoration-transparent">
+                        {children}
+                     </div>
+                     <div className="px-8 py-6 border-t border-slate-50 flex items-center justify-end gap-3 bg-white sticky bottom-0 z-20">
+                        <button 
+                          type="button" 
                           onClick={onClose}
-                          className="flex-1 py-3 bg-white border border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-sm hover:text-slate-900 hover:bg-slate-50 transition-all outline-none"
-                       >Cancel</button>
-                       <button 
-                          type="submit"
-                          className="flex-1 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-sm shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all outline-none"
-                       >
-                          <Save size={14} />
+                          className="h-12 px-6 bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-100 transition-all"
+                        >Cancel Protocol</button>
+                        <button 
+                          type="submit" 
+                          className="h-12 px-10 bg-[#2C2C2C] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
+                        >
+                          <Save size={14} strokeWidth={3} />
                           {submitLabel}
-                       </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="p-8">
-                    {children}
-                  </div>
-                )}
-             </div>
+                        </button>
+                     </div>
+                   </form>
+                 ) : (
+                   <div className="p-8">
+                     {children}
+                   </div>
+                 )}
+              </div>
           </motion.div>
         </div>
       )}

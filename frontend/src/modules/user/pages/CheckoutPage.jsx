@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function CheckoutPage() {
-  const { total, items, orderType, tableNumber } = useCart();
+  const { subtotal, tax, total, items, orderType, tableNumber } = useCart();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,17 +27,18 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     
     const newOrder = {
-      table: tableNumber || '7',
-      source: 'QR Ordering',
+      tableName: tableNumber || '7',
       items: items.map(item => ({
-        id: item.id || `i-${Math.random()}`,
+        itemId: item.id,
         name: item.name,
         quantity: item.quantity,
-        note: item.notes || '',
-        status: 'new'
+        price: item.price
       })),
-      type: orderType || 'Dine-In',
-      total: grandTotal
+      orderType: orderType || 'Dine-In',
+      subTotal: subtotal,
+      tax: tax,
+      grandTotal: total,
+      waiterName: 'Customer App'
     };
 
     createOrder(newOrder);
@@ -53,9 +54,8 @@ export default function CheckoutPage() {
     { id: 'cash', name: 'Pay at Counter', icon: Banknote, sub: 'After your meal' },
   ];
 
-  const subtotal = total;
-  const taxes = Math.floor(subtotal * 0.18);
-  const grandTotal = subtotal + taxes;
+  const taxes = tax;
+  const grandTotal = total;
 
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white selection:bg-brand-500 selection:text-charcoal-900 transition-colors duration-300">

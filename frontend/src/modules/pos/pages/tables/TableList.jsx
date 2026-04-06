@@ -1,128 +1,124 @@
-
 import React, { useState } from 'react';
 import { 
   Table, Search, Filter, Plus, 
   MoreVertical, Edit2, Trash2, Users,
-  Monitor, Layout, CheckCircle2
+  Monitor, Layout, CheckCircle2, Clock, MapPin, RefreshCw, Zap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const MOCK_TABLES_LIST = [
-  { id: 1, name: 'Table 1', capacity: 2, zone: 'Main Hall', status: 'available' },
-  { id: 2, name: 'Table 2', capacity: 2, zone: 'Main Hall', status: 'occupied' },
-  { id: 3, name: 'Table 3', capacity: 4, zone: 'Main Hall', status: 'available' },
-  { id: 4, name: 'Table 4', capacity: 4, zone: 'Main Hall', status: 'billing' },
-  { id: 5, name: 'Table 5', capacity: 6, zone: 'Balcony', status: 'occupied' },
-  { id: 6, name: 'Table 6', capacity: 2, zone: 'VIP Lounge', status: 'available' },
-];
+import { useNavigate } from 'react-router-dom';
+import { usePos } from '../../context/PosContext';
 
 export default function TableList() {
+  const navigate = useNavigate();
+  const { tables, loading, fetchActiveTableOrders, toggleSidebar } = usePos();
   const [searchQuery, setSearchQuery] = useState('');
 
+  const filteredTables = tables.filter(t => 
+    t.status === 'Available' && 
+    (t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+     t.area.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
-    <div className="h-full flex flex-col bg-[#F8F9FB] animate-in fade-in duration-500">
-      <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0">
+    <div className="h-full flex flex-col bg-[#F8F9FB] animate-in fade-in duration-500 overflow-hidden font-sans select-none">
+      <header className="px-10 py-8 bg-white border-b border-slate-200 shrink-0 shadow-sm relative z-10">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">Table Management Registry</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Configure Table Settings & Capacity Information</p>
+          <div className="flex items-center gap-6">
+             <button 
+               onClick={toggleSidebar}
+               className="p-4 bg-slate-900 border border-slate-900 rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10"
+             >
+                <Layout size={20} className="text-white" />
+             </button>
+             <div>
+                <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 italic leading-none">Available Tables</h1>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                   {filteredTables.length} Open Nodes Ready For Seating
+                </p>
+             </div>
           </div>
-          <button className="h-10 px-6 bg-[#5D4037] text-white rounded text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2 outline-none">
-            <Plus size={14} />
-            Add New Table
-          </button>
+          
+          <div className="flex items-center gap-4">
+             <button 
+               onClick={fetchActiveTableOrders}
+               className="p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all active:scale-95 group"
+             >
+               <RefreshCw size={20} className={`text-slate-600 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform'}`} />
+             </button>
+          </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={16} />
-            <input 
-              type="text" 
-              placeholder="SEARCH BY TABLE NAME OR ZONE..."
-              className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white transition-all underline decoration-transparent"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <button className="h-10 px-4 bg-white border border-slate-200 text-slate-400 rounded text-[10px] font-black uppercase tracking-widest hover:text-slate-900 flex items-center gap-2 transition-all outline-none">
-            <Filter size={14} />
-            Filters
-          </button>
+        <div className="max-w-4xl relative group">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={18} />
+          <input 
+            type="text" 
+            placeholder="SEARCH VACANT TABLES OR AREAS..."
+            className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-16 pr-8 text-[11px] font-bold uppercase tracking-widest outline-none focus:ring-1 focus:ring-slate-900 focus:bg-white transition-all shadow-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </header>
 
-      <div className="flex-1 p-8 overflow-y-auto no-scrollbar">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {MOCK_TABLES_LIST.map(table => (
-            <motion.div 
-              key={table.id}
-              whileHover={{ y: -4 }}
-              className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm hover:border-blue-300 hover:shadow-xl hover:shadow-[#5D4037]/20 transition-all group"
-            >
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
-                    table.status === 'available' ? 'bg-emerald-50 text-emerald-500' :
-                    table.status === 'occupied' ? 'bg-amber-50 text-amber-500' :
-                    'bg-blue-50 text-blue-500'
-                  }`}>
-                    <Layout size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">{table.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none px-1.5 py-0.5 bg-slate-50 border border-slate-100 rounded">{table.zone}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                   <button className="text-slate-200 hover:text-slate-900 transition-colors">
-                      <MoreVertical size={16} />
-                   </button>
-                   <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
-                     table.status === 'available' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                     table.status === 'occupied' ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse' :
-                     'bg-blue-50 text-[#5D4037] border-blue-100'
-                   }`}>
-                     {table.status}
-                   </span>
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-4 border-t border-slate-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Users size={14} className="text-slate-400" />
-                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Seating Capacity</span>
-                  </div>
-                  <span className="text-[10px] font-black text-slate-900">{table.capacity} PERSONS</span>
-                </div>
-                
-                  <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Monitor size={14} className="text-slate-400" />
-                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Activity Status</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${table.status === 'available' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                    <span className="text-[10px] font-black text-slate-900 uppercase">{table.status === 'available' ? 'Available' : 'Active'}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 grid grid-cols-2 gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                <button className="flex items-center justify-center gap-2 py-2.5 bg-[#5D4037] text-white rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md">
-                  <Edit2 size={12} />
-                  Edit Table
-                </button>
-                <button className="flex items-center justify-center gap-2 py-2.5 bg-slate-50 text-slate-400 border border-slate-200 rounded text-[9px] font-black uppercase tracking-widest hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all">
-                  <Trash2 size={12} />
-                  Remove Table
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+      <div className="flex-1 p-10 overflow-y-auto no-scrollbar scroll-smooth">
+        {filteredTables.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center py-40 opacity-40">
+             <div className="w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 border-2 border-dashed border-slate-200">
+                <Table size={40} className="text-slate-300" />
+             </div>
+             <p className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">No Available Tables</p>
+             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">All tables are currently occupied or reserved</p>
+          </div>
+        ) : (
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm overflow-hidden">
+             <table className="w-full text-left border-collapse">
+                <thead>
+                   <tr className="bg-slate-50 border-b border-slate-100">
+                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Table Node</th>
+                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Floor Area</th>
+                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Guest Capacity</th>
+                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Node Status</th>
+                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Quick Action</th>
+                   </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 font-sans">
+                   {filteredTables.map(table => (
+                      <tr key={table._id} className="transition-all">
+                         <td className="px-10 py-6">
+                            <div className="flex items-center gap-5">
+                               <div className="w-12 h-12 rounded-[1rem] bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-900/5">
+                                  <Table size={20} />
+                               </div>
+                               <span className="text-lg font-black text-slate-900 tracking-tighter italic uppercase">{table.tableName}</span>
+                            </div>
+                         </td>
+                         <td className="px-10 py-6">
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-lg italic">{table.area}</span>
+                         </td>
+                         <td className="px-10 py-6 text-center">
+                            <div className="inline-flex items-center gap-2 text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-full">
+                               <Users size={12} />
+                               {table.capacity} Seating
+                            </div>
+                         </td>
+                         <td className="px-10 py-6 text-center">
+                            <div className="inline-flex items-center gap-2 text-[9px] font-black text-emerald-600 uppercase tracking-widest px-4 py-1.5 bg-emerald-50/50 border border-emerald-100 rounded-full">
+                               <Zap size={11} className="fill-emerald-600 stroke-none" />
+                               Available
+                            </div>
+                         </td>
+                         <td className="px-10 py-6 text-right">
+                            <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest opacity-20 cursor-not-allowed">
+                               Monitor Only
+                            </button>
+                         </td>
+                      </tr>
+                   ))}
+                </tbody>
+             </table>
+          </div>
+        )}
       </div>
     </div>
   );

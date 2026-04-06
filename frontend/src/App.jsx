@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './modules/user/context/CartContext';
 import { ThemeProvider } from './modules/user/context/ThemeContext';
@@ -8,8 +9,23 @@ import PosRoutes from './modules/pos/routes/PosRoutes';
 import AdminRoutes from './modules/admin/routes/AdminRoutes';
 import { OrderProvider } from './context/OrderContext';
 import { PosProvider } from './modules/pos/context/PosContext';
+import { Toaster } from 'react-hot-toast';
+import PageLoader from './components/ui/PageLoader';
 
 function App() {
+  const [isBooting, setIsBooting] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsBooting(false);
+    }, 2500); // Wait for the serving to be ready 🍳
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isBooting) {
+    return <PageLoader />;
+  }
+
   return (
     <BrowserRouter>
       <ThemeProvider>
@@ -27,6 +43,7 @@ function App() {
           </PosProvider>
         </CartProvider>
       </ThemeProvider>
+      <Toaster position="top-center" reverseOrder={false} />
     </BrowserRouter>
   );
 }

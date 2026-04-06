@@ -3,28 +3,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Search, Map, Users, Clock, Plus, Filter, Sparkles } from 'lucide-react';
 import { usePos } from '../../../modules/pos/context/PosContext';
-import { TABLE_SECTIONS } from '../../../modules/pos/data/tablesMockData';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { StaffNotifications } from '../components/StaffNotifications';
 
 export default function MyTables() {
-  const { orders } = usePos();
+  const { orders, tables } = usePos();
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 
-  // Flatten all tables from all sections for the staff app display
+  // Use real-time tables from backend
   const displayTables = useMemo(() => {
-    const allTables = TABLE_SECTIONS.flatMap(section => section.tables);
-    return allTables.map(t => {
-      const order = orders[t.id];
-      let status = t.status === 'blank' ? 'available' : t.status;
-      if (order) {
-        if (order.status === 'running-kot') status = 'occupied';
-        if (order.status === 'printed') status = 'occupied'; 
-      }
-      return { ...t, status, order };
+    return tables.map(t => {
+      const order = orders[t.tableName];
+      let status = t.status.toLowerCase();
+      return { 
+        ...t, 
+        id: t._id,
+        name: t.tableName,
+        status, 
+        order 
+      };
     });
-  }, [orders]);
+  }, [orders, tables]);
 
   const filteredTables = filter === 'all' ? displayTables : displayTables.filter(t => t.status === filter);
 

@@ -1,22 +1,43 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, Mail, Lock, ArrowRight, ShieldCheck, HelpCircle } from 'lucide-react';
+import { ShieldAlert, Mail, Lock, ArrowRight, ShieldCheck, HelpCircle, Eye, EyeOff } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@gmail.com');
+  const [password, setPassword] = useState('123');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      localStorage.setItem('admin_access', 'mock_admin_token');
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        localStorage.setItem('admin_access', data.token);
+        toast.success('Login Successful!');
+        navigate('/admin/dashboard');
+      } else {
+        toast.error(data.message || 'Login failed');
+      }
+    } catch (err) {
+      toast.error('Server connection failed. Is the backend running?');
+    } finally {
       setIsLoading(false);
-      navigate('/admin/dashboard');
-    }, 1500);
+    }
   };
 
   return (
@@ -65,13 +86,20 @@ export default function AdminLoginPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
+                  className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-400 hover:text-brand-500 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
