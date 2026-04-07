@@ -4,9 +4,9 @@ const Combo = require('../Models/Combo');
 const getCombos = async (req, res) => {
   try {
     const combos = await Combo.find().populate('items.item').sort({ createdAt: -1 });
-    res.json(combos);
+    res.json({ success: true, data: combos });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -14,10 +14,10 @@ const getCombos = async (req, res) => {
 const getCombo = async (req, res) => {
   try {
     const combo = await Combo.findById(req.params.id).populate('items.item');
-    if (!combo) return res.status(404).json({ message: 'Combo not found' });
-    res.json(combo);
+    if (!combo) return res.status(404).json({ success: false, message: 'Combo not found' });
+    res.json({ success: true, data: combo });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -26,9 +26,9 @@ const createCombo = async (req, res) => {
   try {
     const combo = new Combo(req.body);
     await combo.save();
-    res.status(201).json(combo);
+    res.status(201).json({ success: true, data: combo });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -40,10 +40,10 @@ const updateCombo = async (req, res) => {
       req.body,
       { returnDocument: 'after' }
     );
-    if (!combo) return res.status(404).json({ message: 'Combo not found' });
-    res.json(combo);
+    if (!combo) return res.status(404).json({ success: false, message: 'Combo not found' });
+    res.json({ success: true, data: combo });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -51,10 +51,10 @@ const updateCombo = async (req, res) => {
 const deleteCombo = async (req, res) => {
   try {
     const combo = await Combo.findByIdAndDelete(req.params.id);
-    if (!combo) return res.status(404).json({ message: 'Combo not found' });
-    res.json({ message: 'Combo deleted' });
+    if (!combo) return res.status(404).json({ success: false, message: 'Combo not found' });
+    res.json({ success: true, message: 'Combo deleted' });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 

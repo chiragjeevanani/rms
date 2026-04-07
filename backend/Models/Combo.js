@@ -33,6 +33,11 @@ const comboSchema = new mongoose.Schema({
   isAvailable: { type: Boolean, default: true },
   sku: { type: String },
   
+  // Stock Management
+  trackStock: { type: Boolean, default: false },
+  stockCount: { type: Number, default: 0 },
+  minStockLevel: { type: Number, default: 5 },
+  
 }, { timestamps: true });
 
 module.exports = mongoose.model('Combo', comboSchema);

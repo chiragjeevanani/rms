@@ -46,12 +46,50 @@ const deleteStock = async (req, res) => {
 const getStockAnalytics = async (req, res) => {
   try {
     const Stock = require('../Models/Stock');
+    const Item = require('../Models/Item');
+    const Combo = require('../Models/Combo');
     const Wastage = require('../Models/Wastage');
     
-    const [allStock, allWastage] = await Promise.all([
+    const [allRawStock, allItems, allCombos, allWastage] = await Promise.all([
       Stock.find().sort({ name: 1 }),
+      Item.find({ trackStock: true }).populate('category').sort({ name: 1 }),
+      Combo.find({ trackStock: true }).sort({ name: 1 }),
       Wastage.find().sort({ createdAt: -1 }).limit(50)
     ]);
+    
+    // Normalize Item and Combo data to match Stock format
+    const formattedItems = allItems.map(i => ({
+      _id: i._id,
+      name: i.name,
+      quantity: i.stockCount || 0,
+      unit: 'Units',
+      minLevel: i.minStockLevel || 0,
+      category: i.category?.name || 'Menu Item',
+      price: i.hasVariants && i.variants.length > 0 
+        ? Math.min(...i.variants.map(v => v.price)) 
+        : (i.basePrice || 0),
+      sku: i.sku,
+      type: 'Item'
+    }));
+
+    const formattedCombos = allCombos.map(c => ({
+      _id: c._id,
+      name: c.name,
+      quantity: c.stockCount || 0,
+      unit: 'Units',
+      minLevel: c.minStockLevel || 0,
+      category: 'Combo Matrix',
+      price: c.price || 0,
+      sku: c.sku,
+      type: 'Combo'
+    }));
+
+    // Merge everything into a unified stock ledger
+    const allStock = [
+      ...allRawStock.map(s => ({ ...s.toObject(), type: 'Raw' })),
+      ...formattedItems,
+      ...formattedCombos
+    ];
     
     const stats = {
       totalItems: allStock.length,

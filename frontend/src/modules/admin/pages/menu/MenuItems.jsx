@@ -50,7 +50,10 @@ export default function MenuItems() {
     sku: '',
     tags: [],
     isFeatured: false,
-    status: 'Published'
+    status: 'Published',
+    trackStock: false,
+    stockCount: 0,
+    minStockLevel: 5
   });
 
   const location = useLocation();
@@ -104,7 +107,10 @@ export default function MenuItems() {
       setFormData({
         ...item,
         category: item.category?._id || item.category,
-        modifiers: item.modifiers?.map(m => m._id) || []
+        modifiers: item.modifiers?.map(m => m._id) || [],
+        trackStock: item.trackStock || false,
+        stockCount: item.stockCount || 0,
+        minStockLevel: item.minStockLevel || 5
       });
     } else {
       setEditingItem(null);
@@ -126,7 +132,10 @@ export default function MenuItems() {
         sku: `ITM-${Date.now().toString().slice(-6)}`,
         tags: [],
         isFeatured: false,
-        status: 'Published'
+        status: 'Published',
+        trackStock: false,
+        stockCount: 0,
+        minStockLevel: 5
       });
     }
     setIsModalOpen(true);
@@ -492,6 +501,9 @@ export default function MenuItems() {
                       </p>
                     )}
                     <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60 leading-none">{item.modifiers?.length || 0} Modifiers</p>
+                    {item.trackStock && (
+                      <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${item.stockCount <= (item.minStockLevel || 5) ? 'text-rose-500' : 'text-emerald-500'}`}>{item.stockCount} In Stock</p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button 
@@ -796,6 +808,58 @@ export default function MenuItems() {
                     {formData.isFeatured && <Check size={14} />}
                  </button>
               </div>
+          </div>
+
+          {/* Section 4: Stock Management */}
+          <div className="bg-slate-900 text-white p-8 rounded-[3rem] space-y-6">
+             <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                   <div className="p-3 bg-white/10 rounded-2xl text-amber-500">
+                      <Package size={20} />
+                   </div>
+                   <div>
+                      <h4 className="text-xs font-black uppercase tracking-tight">Inventory Control</h4>
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Manage real-time availability</p>
+                   </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white/5 p-1 rounded-2xl border border-white/5">
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({ ...formData, trackStock: false })}
+                    className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase transition-all ${!formData.trackStock ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
+                  >Manual</button>
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({ ...formData, trackStock: true })}
+                    className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase transition-all ${formData.trackStock ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
+                  >Tracked</button>
+                </div>
+             </div>
+
+             {formData.trackStock && (
+               <div className="grid grid-cols-2 gap-6 animate-in slide-in-from-top-4">
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Stock Level</label>
+                     <input 
+                       type="number"
+                       className="w-full bg-white/5 border border-white/10 p-4 text-sm font-black text-white outline-none rounded-2xl focus:border-amber-500/50"
+                       value={formData.stockCount}
+                       onChange={(e) => setFormData({...formData, stockCount: e.target.value})}
+                       placeholder="0"
+                     />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Low Stock Alert Level</label>
+                     <input 
+                       type="number"
+                       className="w-full bg-white/5 border border-white/10 p-4 text-sm font-black text-rose-500 outline-none rounded-2xl focus:border-amber-500/50"
+                       value={formData.minStockLevel}
+                       onChange={(e) => setFormData({...formData, minStockLevel: e.target.value})}
+                       placeholder="5"
+                     />
+                  </div>
+               </div>
+             )}
           </div>
 
           <div className="space-y-4 pt-6 border-t border-slate-50">

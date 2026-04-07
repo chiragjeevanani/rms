@@ -37,7 +37,10 @@ export default function ComboMeals() {
     status: 'Published',
     isAvailable: true,
     sku: '',
-    preparationTime: 20
+    preparationTime: 20,
+    trackStock: false,
+    stockCount: 0,
+    minStockLevel: 5
   });
 
   const location = useLocation();
@@ -119,7 +122,10 @@ export default function ComboMeals() {
         status: combo.status || 'Published',
         isAvailable: combo.isAvailable ?? true,
         sku: combo.sku || `CMB-${Date.now().toString().slice(-6)}`,
-        preparationTime: combo.preparationTime || 20
+        preparationTime: combo.preparationTime || 20,
+        trackStock: combo.trackStock || false,
+        stockCount: combo.stockCount || 0,
+        minStockLevel: combo.minStockLevel || 5
       });
     } else {
       setEditingCombo(null);
@@ -133,7 +139,10 @@ export default function ComboMeals() {
         status: 'Published',
         isAvailable: true,
         sku: `CMB-${Date.now().toString().slice(-6)}`,
-        preparationTime: 20
+        preparationTime: 20,
+        trackStock: false,
+        stockCount: 0,
+        minStockLevel: 5
       });
     }
     setIsModalOpen(true);
@@ -414,6 +423,9 @@ export default function ComboMeals() {
                        <p className="text-[9px] font-bold text-slate-400 line-through mt-0.5 tracking-tighter">₹{combo.originalPrice}</p>
                     )}
                     <p className="text-[7px] font-black text-slate-300 uppercase tracking-widest mt-1 opacity-60 leading-none">#{combo.sku}</p>
+                    {combo.trackStock && (
+                      <p className={`text-[8px] font-black uppercase mt-1 ${combo.stockCount <= (combo.minStockLevel || 5) ? 'text-rose-500' : 'text-emerald-500'}`}>{combo.stockCount} Units</p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button 
@@ -629,6 +641,64 @@ export default function ComboMeals() {
                   {formData.isAvailable && <Check size={14} />}
                </button>
             </div>
+          </div>
+
+          {/* Stock Management Component */}
+          <div className="bg-[#0F172A] text-white p-8 rounded-[3rem] border border-white/5 space-y-6">
+             <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                   <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400">
+                      <Package size={24} />
+                   </div>
+                   <div>
+                      <h4 className="text-sm font-black uppercase tracking-tight">Bundle Level Inventory</h4>
+                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Global assembly stock tracking</p>
+                   </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white/5 p-1 rounded-2xl border border-white/5">
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({ ...formData, trackStock: false })}
+                    className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase transition-all ${!formData.trackStock ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white'}`}
+                  >Manual Control</button>
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({ ...formData, trackStock: true })}
+                    className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase transition-all ${formData.trackStock ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white'}`}
+                  >Auto Tracked</button>
+                </div>
+             </div>
+
+             {formData.trackStock && (
+               <div className="grid grid-cols-2 gap-8 animate-in slide-in-from-top-4">
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Assembled Units Available</label>
+                     <div className="relative">
+                        <input 
+                          type="number"
+                          className="w-full bg-white/5 border border-white/10 p-5 text-xl font-black text-white outline-none rounded-3xl focus:border-blue-500/50 transition-all"
+                          value={formData.stockCount}
+                          onChange={(e) => setFormData({...formData, stockCount: e.target.value})}
+                          placeholder="0"
+                        />
+                        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-600 uppercase">Units</div>
+                     </div>
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Low Assembly Notification</label>
+                     <div className="relative">
+                        <input 
+                          type="number"
+                          className="w-full bg-white/5 border border-white/10 p-5 text-xl font-black text-rose-400 outline-none rounded-3xl focus:border-blue-500/50 transition-all"
+                          value={formData.minStockLevel}
+                          onChange={(e) => setFormData({...formData, minStockLevel: e.target.value})}
+                          placeholder="5"
+                        />
+                        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-600 uppercase">Min</div>
+                     </div>
+                  </div>
+               </div>
+             )}
           </div>
 
           <div className="space-y-4 pt-6 border-t border-slate-50">

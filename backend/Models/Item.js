@@ -44,6 +44,11 @@ const itemSchema = new mongoose.Schema({
   tags: [{ type: String }],
   isFeatured: { type: Boolean, default: false },
   
+  // Stock Management
+  trackStock: { type: Boolean, default: false },
+  stockCount: { type: Number, default: 0 },
+  minStockLevel: { type: Number, default: 5 },
+  
   status: { 
     type: String, 
     enum: ['Published', 'Draft'], 
