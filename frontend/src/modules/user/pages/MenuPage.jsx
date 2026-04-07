@@ -78,7 +78,7 @@ export default function MenuPage() {
     const base = [
       { id: 'all', label: 'All', icon: '◉' },
       { id: 'popular', label: 'Popular', icon: '★' },
-      { id: 'combo', label: 'Combo', icon: '📦' }
+      { id: 'combos', label: 'Combo', icon: '📦' }
     ];
     const backendCats = categories
       .filter(cat => cat.status === 'Published')
@@ -97,9 +97,9 @@ export default function MenuPage() {
     if (isSearching) {
       result = [...items, ...combos];
     } else {
-      if (activeCategory === 'all') result = items;
+      if (activeCategory === 'all') result = [...items, ...combos];
       else if (activeCategory === 'popular') result = items.filter(i => i.isFeatured || i.tags?.includes('popular'));
-      else if (activeCategory === 'combo') result = combos;
+      else if (activeCategory === 'combos') result = combos;
       else result = items.filter(i => i.category?._id === activeCategory);
     }
 
@@ -116,7 +116,7 @@ export default function MenuPage() {
       price: i.hasVariants ? i.variants.find(v => v.isDefault)?.price : (i.sellingPrice || i.basePrice || i.price),
       originalPrice: i.hasVariants ? i.variants.find(v => v.isDefault)?.originalPrice : (i.basePrice || i.originalPrice),
       rating: i.reviews?.length > 0 ? (i.reviews.reduce((acc, r) => acc + r.rating, 0) / i.reviews.length).toFixed(1) : (i.rating || 0),
-      isVeg: i.foodType === 'Veg' || i.isVeg,
+      isVeg: i.foodType === 'Veg' || i.isVeg || (i.items && i.items.every(ci => ci.item?.foodType === 'Veg' || ci.item?.isVeg)),
     }));
   }, [activeCategory, items, combos, searchQuery, isVegOnly]);
 

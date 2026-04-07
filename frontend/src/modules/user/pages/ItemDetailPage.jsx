@@ -341,6 +341,29 @@ export default function ItemDetailPage() {
              ))}
           </div>
 
+          {/* Combo Items Section */}
+          {item?.items?.length > 0 && (
+             <div className="mb-10 space-y-4">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500">Includes in this Combo</h3>
+                <div className="grid grid-cols-1 gap-3">
+                   {item.items.map((ci, idx) => (
+                      <div key={idx} className="flex items-center gap-4 bg-white/5 p-4 rounded-3xl border border-white/5">
+                         <div className="w-12 h-12 rounded-2xl overflow-hidden bg-charcoal-800 shrink-0 border border-white/5">
+                            <img src={ci.item?.image} className="w-full h-full object-cover" alt="" />
+                         </div>
+                         <div className="flex-1">
+                            <p className="text-sm font-bold text-white uppercase">{ci.item?.name}</p>
+                            <p className="text-[9px] font-black text-charcoal-500 uppercase tracking-widest">{ci.item?.category?.name || 'Main Course'}</p>
+                         </div>
+                         <div className="text-right">
+                            <span className="bg-brand-500/10 text-brand-500 text-[10px] font-black px-3 py-1 rounded-lg border border-brand-500/10 uppercase">x{ci.quantity}</span>
+                         </div>
+                      </div>
+                   ))}
+                </div>
+             </div>
+          )}
+
           <div className="flex justify-between items-baseline mb-6 border-t border-white/5 pt-8">
              <p className="text-charcoal-700 dark:text-charcoal-300 font-medium leading-relaxed italic opacity-90 text-sm">{item?.description}</p>
           </div>

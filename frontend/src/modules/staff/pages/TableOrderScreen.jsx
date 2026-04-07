@@ -40,7 +40,7 @@ export default function TableOrderScreen() {
         
         setCategories(catData);
         setItems(itemData);
-        setCombos(comboData || []);
+        setCombos(comboData?.data || []);
       } catch (err) {
         console.error("Fetch error", err);
       }
