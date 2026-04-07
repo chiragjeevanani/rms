@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, Download, Calendar, ArrowUpRight, TrendingUp, 
-  DollarSign, Package, ShoppingBag, Activity, Search
+  DollarSign, Package, ShoppingBag, Activity, Search, Filter,
+  ChevronDown
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, AreaChart, Area 
@@ -13,10 +14,32 @@ export default function SalesReports() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dateRange, setDateRange] = useState('7d'); // 7d, 30d, today, custom
+  const [customRange, setCustomRange] = useState({
+    start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    end: new Date().toISOString().split('T')[0]
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchSalesData = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/reports/sales`, {
+      let start = customRange.start;
+      let end = customRange.end;
+
+      if (dateRange === 'today') {
+        start = new Date().toISOString().split('T')[0];
+        end = start;
+      } else if (dateRange === '7d') {
+        start = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        end = new Date().toISOString().split('T')[0];
+      } else if (dateRange === '30d') {
+        start = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        end = new Date().toISOString().split('T')[0];
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/reports/sales?startDate=${start}&endDate=${end}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
       });
       if (response.ok) {
@@ -34,9 +57,16 @@ export default function SalesReports() {
 
   useEffect(() => {
     fetchSalesData();
-  }, []);
+  }, [dateRange, customRange]);
 
-  if (loading) {
+  const { metrics, trends, topProducts, efficiency } = data || {};
+
+  const filteredTrends = trends?.filter(t => 
+    t.date.includes(searchTerm) || 
+    t.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ).slice().reverse();
+
+  if (loading && !data) {
     return (
       <div className="h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
@@ -47,10 +77,37 @@ export default function SalesReports() {
     );
   }
 
-  const { metrics, trends, topProducts } = data || {};
+  const handleExport = () => {
+    if (!trends || trends.length === 0) return;
+    const headers = ['Date', 'Day', 'Orders', 'Revenue', 'Avg Order Value'];
+    const rows = trends.map(t => [
+      t.date, 
+      t.name, 
+      t.orders, 
+      t.revenue, 
+      (t.revenue / (t.orders || 1)).toFixed(2)
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(",") + "\n" 
+      + rows.map(r => r.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `sales_report_${dateRange}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const rangeLabels = {
+    'today': 'Today',
+    '7d': 'Last 7 Days',
+    '30d': 'Last 30 Days',
+    'custom': 'Custom Range'
+  };
 
   return (
-    <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-slate-50/30 min-h-screen">
+    <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-slate-50/30 min-h-screen pb-20">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
@@ -60,12 +117,80 @@ export default function SalesReports() {
              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Fiscal Performance & Revenue Operations</p>
           </div>
         </div>
+        
         <div className="flex items-center gap-3">
-          <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-3 shadow-sm">
-             <Calendar size={14} className="text-slate-400" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Last 7 Days</span>
+          <div className="relative">
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="bg-white px-6 py-3 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm hover:border-slate-400 transition-all group"
+            >
+               <Calendar size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
+               <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 group-hover:text-slate-900">{rangeLabels[dateRange]}</span>
+               <ChevronDown size={14} className={`text-slate-400 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {isFilterOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-3 w-64 bg-white rounded-3xl shadow-2xl border border-slate-100 p-4 z-50 overflow-hidden"
+                >
+                  <div className="space-y-1">
+                    {Object.entries(rangeLabels).map(([key, label]) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setDateRange(key);
+                          if (key !== 'custom') setIsFilterOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          dateRange === key ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {dateRange === 'custom' && (
+                    <div className="mt-4 pt-4 border-t border-slate-50 space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Start Date</label>
+                        <input 
+                          type="date" 
+                          value={customRange.start}
+                          onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
+                          className="w-full h-10 px-4 bg-slate-50 border-none rounded-xl text-[10px] font-bold text-slate-900 outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">End Date</label>
+                        <input 
+                          type="date" 
+                          value={customRange.end}
+                          onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
+                          className="w-full h-10 px-4 bg-slate-50 border-none rounded-xl text-[10px] font-bold text-slate-900 outline-none"
+                        />
+                      </div>
+                      <button 
+                         onClick={() => { fetchSalesData(); setIsFilterOpen(false); }}
+                         className="w-full h-10 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest mt-2"
+                      >
+                         Apply Range
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <button className="h-12 px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none">
+
+          <button 
+            onClick={handleExport}
+            className="h-12 px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
+          >
             <Download size={14} />
             Export Dataset
           </button>
@@ -75,10 +200,10 @@ export default function SalesReports() {
       {/* Metric Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Today\'s Earning', value: `₹${metrics?.todayRevenue?.toLocaleString()}`, icon: DollarSign, trend: '+12.5%', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-          { label: 'Today\'s Orders', value: metrics?.todayOrders, icon: ShoppingBag, trend: 'Optimal', color: 'text-blue-500', bg: 'bg-blue-50' },
+          { label: 'Range Revenue', value: `₹${metrics?.filteredRevenue?.toLocaleString()}`, icon: DollarSign, trend: `${dateRange === 'today' ? 'Today' : 'Selection'}`, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: 'Range Orders', value: metrics?.filteredOrders, icon: ShoppingBag, trend: 'Volume', color: 'text-blue-500', bg: 'bg-blue-50' },
           { label: 'Total Revenue', value: `₹${metrics?.totalRevenue?.toLocaleString()}`, icon: TrendingUp, trend: 'Gross', color: 'text-indigo-500', bg: 'bg-indigo-50' },
-          { label: 'Gross Volume', value: metrics?.totalOrders, icon: Package, trend: 'All Time', color: 'text-slate-500', bg: 'bg-slate-100' },
+          { label: 'Total Orders', value: metrics?.totalOrders, icon: Package, trend: 'All Time', color: 'text-slate-500', bg: 'bg-slate-100' },
         ].map((item, i) => (
           <div key={i} className="bg-white border border-slate-100 p-8 rounded-[2rem] shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
             <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-[0.03] group-hover:scale-150 transition-transform duration-700 ${item.bg}`} />
@@ -91,7 +216,7 @@ export default function SalesReports() {
             <div className="text-3xl font-black text-slate-900 tracking-tighter mb-2">{item.value || 0}</div>
             <div className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest ${item.color}`}>
                <ArrowUpRight size={10} />
-               {item.trend} Growth
+               {item.trend}
             </div>
           </div>
         ))}
@@ -99,7 +224,7 @@ export default function SalesReports() {
 
       {/* Main Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Weekly Trend Chart */}
+        {/* Trend Chart */}
         <div className="lg:col-span-2 bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm">
           <div className="flex items-center justify-between mb-10">
              <div className="flex items-center gap-4">
@@ -123,6 +248,7 @@ export default function SalesReports() {
                 <Tooltip 
                    contentStyle={{ backgroundColor: '#0f172a', borderRadius: '1rem', border: 'none', color: '#fff', fontSize: '10px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}
                    itemStyle={{ color: '#fff', textTransform: 'uppercase', fontWeight: 900 }}
+                   formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
                 />
                 <Area type="monotone" dataKey="revenue" stroke="#0f172a" strokeWidth={4} fillOpacity={1} fill="url(#colorRev)" />
               </AreaChart>
@@ -137,8 +263,8 @@ export default function SalesReports() {
               <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Top Selling Units</h3>
            </div>
            
-           <div className="space-y-6 flex-1">
-              {topProducts?.map((product, i) => (
+           <div className="space-y-6 flex-1 max-h-[400px] overflow-y-auto pr-4 scrollbar-hide">
+              {topProducts?.length > 0 ? topProducts.map((product, i) => (
                 <div key={i} className="group cursor-pointer">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-black uppercase tracking-tight text-slate-700 group-hover:text-emerald-500 transition-colors">
@@ -158,19 +284,24 @@ export default function SalesReports() {
                      <span className="text-[9px] font-black text-slate-500">₹{product.revenue.toLocaleString()}</span>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="h-full flex flex-col items-center justify-center opacity-30 text-center py-20">
+                   <Package size={40} className="mb-4" />
+                   <p className="text-[10px] font-black uppercase tracking-widest">No Sales Data</p>
+                </div>
+              )}
            </div>
 
            <div className="mt-10 pt-10 border-t border-slate-50 text-center">
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Production Efficiency</p>
               <div className="flex items-center justify-center gap-4">
                  <div className="text-center">
-                    <div className="text-xl font-black text-slate-900">98.2%</div>
+                    <div className="text-xl font-black text-slate-900">{efficiency?.qualityScore || '95.0'}%</div>
                     <div className="text-[7px] font-black text-emerald-500 uppercase tracking-widest">Quality Score</div>
                  </div>
                  <div className="w-px h-10 bg-slate-100" />
                  <div className="text-center">
-                    <div className="text-xl font-black text-slate-900">14m</div>
+                    <div className="text-xl font-black text-slate-900">{efficiency?.avgPrepTime || '12'}m</div>
                     <div className="text-[7px] font-black text-blue-500 uppercase tracking-widest">Avg Prep Time</div>
                  </div>
               </div>
@@ -190,6 +321,8 @@ export default function SalesReports() {
               <input 
                  type="text" 
                  placeholder="Search Transactions..." 
+                 value={searchTerm}
+                 onChange={(e) => setSearchTerm(e.target.value)}
                  className="h-10 pl-10 pr-6 bg-slate-50 border-none rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-600 focus:ring-2 ring-slate-900/5 transition-all outline-none"
               />
            </div>
@@ -198,7 +331,7 @@ export default function SalesReports() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Time Period</th>
+                <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Date & Day</th>
                 <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Total Orders</th>
                 <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Gross Inflow</th>
                 <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Average Value</th>
@@ -206,17 +339,19 @@ export default function SalesReports() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {trends?.map((day, i) => (
+              {filteredTrends?.map((day, i) => (
                 <tr key={i} className="hover:bg-slate-50/30 transition-colors">
-                  <td className="px-10 py-6 text-xs font-black text-slate-700 uppercase tracking-tight">{day.name}</td>
+                  <td className="px-10 py-6 text-xs font-black text-slate-700 uppercase tracking-tight">
+                    {day.date} <span className="ml-2 text-slate-400 font-bold">{day.name}</span>
+                  </td>
                   <td className="px-10 py-6 text-xs font-black text-slate-900">{day.orders}</td>
                   <td className="px-10 py-6 text-xs font-black text-slate-900">₹{day.revenue.toLocaleString()}</td>
                   <td className="px-10 py-6 text-xs font-black text-slate-500">₹{(day.revenue / (day.orders || 1)).toFixed(0)}</td>
                   <td className="px-10 py-6 text-right">
                     <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                      day.revenue > 1000 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'
+                      day.revenue > (metrics?.filteredRevenue / trends.length) ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'
                     }`}>
-                      {day.revenue > 1000 ? 'High Velocity' : 'Stable'}
+                      {day.revenue > (metrics?.filteredRevenue / trends.length) ? 'High Velocity' : 'Stable'}
                     </span>
                   </td>
                 </tr>

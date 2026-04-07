@@ -5,7 +5,7 @@ import { ShieldAlert, Mail, Lock, ArrowRight, ShieldCheck, HelpCircle, Eye, EyeO
 import toast from 'react-hot-toast';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('admin@gmail.com');
+  const [email, setEmail] = useState('admin@rms.com');
   const [password, setPassword] = useState('123');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, Camera, Save, Loader2, Lock, 
-  ShieldCheck, ShieldAlert, Key, Eye, EyeOff 
+  ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Package 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function AccountSettings() {
   // Profile State
-  const [admin, setAdmin] = useState({ name: '', email: '', profileImg: '' });
+  const [admin, setAdmin] = useState({ name: '', email: '', profileImg: '', restaurantName: '', mobileNumber: '', address: '' });
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -34,7 +34,14 @@ export default function AccountSettings() {
       });
       const data = await response.json();
       if (response.ok) {
-        setAdmin(data);
+        setAdmin({
+          name: data.name || '',
+          email: data.email || '',
+          profileImg: data.profileImg || '',
+          restaurantName: data.restaurantName || '',
+          mobileNumber: data.mobileNumber || '',
+          address: data.address || ''
+        });
       } else {
         toast.error(data.message);
       }
@@ -87,7 +94,13 @@ export default function AccountSettings() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
         },
-        body: JSON.stringify({ name: admin.name, profileImg: admin.profileImg })
+        body: JSON.stringify({ 
+          name: admin.name, 
+          profileImg: admin.profileImg,
+          restaurantName: admin.restaurantName,
+          mobileNumber: admin.mobileNumber,
+          address: admin.address
+        })
       });
       const data = await response.json();
       if (response.ok) {
@@ -205,7 +218,7 @@ export default function AccountSettings() {
                <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest italic">Profile Picture</p>
             </div>
 
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Full Name</label>
                 <div className="relative">
@@ -216,6 +229,21 @@ export default function AccountSettings() {
                     onChange={(e) => setAdmin({...admin, name: e.target.value})}
                     className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
                     placeholder="Enter your name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Restaurant Name</label>
+                <div className="relative">
+                  <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                  <input 
+                    type="text" 
+                    value={admin.restaurantName}
+                    onChange={(e) => setAdmin({...admin, restaurantName: e.target.value})}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
+                    placeholder="Enter restaurant name"
                     required
                   />
                 </div>
@@ -232,6 +260,36 @@ export default function AccountSettings() {
                     className="w-full bg-stone-100 border border-stone-200 rounded-2xl py-4 pl-12 pr-4 outline-none font-bold text-stone-500 cursor-not-allowed"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Mobile Number</label>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                  <input 
+                    type="text" 
+                    value={admin.mobileNumber}
+                    onChange={(e) => setAdmin({...admin, mobileNumber: e.target.value})}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
+                    placeholder="Enter mobile number"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Restaurant Address</label>
+              <div className="relative">
+                <div className="absolute left-4 top-4 text-stone-400">
+                   <Mail size={18} />
+                </div>
+                <textarea 
+                  value={admin.address}
+                  onChange={(e) => setAdmin({...admin, address: e.target.value})}
+                  rows={3}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800 resize-none"
+                  placeholder="Enter restaurant address"
+                />
               </div>
             </div>
 

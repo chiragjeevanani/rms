@@ -192,18 +192,21 @@ const updateOrderStatus = async (req, res) => {
     
     if (status === 'Preparing') updateData.prepStartedAt = new Date();
     if (status === 'Ready') updateData.readyAt = new Date();
+    if (status.toLowerCase() === 'paid') updateData.closedAt = new Date();
 
     const order = await Order.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
     // Free the table if status is Paid/Cancelled/Void
     const terminatingStatuses = ['paid', 'cancelled', 'void'];
-    if (terminatingStatuses.includes(status.toLowerCase()) && order.tableName) {
-        await Table.findOneAndUpdate(
-            { tableName: order.tableName }, 
-            { status: 'Available', isAvailable: true }
-        );
-        console.log(`Table ${order.tableName} released due to order status: ${status}`);
+    if (terminatingStatuses.includes(status.toLowerCase())) {
+        if (order.tableName) {
+            await Table.findOneAndUpdate(
+                { tableName: order.tableName }, 
+                { status: 'Available', isAvailable: true }
+            );
+            console.log(`Table ${order.tableName} released due to order status: ${status}`);
+        }
     }
 
     const io = req.app.get('socketio');
@@ -264,64 +267,129 @@ const getKitchenAnalytics = async (req, res) => {
 
 const getSalesAnalytics = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
+    
+    let filter = { status: 'Paid' };
+    if (startDate && endDate) {
+      filter.closedAt = { 
+        $gte: new Date(startDate), 
+        $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)) 
+      };
+    }
+
     const todayStart = new Date(); 
     todayStart.setHours(0, 0, 0, 0);
-    
-    // 1. Revenue Metrics
-    const allTimeRevenue = await Order.aggregate([
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    // 1. Core Metrics (Always show today's vs total, but maybe filter by range too?)
+    // For now, let's keep metrics as global stats and current stats
+    const metricsResult = await Order.aggregate([
       { $match: { status: 'Paid' } },
-      { $group: { _id: null, total: { $sum: '$grandTotal' } } }
+      { $facet: {
+        allTime: [
+          { $group: { _id: null, totalRevenue: { $sum: '$grandTotal' }, totalOrders: { $sum: 1 } } }
+        ],
+        today: [
+          { $match: { closedAt: { $gte: todayStart } } },
+          { $group: { _id: null, todayRevenue: { $sum: '$grandTotal' }, todayOrders: { $sum: 1 } } }
+        ],
+        filtered: [
+          { $match: filter.closedAt ? { closedAt: filter.closedAt } : {} },
+          { $group: { _id: null, revenue: { $sum: '$grandTotal' }, orders: { $sum: 1 } } }
+        ]
+      }}
     ]);
 
-    const todayRevenue = await Order.aggregate([
-      { $match: { createdAt: { $gte: todayStart }, status: 'Paid' } },
-      { $group: { _id: null, total: { $sum: '$grandTotal' } } }
-    ]);
+    const metrics = {
+      totalRevenue: metricsResult[0].allTime[0]?.totalRevenue || 0,
+      totalOrders: metricsResult[0].allTime[0]?.totalOrders || 0,
+      todayRevenue: metricsResult[0].today[0]?.todayRevenue || 0,
+      todayOrders: metricsResult[0].today[0]?.todayOrders || 0,
+      filteredRevenue: metricsResult[0].filtered[0]?.revenue || 0,
+      filteredOrders: metricsResult[0].filtered[0]?.orders || 0
+    };
 
-    // 2. Hourly Sales for Chart
-    const hourlySales = await Order.aggregate([
-      { $match: { createdAt: { $gte: todayStart }, status: 'Paid' } },
-      { $group: { 
-          _id: { $hour: "$createdAt" }, 
-          revenue: { $sum: "$grandTotal" } 
-        } 
+    // 2. Trends
+    // If range is provided, we should show daily breakdown for that range. 
+    // If not, default to last 7 days.
+    const trendStart = startDate ? new Date(startDate) : sevenDaysAgo;
+    const trendEnd = endDate ? new Date(endDate) : new Date();
+    
+    const dailyTrends = await Order.aggregate([
+      { $match: { status: 'Paid', closedAt: { $gte: trendStart, $lte: new Date(new Date(trendEnd).setHours(23, 59, 59, 999)) } } },
+      { $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$closedAt" } },
+          revenue: { $sum: "$grandTotal" },
+          orders: { $sum: 1 }
+        }
       },
       { $sort: { "_id": 1 } }
     ]);
 
-    // 3. Table Occupancy
-    const totalTables = await Table.countDocuments();
-    const occupiedTables = await Table.countDocuments({ status: 'Occupied' });
+    // Fill gaps in trends
+    const trends = [];
+    let curr = new Date(trendStart);
+    while (curr <= trendEnd) {
+      const dateStr = curr.toISOString().split('T')[0];
+      const match = dailyTrends.find(t => t._id === dateStr);
+      trends.push({
+        date: dateStr,
+        name: curr.toLocaleDateString('en-US', { weekday: 'short' }),
+        revenue: match ? match.revenue : 0,
+        orders: match ? match.orders : 0
+      });
+      curr.setDate(curr.getDate() + 1);
+    }
 
-    // 4. Top Selling Items Today
-    const topItems = await Order.aggregate([
-      { $match: { createdAt: { $gte: todayStart }, status: 'Paid' } },
+    // 3. Top Products in the filtered range
+    const topProducts = await Order.aggregate([
+      { $match: filter },
       { $unwind: "$items" },
       { $group: { 
           _id: "$items.name", 
-          count: { $sum: "$items.quantity" } 
+          volume: { $sum: "$items.quantity" },
+          revenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
         } 
       },
-      { $sort: { count: -1 } },
-      { $limit: 3 }
+      { $sort: { volume: -1 } },
+      { $limit: 10 }
+    ]).then(items => items.map(p => ({
+      name: p._id,
+      volume: p.volume,
+      revenue: p.revenue
+    })));
+
+    // 4. Performance Metrics
+    const performanceStats = await Order.aggregate([
+      { $match: { readyAt: { $exists: true }, createdAt: { $exists: true } } },
+      { $group: {
+          _id: null,
+          avgPrepTime: { $avg: { $subtract: ["$readyAt", "$createdAt"] } }
+        }
+      }
     ]);
+
+    const Item = require('../Models/Item');
+    const itemsWithReviews = await Item.aggregate([
+      { $unwind: "$reviews" },
+      { $group: { _id: null, avgRating: { $avg: "$reviews.rating" } } }
+    ]);
+
+    const efficiency = {
+      avgPrepTime: performanceStats.length > 0 ? Math.round(performanceStats[0].avgPrepTime / 60000) : 12,
+      qualityScore: itemsWithReviews.length > 0 ? (itemsWithReviews[0].avgRating * 20).toFixed(1) : 95.0
+    };
 
     res.json({
       success: true,
       data: {
-        metrics: {
-          totalRevenue: allTimeRevenue.length > 0 ? allTimeRevenue[0].total : 0,
-          todayRevenue: todayRevenue.length > 0 ? todayRevenue[0].total : 0,
-          occupancy: totalTables > 0 ? Math.round((occupiedTables / totalTables) * 100) : 0
-        },
-        hourlySales: hourlySales.map(item => ({
-          time: `${item._id}:00`,
-          revenue: item.revenue
-        })),
-        topItems: topItems.map(item => ({
-          name: item._id,
-          count: item.count
-        }))
+        metrics,
+        trends,
+        topProducts,
+        efficiency
       }
     });
   } catch (error) {

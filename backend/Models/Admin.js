@@ -18,13 +18,25 @@ const adminSchema = new mongoose.Schema({
   profileImg: {
     type: String,
     default: '',
+  },
+  restaurantName: {
+    type: String,
+    default: 'Your Restaurant Name',
+  },
+  mobileNumber: {
+    type: String,
+    default: '',
+  },
+  address: {
+    type: String,
+    default: '',
   }
 }, { timestamps: true });
 
 // Hash password before saving
-adminSchema.pre('save', async function (next) {
+adminSchema.pre('save', async function () {
   if (!this.isModified('password')) {
-    next();
+    return;
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);

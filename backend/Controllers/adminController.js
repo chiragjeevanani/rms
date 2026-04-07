@@ -50,18 +50,42 @@ const getProfile = async (req, res) => {
   }
 };
 
+const getPublicRestaurantInfo = async (req, res) => {
+  try {
+    const admin = await Admin.findOne().select('restaurantName mobileNumber address profileImg');
+    if (!admin) return res.status(404).json({ message: 'Store info not found' });
+    res.json(admin);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const updateProfile = async (req, res) => {
-  const { name, profileImg } = req.body;
+  const { name, profileImg, restaurantName, mobileNumber, address } = req.body;
   try {
     const admin = await Admin.findById(req.admin.id);
     if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
     if (name) admin.name = name;
     if (profileImg) admin.profileImg = profileImg;
+    if (restaurantName) admin.restaurantName = restaurantName;
+    if (mobileNumber) admin.mobileNumber = mobileNumber;
+    if (address) admin.address = address;
 
     await admin.save();
-    res.json({ message: 'Profile updated successfully', admin: { name: admin.name, email: admin.email, profileImg: admin.profileImg } });
+    res.json({ 
+      message: 'Profile updated successfully', 
+      admin: { 
+        name: admin.name, 
+        email: admin.email, 
+        profileImg: admin.profileImg,
+        restaurantName: admin.restaurantName,
+        mobileNumber: admin.mobileNumber,
+        address: admin.address
+      } 
+    });
   } catch (error) {
+    console.error('Update Profile Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -75,12 +99,12 @@ const changePassword = async (req, res) => {
     const isMatch = await bcrypt.compare(oldPassword, admin.password);
     if (!isMatch) return res.status(400).json({ message: 'Incorrect old password' });
 
-    const salt = await bcrypt.genSalt(10);
-    admin.password = await bcrypt.hash(newPassword, salt);
+    admin.password = newPassword;
 
     await admin.save();
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
+    console.error('Change Password Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -192,6 +216,7 @@ const getDashboardStats = async (req, res) => {
 module.exports = {
   loginAdmin,
   getProfile,
+  getPublicRestaurantInfo,
   updateProfile,
   changePassword,
   getDashboardStats

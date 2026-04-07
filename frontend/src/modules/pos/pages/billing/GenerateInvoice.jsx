@@ -21,6 +21,8 @@ export default function GenerateInvoice() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [storeInfo, setStoreInfo] = useState({ restaurantName: 'PREMIUM RMS', mobileNumber: '', address: '' });
+
   const fetchReadyOrders = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/active`);
@@ -35,8 +37,19 @@ export default function GenerateInvoice() {
     }
   };
 
+  const fetchStoreInfo = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/public-info`);
+      const data = await response.json();
+      if (response.ok) setStoreInfo(data);
+    } catch (err) {
+      console.error('Store info sync failed');
+    }
+  };
+
   useEffect(() => {
     fetchReadyOrders();
+    fetchStoreInfo();
     const intv = setInterval(fetchReadyOrders, 20000);
     return () => clearInterval(intv);
   }, []);
@@ -87,7 +100,9 @@ export default function GenerateInvoice() {
       {/* Hidden Print Receipt Layer */}
       <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-10 text-slate-900" id="printable-receipt">
          <div className="max-w-[80mm] mx-auto text-center font-mono border-b border-slate-200 pb-5 mb-5 uppercase tracking-tighter">
-            <h1 className="text-lg font-bold">PREMIUM RMS</h1>
+            <h1 className="text-lg font-bold">{storeInfo.restaurantName}</h1>
+            {storeInfo.address && <p className="text-[8px] mt-1 line-clamp-2">{storeInfo.address}</p>}
+            {storeInfo.mobileNumber && <p className="text-[8px] mt-0.5">TEL: {storeInfo.mobileNumber}</p>}
          </div>
          {selectedOrder && (
             <div className="text-[10px] font-mono">
@@ -113,7 +128,7 @@ export default function GenerateInvoice() {
                   <div className="flex justify-between font-normal"><span>TAX:</span><span>₹{selectedOrder.tax}</span></div>
                   <div className="flex justify-between border-t border-slate-200 mt-2 pt-1 text-base"><span>TOTAL:</span><span>₹{selectedOrder.grandTotal}</span></div>
                </div>
-               <p className="text-center italic opacity-50 mt-10 tracking-widest text-[8px]">Thank you!</p>
+               <p className="text-center italic opacity-50 mt-10 tracking-widest text-[8px]">Thank you for visiting {storeInfo.restaurantName}!</p>
             </div>
          )}
       </div>

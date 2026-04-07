@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { 
   loginAdmin, 
-  getProfile, 
+  getProfile,
+  getPublicRestaurantInfo,
   updateProfile, 
   changePassword,
   getDashboardStats 
@@ -11,6 +12,7 @@ const { protectAdmin } = require('../Middleware/authMiddleware');
 const { upload } = require('../Config/cloudinary');
 
 router.post('/login', loginAdmin);
+router.get('/public-info', getPublicRestaurantInfo);
 router.get('/profile', protectAdmin, getProfile);
 router.get('/dashboard-stats', protectAdmin, getDashboardStats);
 router.put('/profile', protectAdmin, updateProfile);
