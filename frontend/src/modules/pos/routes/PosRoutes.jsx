@@ -19,7 +19,12 @@ import PaymentHistory from '../pages/billing/PaymentHistory';
 import { PosProvider } from '../context/PosContext';
 
 export default function PosRoutes() {
-  const isPosAuthenticated = localStorage.getItem('pos_access');
+  const isPosAuthenticated = !!localStorage.getItem('pos_access');
+
+  // If already authenticated and trying to access login, redirect to dashboard
+  if (isPosAuthenticated && window.location.pathname === '/pos/login') {
+    return <Navigate to="/pos/dashboard" replace />;
+  }
 
   if (!isPosAuthenticated && window.location.pathname !== '/pos/login') {
     return (

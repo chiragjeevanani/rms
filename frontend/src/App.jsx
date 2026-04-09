@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './modules/user/context/CartContext';
 import { ThemeProvider } from './modules/user/context/ThemeContext';
 import UserRoutes from './modules/user/routes/UserRoutes';
@@ -12,13 +12,29 @@ import { PosProvider } from './modules/pos/context/PosContext';
 import { Toaster } from 'react-hot-toast';
 import PageLoader from './components/ui/PageLoader';
 
+function RootRedirect() {
+  const isAdmin = localStorage.getItem('admin_access');
+  const isStaff = localStorage.getItem('staff_access');
+  const isPos = localStorage.getItem('pos_access');
+  const isKds = localStorage.getItem('kds_access');
+  const isUser = localStorage.getItem('user_token');
+
+  if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
+  if (isStaff) return <Navigate to="/staff/dashboard" replace />;
+  if (isPos) return <Navigate to="/pos/dashboard" replace />;
+  if (isKds) return <Navigate to="/kds/dashboard" replace />;
+  if (isUser) return <Navigate to="/menu" replace />;
+
+  return <Navigate to="/welcome" replace />;
+}
+
 function App() {
   const [isBooting, setIsBooting] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsBooting(false);
-    }, 2500); // Wait for the serving to be ready 🍳
+    }, 1500); // Wait for the serving to be ready 🍳
     return () => clearTimeout(timer);
   }, []);
 
@@ -33,6 +49,7 @@ function App() {
           <PosProvider>
             <OrderProvider>
               <Routes>
+                <Route path="/" element={<RootRedirect />} />
                 <Route path="/staff/*" element={<StaffRoutes />} />
                 <Route path="/kds/*" element={<KdsRoutes />} />
                 <Route path="/pos/*" element={<PosRoutes />} />

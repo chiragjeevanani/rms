@@ -11,6 +11,13 @@ import KdsLoginPage from '../pages/KdsLoginPage';
 import KdsOrderDetailsPage from '../pages/KdsOrderDetailsPage';
 
 export default function KdsRoutes() {
+  const isKdsAuthenticated = !!localStorage.getItem('kds_access');
+
+  // If already authenticated and trying to access login, redirect to dashboard
+  if (isKdsAuthenticated && window.location.pathname === '/kds/login') {
+    return <Navigate to="/kds/dashboard" replace />;
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<KdsLoginPage />} />
