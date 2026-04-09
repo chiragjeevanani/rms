@@ -8,6 +8,8 @@ export default function StaffLogin() {
   const [view, setView] = useState('login'); // login, forgot, verify, reset
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -306,11 +308,19 @@ export default function StaffLogin() {
                         <div className="relative group">
                            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                            <input 
-                            type="password" name="newPassword" required
+                            type={showResetPassword ? 'text' : 'password'} 
+                            name="newPassword" required
                             value={formData.newPassword} onChange={handleInputChange}
                             placeholder="••••••••"
-                            className="w-full bg-slate-50 border-none rounded-2xl py-5 pl-14 pr-6 outline-none focus:ring-4 focus:ring-slate-900/5 transition-all font-bold text-slate-900 tracking-widest"
+                            className="w-full bg-slate-50 border-none rounded-2xl py-5 pl-14 pr-14 outline-none focus:ring-4 focus:ring-slate-900/5 transition-all font-bold text-slate-900 tracking-widest"
                            />
+                           <button 
+                            type="button"
+                            onClick={() => setShowResetPassword(!showResetPassword)}
+                            className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
+                           >
+                            {showResetPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                           </button>
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -318,11 +328,19 @@ export default function StaffLogin() {
                         <div className="relative group">
                            <ShieldAlert className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                            <input 
-                            type="password" name="confirmPassword" required
+                            type={showConfirmPassword ? 'text' : 'password'} 
+                            name="confirmPassword" required
                             value={formData.confirmPassword} onChange={handleInputChange}
                             placeholder="••••••••"
-                            className="w-full bg-slate-50 border-none rounded-2xl py-5 pl-14 pr-6 outline-none focus:ring-4 focus:ring-slate-900/5 transition-all font-bold text-slate-900 tracking-widest"
+                            className="w-full bg-slate-50 border-none rounded-2xl py-5 pl-14 pr-14 outline-none focus:ring-4 focus:ring-slate-900/5 transition-all font-bold text-slate-900 tracking-widest"
                            />
+                           <button 
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
+                           >
+                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                           </button>
                         </div>
                       </div>
                    </div>

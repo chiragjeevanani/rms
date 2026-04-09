@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import PosLayout from '../components/layout/PosLayout';
 import PosLoginPage from '../pages/PosLoginPage';
 
@@ -20,13 +20,14 @@ import { PosProvider } from '../context/PosContext';
 
 export default function PosRoutes() {
   const isPosAuthenticated = !!localStorage.getItem('pos_access');
+  const location = useLocation();
 
   // If already authenticated and trying to access login, redirect to dashboard
-  if (isPosAuthenticated && window.location.pathname === '/pos/login') {
+  if (isPosAuthenticated && location.pathname === '/pos/login') {
     return <Navigate to="/pos/dashboard" replace />;
   }
 
-  if (!isPosAuthenticated && window.location.pathname !== '/pos/login') {
+  if (!isPosAuthenticated && location.pathname !== '/pos/login') {
     return (
       <Routes>
         <Route path="/login" element={<PosLoginPage />} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './modules/user/context/CartContext';
 import { ThemeProvider } from './modules/user/context/ThemeContext';
 import UserRoutes from './modules/user/routes/UserRoutes';
@@ -34,7 +34,7 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsBooting(false);
-    }, 1500); // Wait for the serving to be ready 🍳
+    }, 1500); 
     return () => clearTimeout(timer);
   }, []);
 
@@ -43,7 +43,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <Router>
       <ThemeProvider>
         <CartProvider>
           <PosProvider>
@@ -61,7 +61,7 @@ function App() {
         </CartProvider>
       </ThemeProvider>
       <Toaster position="top-center" reverseOrder={false} />
-    </BrowserRouter>
+    </Router>
   );
 }
 
