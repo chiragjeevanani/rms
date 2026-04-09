@@ -12,7 +12,12 @@ import AlertsPage from '../pages/AlertsPage';
 import StaffItemDetail from '../pages/StaffItemDetail';
 
 export default function StaffRoutes() {
-  const isStaffAuthenticated = !!localStorage.getItem('staff_access');
+  const isValid = (key) => {
+    const val = localStorage.getItem(key);
+    return val && val !== 'undefined' && val !== 'null';
+  };
+
+  const isStaffAuthenticated = isValid('staff_access');
 
   // If already authenticated and trying to access login, redirect to dashboard
   if (isStaffAuthenticated && window.location.pathname === '/staff/login') {

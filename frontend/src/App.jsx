@@ -33,14 +33,17 @@ function RootRedirect() {
 function App() {
   const [isBooting, setIsBooting] = useState(true);
 
+  // Helper to safely check tokens
+  const isValid = (key) => {
+    const val = localStorage.getItem(key);
+    return val && val !== 'undefined' && val !== 'null';
+  };
+
   useEffect(() => {
-    // Ensuring body background is clean at start
     document.body.style.backgroundColor = '#FFFFFF';
-    
     const timer = setTimeout(() => {
       setIsBooting(false);
-    }, 2000); 
-    
+    }, 1500); 
     return () => clearTimeout(timer);
   }, []);
 
@@ -55,7 +58,14 @@ function App() {
           <PosProvider>
             <OrderProvider>
               <Routes>
-                <Route path="/" element={<RootRedirect />} />
+                <Route path="/" element={
+                  isValid('admin_access') ? <Navigate to="/admin/dashboard" replace /> :
+                  isValid('staff_access') ? <Navigate to="/staff/dashboard" replace /> :
+                  isValid('pos_access') ? <Navigate to="/pos/dashboard" replace /> :
+                  isValid('kds_access') ? <Navigate to="/kds/dashboard" replace /> :
+                  isValid('user_token') ? <Navigate to="/menu" replace /> :
+                  <Navigate to="/welcome" replace />
+                } />
                 <Route path="/staff/*" element={<StaffRoutes />} />
                 <Route path="/kds/*" element={<KdsRoutes />} />
                 <Route path="/pos/*" element={<PosRoutes />} />
