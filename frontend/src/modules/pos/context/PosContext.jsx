@@ -3,9 +3,7 @@ import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
 
 const PosContext = createContext();
-const apiUrl = import.meta.env.VITE_API_URL || '';
-const socketUrl = apiUrl.replace('/api', '') || window.location.origin;
-const socket = io(socketUrl);
+const socket = io(import.meta.env.VITE_API_URL.replace('/api', ''));
 
 export function PosProvider({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -135,8 +133,8 @@ export function PosProvider({ children }) {
   const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
-    <PosContext.Provider value={{ 
-      isSidebarOpen, orders, tables, toggleSidebar, closeSidebar, 
+    <PosContext.Provider value={{
+      isSidebarOpen, orders, tables, toggleSidebar, closeSidebar,
       loading, fetchActiveTableOrders: syncAll, placeKOT, settleOrder, voidItem
     }}>
       {children}

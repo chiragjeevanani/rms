@@ -115,10 +115,9 @@ export default function StaffDashboard() {
     }
   };
 
-  // Safety Guards for Calculations
-  const occupiedTables = (tables || []).filter(t => t?.status?.toLowerCase() === 'occupied').length;
-  const reservedTables = (tables || []).filter(t => t?.status?.toLowerCase() === 'reserved').length;
-  const readyOrdersCount = Object.values(orders || {}).filter(o => o?.status?.toLowerCase() === 'ready').length;
+  const occupiedTables = (tables || []).filter(t => t.status?.toLowerCase() === 'occupied').length;
+  const reservedTables = (tables || []).filter(t => t.status?.toLowerCase() === 'reserved').length;
+  const readyOrdersCount = Object.values(orders || {}).filter(o => o.status?.toLowerCase() === 'ready').length;
   const activeOrdersCount = Object.values(orders || {}).length;
   const totalTablesCount = (tables || []).length || 1;
 
@@ -256,8 +255,8 @@ export default function StaffDashboard() {
                   whileTap={{ scale: 0.98 }}
                   onClick={markPresent}
                   className={`col-span-2 p-6 rounded-[2.5rem] shadow-xl flex items-center justify-between cursor-pointer transition-all ${attendanceStatus === 'Present'
-                      ? 'bg-blue-600 text-white shadow-blue-600/20'
-                      : 'bg-white text-slate-400 border border-slate-100 shadow-sm hover:border-blue-200 transition-colors'
+                    ? 'bg-blue-600 text-white shadow-blue-600/20'
+                    : 'bg-white text-slate-400 border border-slate-100 shadow-sm hover:border-blue-200 transition-colors'
                     }`}
                 >
                   <div className="flex items-center gap-5">
