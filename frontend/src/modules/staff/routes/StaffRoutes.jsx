@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import StaffLogin from '../pages/StaffLogin';
 import StaffDashboard from '../pages/StaffDashboard';
 import MyTables from '../pages/MyTables';
@@ -13,13 +13,14 @@ import StaffItemDetail from '../pages/StaffItemDetail';
 
 export default function StaffRoutes() {
   const isStaffAuthenticated = !!localStorage.getItem('staff_access');
+  const location = useLocation();
 
   // If already authenticated and trying to access login, redirect to dashboard
-  if (isStaffAuthenticated && window.location.pathname === '/staff/login') {
+  if (isStaffAuthenticated && location.pathname === '/staff/login') {
     return <Navigate to="/staff/dashboard" replace />;
   }
 
-  if (!isStaffAuthenticated && window.location.pathname !== '/staff/login') {
+  if (!isStaffAuthenticated && location.pathname !== '/staff/login') {
     return (
       <Routes>
         <Route path="/login" element={<StaffLogin />} />

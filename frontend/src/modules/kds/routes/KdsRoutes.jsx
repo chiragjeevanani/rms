@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import KdsLayout from '../components/KdsLayout';
 import KdsDashboard from '../pages/KdsDashboard';
 import IncomingOrders from '../pages/IncomingOrders';
@@ -12,9 +12,10 @@ import KdsOrderDetailsPage from '../pages/KdsOrderDetailsPage';
 
 export default function KdsRoutes() {
   const isKdsAuthenticated = !!localStorage.getItem('kds_access');
+  const location = useLocation();
 
   // If already authenticated and trying to access login, redirect to dashboard
-  if (isKdsAuthenticated && window.location.pathname === '/kds/login') {
+  if (isKdsAuthenticated && location.pathname === '/kds/login') {
     return <Navigate to="/kds/dashboard" replace />;
   }
 
