@@ -19,8 +19,6 @@ function RootRedirect() {
   const isKds = localStorage.getItem('kds_access');
   const isUser = localStorage.getItem('user_token');
 
-  console.log("RootRedirect triggered", { isStaff: !!isStaff });
-
   if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
   if (isStaff) return <Navigate to="/staff/dashboard" replace />;
   if (isPos) return <Navigate to="/pos/dashboard" replace />;
@@ -33,17 +31,10 @@ function RootRedirect() {
 function App() {
   const [isBooting, setIsBooting] = useState(true);
 
-  // Helper to safely check tokens
-  const isValid = (key) => {
-    const val = localStorage.getItem(key);
-    return val && val !== 'undefined' && val !== 'null';
-  };
-
   useEffect(() => {
-    document.body.style.backgroundColor = '#FFFFFF';
     const timer = setTimeout(() => {
       setIsBooting(false);
-    }, 1500); 
+    }, 1500); // Wait for the serving to be ready 🍳
     return () => clearTimeout(timer);
   }, []);
 
@@ -58,14 +49,7 @@ function App() {
           <PosProvider>
             <OrderProvider>
               <Routes>
-                <Route path="/" element={
-                  isValid('admin_access') ? <Navigate to="/admin/dashboard" replace /> :
-                  isValid('staff_access') ? <Navigate to="/staff/dashboard" replace /> :
-                  isValid('pos_access') ? <Navigate to="/pos/dashboard" replace /> :
-                  isValid('kds_access') ? <Navigate to="/kds/dashboard" replace /> :
-                  isValid('user_token') ? <Navigate to="/menu" replace /> :
-                  <Navigate to="/welcome" replace />
-                } />
+                <Route path="/" element={<RootRedirect />} />
                 <Route path="/staff/*" element={<StaffRoutes />} />
                 <Route path="/kds/*" element={<KdsRoutes />} />
                 <Route path="/pos/*" element={<PosRoutes />} />
