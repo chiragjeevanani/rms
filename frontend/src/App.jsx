@@ -19,6 +19,8 @@ function RootRedirect() {
   const isKds = localStorage.getItem('kds_access');
   const isUser = localStorage.getItem('user_token');
 
+  console.log("RootRedirect triggered", { isStaff: !!isStaff });
+
   if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
   if (isStaff) return <Navigate to="/staff/dashboard" replace />;
   if (isPos) return <Navigate to="/pos/dashboard" replace />;
@@ -32,9 +34,13 @@ function App() {
   const [isBooting, setIsBooting] = useState(true);
 
   useEffect(() => {
+    // Ensuring body background is clean at start
+    document.body.style.backgroundColor = '#FFFFFF';
+    
     const timer = setTimeout(() => {
       setIsBooting(false);
-    }, 1500); // Wait for the serving to be ready 🍳
+    }, 2000); 
+    
     return () => clearTimeout(timer);
   }, []);
 

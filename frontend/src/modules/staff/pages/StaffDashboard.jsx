@@ -115,11 +115,14 @@ export default function StaffDashboard() {
     }
   };
 
-  const occupiedTables = (tables || []).filter(t => t.status?.toLowerCase() === 'occupied').length;
-  const reservedTables = (tables || []).filter(t => t.status?.toLowerCase() === 'reserved').length;
-  const readyOrdersCount = Object.values(orders || {}).filter(o => o.status?.toLowerCase() === 'ready').length;
-  const activeOrdersCount = Object.values(orders || {}).length;
-  const totalTablesCount = (tables || []).length || 1;
+  const safeTables = Array.isArray(tables) ? tables : [];
+  const safeOrders = orders && typeof orders === 'object' ? orders : {};
+
+  const occupiedTables = safeTables.filter(t => t?.status?.toLowerCase() === 'occupied').length;
+  const reservedTables = safeTables.filter(t => t?.status?.toLowerCase() === 'reserved').length;
+  const readyOrdersCount = Object.values(safeOrders).filter(o => o?.status?.toLowerCase() === 'ready').length;
+  const activeOrdersCount = Object.values(safeOrders).length;
+  const totalTablesCount = safeTables.length || 1;
 
   // Performance Calculations
   const tableTurnover = Math.round((occupiedTables / totalTablesCount) * 100);
