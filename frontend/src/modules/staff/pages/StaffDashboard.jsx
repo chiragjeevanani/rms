@@ -115,9 +115,10 @@ export default function StaffDashboard() {
     }
   };
 
-  const occupiedTables = (tables || []).filter(t => t.status?.toLowerCase() === 'occupied').length;
-  const reservedTables = (tables || []).filter(t => t.status?.toLowerCase() === 'reserved').length;
-  const readyOrdersCount = Object.values(orders || {}).filter(o => o.status?.toLowerCase() === 'ready').length;
+  // Safety Guards for Calculations
+  const occupiedTables = (tables || []).filter(t => t?.status?.toLowerCase() === 'occupied').length;
+  const reservedTables = (tables || []).filter(t => t?.status?.toLowerCase() === 'reserved').length;
+  const readyOrdersCount = Object.values(orders || {}).filter(o => o?.status?.toLowerCase() === 'ready').length;
   const activeOrdersCount = Object.values(orders || {}).length;
   const totalTablesCount = (tables || []).length || 1;
 
