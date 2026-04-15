@@ -21,7 +21,7 @@ function RootRedirect() {
 
   if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
   if (isStaff) return <Navigate to="/staff/dashboard" replace />;
-  if (isPos) return <Navigate to="/pos/dashboard" replace />;
+  if (isPos) return <Navigate to="/pos/tables/list" replace />;
   if (isKds) return <Navigate to="/kds/dashboard" replace />;
   if (isUser) return <Navigate to="/menu" replace />;
 

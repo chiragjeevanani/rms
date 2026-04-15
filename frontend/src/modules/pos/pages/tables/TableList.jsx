@@ -1,125 +1,316 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
-  Table, Search, Filter, Plus, 
-  MoreVertical, Edit2, Trash2, Users,
-  Monitor, Layout, CheckCircle2, Clock, MapPin, RefreshCw, Zap
+  Search, Plus, RefreshCw, LayoutGrid, Clock, 
+  Printer, ChevronRight, Filter, MoreVertical,
+  Timer, AlertCircle, Utensils, Zap, Car, X, Check
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { usePos } from '../../context/PosContext';
+import { TABLE_STATUS_COLORS } from '../../data/tableStatusColors';
+import { printBillReceipt } from '../../utils/printBill';
+import PosTopNavbar from '../../components/PosTopNavbar';
 
 export default function TableList() {
   const navigate = useNavigate();
-  const { tables, loading, fetchActiveTableOrders, toggleSidebar } = usePos();
+  const { tables, orders, loading, fetchActiveTableOrders } = usePos();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeArea, setActiveArea] = useState('All');
 
-  const filteredTables = tables.filter(t => 
-    t.status === 'Available' && 
-    (t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-     t.area.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  // Car Service Local State (as per plan - no backend yet)
+  const [carOrders, setCarOrders] = useState([]);
+  const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
+  const [newCarNumber, setNewCarNumber] = useState('');
+
+  const areas = useMemo(() => ['All', ...new Set(tables.map(t => t.area))], [tables]);
+
+  const filteredTables = useMemo(() => {
+    return tables.filter(t => {
+      const matchesSearch = t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           t.area.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesArea = activeArea === 'All' || t.area === activeArea;
+      return matchesSearch && matchesArea;
+    });
+  }, [tables, searchQuery, activeArea]);
+
+  const getTableStatus = (table) => {
+    const order = orders[table.tableName];
+    if (!order) return 'blank';
+    return order.status || 'running-kot'; // default to running-kot if order exists
+  };
+
+  const calculateElapsedTime = (startTime) => {
+    if (!startTime) return '0m';
+    const start = new Date(startTime);
+    const now = new Date();
+    const diff = Math.floor((now - start) / 60000);
+    return `${diff}m`;
+  };
+
+  const handleAddCar = () => {
+    if (!newCarNumber.trim()) return;
+    setCarOrders(prev => [...prev, {
+      id: `CAR-${Date.now()}`,
+      carNumber: newCarNumber.toUpperCase(),
+      status: 'running-kot',
+      startTime: new Date().toISOString(),
+      total: 0
+    }]);
+    setNewCarNumber('');
+    setIsAddCarModalOpen(false);
+  };
 
   return (
-    <div className="h-full flex flex-col bg-[#F8F9FB] animate-in fade-in duration-500 overflow-hidden font-sans select-none">
-      <header className="px-10 py-8 bg-white border-b border-slate-200 shrink-0 shadow-sm relative z-10">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-6">
-             <button 
-               onClick={toggleSidebar}
-               className="p-4 bg-slate-900 border border-slate-900 rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10"
-             >
-                <Layout size={20} className="text-white" />
-             </button>
-             <div>
-                <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 italic leading-none">Available Tables</h1>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                   {filteredTables.length} Open Nodes Ready For Seating
-                </p>
-             </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-             <button 
-               onClick={fetchActiveTableOrders}
-               className="p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all active:scale-95 group"
-             >
-               <RefreshCw size={20} className={`text-slate-600 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform'}`} />
-             </button>
-          </div>
+    <div className="h-full flex flex-col bg-[#F4F4F7] overflow-hidden font-sans select-none animate-in fade-in duration-300">
+      <PosTopNavbar />
+      {/* 1. Sub-Header Toolbar */}
+      <header className="bg-white border-b border-gray-200 px-6 py-3 shrink-0 flex items-center justify-between gap-6 z-20 shadow-sm">
+        <div className="flex items-center gap-6">
+           <button 
+             onClick={() => navigate('/pos/tables')}
+             className="p-2 text-gray-400 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
+           >
+              <LayoutGrid size={20} />
+           </button>
+           <h1 className="text-sm font-black uppercase tracking-widest text-gray-900 italic">Global Floor Management</h1>
+           
+           {/* Status Legend */}
+           <div className="flex items-center gap-4 border-l border-gray-200 pl-6">
+              {Object.entries(TABLE_STATUS_COLORS).filter(([k]) => ['blank', 'running-kot', 'printed', 'paid'].includes(k)).map(([key, cfg]) => (
+                <div key={key} className="flex items-center gap-2">
+                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cfg.dot || cfg.color }} />
+                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">{key.replace('-', ' ')}</span>
+                </div>
+              ))}
+           </div>
         </div>
 
-        <div className="max-w-4xl relative group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="SEARCH VACANT TABLES OR AREAS..."
-            className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-16 pr-8 text-[11px] font-bold uppercase tracking-widest outline-none focus:ring-1 focus:ring-slate-900 focus:bg-white transition-all shadow-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex items-center gap-3">
+           <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={14} />
+              <input 
+                type="text" 
+                placeholder="Search Tables/Zone..."
+                className="pl-9 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:ring-1 focus:ring-[#5D4037] focus:bg-white outline-none w-48 transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+           </div>
+           <button className="flex items-center gap-2 px-4 py-1.5 bg-[#F57C00] text-white rounded-lg text-xs font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg">
+              <Plus size={14} />
+              New Order
+           </button>
+           <button 
+             onClick={fetchActiveTableOrders}
+             className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+           >
+              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+           </button>
         </div>
       </header>
 
-      <div className="flex-1 p-10 overflow-y-auto no-scrollbar scroll-smooth">
-        {filteredTables.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center py-40 opacity-40">
-             <div className="w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 border-2 border-dashed border-slate-200">
-                <Table size={40} className="text-slate-300" />
-             </div>
-             <p className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">No Available Tables</p>
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">All tables are currently occupied or reserved</p>
+      {/* 2. Area Filter Tabs */}
+      <div className="bg-white px-6 py-2 border-b border-gray-200 flex items-center gap-2 shrink-0 overflow-x-auto no-scrollbar">
+        {areas.map(area => (
+          <button 
+            key={area}
+            onClick={() => setActiveArea(area)}
+            className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeArea === area 
+                ? 'bg-[#5D4037] text-white shadow-md shadow-[#5D4037]/20' 
+                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+            }`}
+          >
+            {area}
+          </button>
+        ))}
+        <div className="ml-auto flex items-center gap-4 text-[10px] font-bold text-gray-400">
+           <span>Total Tables: {tables.length}</span>
+           <span className="text-emerald-500">Available: {tables.filter(t => getTableStatus(t) === 'blank').length}</span>
+        </div>
+      </div>
+
+      {/* 3. Main Grid */}
+      <div className="flex-1 overflow-y-auto p-6 no-scrollbar space-y-8 bg-[#F8F9FB]">
+        {/* Sections grouped by Area */}
+        {areas.filter(a => a !== 'All' && (activeArea === 'All' || a === activeArea)).map(area => (
+          <div key={area} className="space-y-4">
+            <div className="flex items-center gap-3">
+               <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">{area} Zone</h2>
+               <div className="h-px bg-gray-200 flex-1" />
+            </div>
+
+            <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 2xl:grid-cols-16 gap-3">
+              {filteredTables.filter(t => t.area === area).map(table => {
+                const status = getTableStatus(table);
+                const order = orders[table.tableName];
+                const cfg = TABLE_STATUS_COLORS[status] || TABLE_STATUS_COLORS.blank;
+
+                return (
+                  <motion.div
+                    key={table._id}
+                    layoutId={table._id}
+                    whileHover={{ scale: 1.05, zIndex: 10 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate(`/pos/order/${table.tableName}`)}
+                    className="aspect-square rounded-xl border-2 flex flex-col items-center justify-center relative cursor-pointer group shadow-sm transition-all"
+                    style={{ 
+                      backgroundColor: cfg.color, 
+                      borderColor: cfg.borderColor,
+                      borderStyle: cfg.borderStyle
+                    }}
+                  >
+                    {/* Table Name */}
+                    <span className="text-[14px] font-black text-slate-800" style={{ color: cfg.textColor }}>
+                      {table.tableName}
+                    </span>
+
+                    {/* Meta info for occupied tables */}
+                    {order && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-inherit rounded-xl">
+                        <div className="absolute top-1 right-1 bg-white/60 px-1 rounded text-[8px] font-black text-slate-700">
+                           {calculateElapsedTime(order.startTime)}
+                        </div>
+                        <span className="text-[14px] font-bold text-slate-800" style={{ color: cfg.textColor }}>{table.tableName}</span>
+                        <span className="text-[10px] font-black mt-0.5" style={{ color: cfg.textColor }}>₹{order.total || 0}</span>
+                        
+                        {/* Hover Actions */}
+                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 flex flex-col p-1 gap-1 transition-opacity">
+                           <button 
+                             onClick={(e) => { 
+                               e.stopPropagation(); 
+                               const billingDetails = {
+                                 subTotal: order.subTotal || order.total || 0,
+                                 tax: order.tax || 0,
+                                 discount: order.discount || 0,
+                                 total: order.grandTotal || order.total || 0,
+                                 orderType: order.orderType || 'Dine In',
+                                 billerName: 'Staff'
+                               };
+                               printBillReceipt({ items: order.items || [], waiter: { name: order.waiterName || 'Staff' } }, { name: table.tableName }, billingDetails);
+                             }} 
+                             className="flex-1 bg-white/90 rounded text-[8px] font-black text-slate-700 hover:bg-white flex items-center justify-center gap-1"
+                           >
+                              <Printer size={10} /> PRINT
+                           </button>
+                           <button 
+                             onClick={(e) => { e.stopPropagation(); navigate(`/pos/order/${table.tableName}`); }}
+                             className="flex-1 py-1.5 bg-[#5D4037] text-white rounded text-[8px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[#5D4037]/10 transition-all flex items-center justify-center gap-1.5"
+                           >
+                              <Zap size={10} /> BILLING
+                           </button>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm overflow-hidden">
-             <table className="w-full text-left border-collapse">
-                <thead>
-                   <tr className="bg-slate-50 border-b border-slate-100">
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Table Node</th>
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Floor Area</th>
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Guest Capacity</th>
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Node Status</th>
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Quick Action</th>
-                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50 font-sans">
-                   {filteredTables.map(table => (
-                      <tr key={table._id} className="transition-all">
-                         <td className="px-10 py-6">
-                            <div className="flex items-center gap-5">
-                               <div className="w-12 h-12 rounded-[1rem] bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-900/5">
-                                  <Table size={20} />
-                               </div>
-                               <span className="text-lg font-black text-slate-900 tracking-tighter italic uppercase">{table.tableName}</span>
-                            </div>
-                         </td>
-                         <td className="px-10 py-6">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-lg italic">{table.area}</span>
-                         </td>
-                         <td className="px-10 py-6 text-center">
-                            <div className="inline-flex items-center gap-2 text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-full">
-                               <Users size={12} />
-                               {table.capacity} Seating
-                            </div>
-                         </td>
-                         <td className="px-10 py-6 text-center">
-                            <div className="inline-flex items-center gap-2 text-[9px] font-black text-emerald-600 uppercase tracking-widest px-4 py-1.5 bg-emerald-50/50 border border-emerald-100 rounded-full">
-                               <Zap size={11} className="fill-emerald-600 stroke-none" />
-                               Available
-                            </div>
-                         </td>
-                         <td className="px-10 py-6 text-right">
-                            <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest opacity-20 cursor-not-allowed">
-                               Monitor Only
-                            </button>
-                         </td>
-                      </tr>
-                   ))}
-                </tbody>
-             </table>
+        ))}
+
+        {/* 4. Car Service Section (UI Only) */}
+        {(activeArea === 'All' || activeArea === 'Car Service') && (
+          <div className="space-y-4 pb-10">
+            <div className="flex items-center gap-3">
+               <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">
+                  <Car size={14} /> Car Service
+               </div>
+               <div className="h-px bg-gray-200 flex-1" />
+               <button 
+                onClick={() => setIsAddCarModalOpen(true)}
+                className="p-1 px-3 bg-[#5D4037] text-white text-[9px] font-black uppercase rounded shadow-lg shadow-[#5D4037]/10 active:scale-95"
+               >
+                 + Add Car
+               </button>
+            </div>
+
+            <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 2xl:grid-cols-16 gap-3">
+               {carOrders.map(car => (
+                 <motion.div
+                   key={car.id}
+                   whileHover={{ scale: 1.05 }}
+                   className="aspect-square rounded-xl border-2 border-[#5D4037]/20 bg-[#5D4037]/5 flex flex-col items-center justify-center relative shadow-sm cursor-pointer group"
+                 >
+                    <div className="absolute top-1 right-1 bg-white/60 px-1 rounded text-[8px] font-black">
+                       {calculateElapsedTime(car.startTime)}
+                    </div>
+                    <span className="text-[10px] font-black text-[#5D4037] uppercase tracking-tighter text-center px-1">
+                       {car.carNumber}
+                    </span>
+                    <span className="text-[10px] font-bold text-[#5D4037] mt-1">₹{car.total}</span>
+
+                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 flex flex-col p-1 gap-1 transition-opacity">
+                        <button className="flex-1 bg-white/90 rounded text-[8px] font-black text-slate-700 hover:bg-white">EDIT</button>
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setCarOrders(prev => prev.filter(c => c.id !== car.id)); 
+                          }}
+                          className="flex-1 bg-rose-500/10 rounded text-[8px] font-black text-rose-600 hover:bg-rose-500 hover:text-white"
+                        >
+                          CLEAR
+                        </button>
+                    </div>
+                 </motion.div>
+               ))}
+               {carOrders.length === 0 && (
+                 <div className="col-span-full py-8 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center opacity-30">
+                    <Car size={24} className="text-gray-400 mb-2" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">No active car orders</span>
+                 </div>
+               )}
+            </div>
           </div>
         )}
       </div>
+
+      {/* Footer Branding */}
+      <footer className="px-6 py-3 bg-white border-t border-gray-200 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-6">
+             <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="text-[9px] font-black text-gray-400 uppercase">System Sync: Live</span>
+             </div>
+          </div>
+          <span className="text-[9px] font-black text-gray-300 uppercase italic">RMS Operational Cockpit v2.4</span>
+      </footer>
+
+      {/* Add Car Modal */}
+      <AnimatePresence>
+        {isAddCarModalOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddCarModalOpen(false)} className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm" />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 w-80 z-[101] border border-gray-100"
+            >
+               <h3 className="text-sm font-black uppercase tracking-widest text-gray-800 mb-6 flex items-center gap-2">
+                  <Car size={18} className="text-[#5D4037]" /> Car Registry
+               </h3>
+               <div className="space-y-4">
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-widest">Car Number Plate</label>
+                     <input 
+                       autoFocus
+                       type="text" 
+                       value={newCarNumber}
+                       onChange={(e) => setNewCarNumber(e.target.value)}
+                       onKeyDown={(e) => e.key === 'Enter' && handleAddCar()}
+                       placeholder="DL 4C AB 1234"
+                       className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl py-3 px-4 text-sm font-black placeholder:text-gray-300 focus:border-[#5D4037] focus:bg-white outline-none transition-all uppercase"
+                     />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                     <button onClick={() => setIsAddCarModalOpen(false)} className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 bg-gray-50 rounded-xl transition-all">Cancel</button>
+                     <button onClick={handleAddCar} className="flex-1 py-3 bg-[#5D4037] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#5D4037]/20 active:scale-95 transition-all">Create Session</button>
+                  </div>
+               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

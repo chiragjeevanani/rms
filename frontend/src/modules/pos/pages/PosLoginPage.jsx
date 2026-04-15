@@ -41,7 +41,7 @@ export default function PosLoginPage() {
         localStorage.setItem('pos_access', data.token);
         localStorage.setItem('staff_info', JSON.stringify(data));
         toast.success(`Welcome, ${data.name}`);
-        navigate('/pos/dashboard');
+        navigate('/pos/tables/list');
       } else {
         toast.error(`${data.message || 'Login Failed'}`);
       }

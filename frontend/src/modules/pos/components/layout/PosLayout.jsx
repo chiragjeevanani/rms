@@ -1,13 +1,10 @@
-import { usePos } from '../../context/PosContext';
 import { Outlet } from 'react-router-dom';
-import PosSidebar from '../navigation/PosSidebar';
 import { useOrders } from '../../../../context/OrderContext';
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, MoreVertical, X, Plus, Minus } from 'lucide-react';
 
 export default function PosLayout() {
-  const { isSidebarOpen, closeSidebar } = usePos();
   const { orders, updateOrderStatus } = useOrders();
   const [acceptingOrder, setAcceptingOrder] = useState(null);
   const [dismissedOrders, setDismissedOrders] = useState(() => {
@@ -53,90 +50,104 @@ export default function PosLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-[#F4F4F7] overflow-hidden relative">
-      <PosSidebar isOpen={isSidebarOpen} />
-      
+    <div className="flex h-screen bg-white overflow-hidden relative">
+
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        {/* Floating Incoming Orders Panel - Bottom Right */}
-        <div className="fixed bottom-8 right-8 z-[150] flex flex-col gap-4 pointer-events-none">
-          <AnimatePresence>
-            {incomingOrders.map((order) => (
-              <motion.div
-                key={order.id}
-                layout
-                initial={{ x: 100, opacity: 0, scale: 0.8 }}
-                animate={{ x: 0, opacity: 1, scale: 1 }}
-                exit={{ x: 100, opacity: 0, scale: 0.8 }}
-                className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 w-[360px] pointer-events-auto overflow-hidden ring-1 ring-black/5"
-              >
-                {/* Header: Clean Teal with Type Badge */}
-                <div className="bg-[#0D6B78] p-4 flex items-center justify-between relative">
-                  <div className="flex items-center gap-2.5 text-white">
-                    <Globe size={16} className="opacity-80" />
-                    <span className="text-[10px] font-black tracking-[0.2em] uppercase">
-                      {order.source || 'Online Order'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="bg-amber-400 text-slate-900 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
-                      {order.type || 'Delivery'}
-                    </span>
-                    <button 
-                      onClick={() => setDismissedOrders(prev => [...prev, order.id])}
-                      className="text-white/40 hover:text-white transition-colors"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Body: ID & Items Summary */}
-                <div className="p-5">
-                   <div className="flex justify-between items-center mb-4">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{order.id.slice(-8)}</span>
-                      <div className="flex items-center gap-3">
-                         <span className="text-[11px] font-black text-slate-900 uppercase">
-                           {new Date(order.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                         </span>
-                         <span className="text-sm font-black text-slate-900 italic">₹{order.total}</span>
+        {/* Structural Dropdown Incoming Orders Panel - As per UI Reference */}
+        <AnimatePresence>
+          {incomingOrders.length > 0 && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-gray-200 border-b border-gray-300 overflow-hidden shrink-0 shadow-inner z-50"
+            >
+              <div className="p-4 flex gap-4 overflow-x-auto no-scrollbar scroll-smooth">
+                {incomingOrders.map((order) => (
+                  <motion.div
+                    key={order.id}
+                    layout
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="bg-white rounded-lg shadow-xl border border-gray-300 w-[340px] shrink-0"
+                  >
+                    {/* Header: Coffee with Globe Icon & Delivery Badge */}
+                    <div className="bg-[#5D4037] p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-white">
+                        <Globe size={14} />
+                        <span className="text-xs font-black tracking-tight uppercase">
+                          {order.source || 'Home Website'}
+                        </span>
                       </div>
-                   </div>
-
-                   <div className="space-y-1.5 mb-6">
-                     {order.items.map((item, idx) => (
-                       <div key={idx} className="flex items-center gap-2">
-                         <span className="text-[11px] font-black text-slate-400">{item.quantity}x</span>
-                         <span className="text-[11px] font-bold text-slate-700 uppercase tracking-tight truncate">{item.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-[#F57C00] text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                          {order.type || 'Delivery'}
+                        </span>
+                        <button 
+                          onClick={() => setDismissedOrders(prev => [...prev, order.id])}
+                          className="text-white/40 hover:text-white transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Order Meta: ID, Time, Amount */}
+                    <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-white">
+                       <span className="text-[10px] font-bold text-gray-500">{order.id.slice(-8)}</span>
+                       <div className="flex items-center gap-4">
+                          <span className="text-[10px] font-black text-gray-900 uppercase">
+                            {new Date(order.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <span className="text-[10px] font-black text-gray-900">₹ {order.total}</span>
                        </div>
-                     ))}
-                   </div>
+                    </div>
 
-                   {/* Simplified Actions */}
-                   <div className="flex gap-2">
-                     <button 
-                       onClick={() => handleRejectOrder(order.id)}
-                       className="flex-1 py-3.5 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 transition-all border border-slate-100"
-                     >
-                       Cancel
-                     </button>
-                     <button 
-                       onClick={() => handleAcceptOrder(order)}
-                       className="flex-[2] py-3.5 bg-[#BE123C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-900/20 active:scale-95 transition-all"
-                     >
-                       Confirm Order
-                     </button>
-                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                    {/* Items Grid */}
+                    <div className="p-4 bg-gray-50/50">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-[11px] font-bold text-gray-400 shrink-0">{item.quantity}x</span>
+                            <span className="text-[11px] font-bold text-gray-700 truncate">{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="p-3 flex items-center justify-between bg-white border-t border-gray-100">
+                      <div className="flex items-center gap-1">
+                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                          <MoreVertical size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleRejectOrder(order.id)}
+                          className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                      <button 
+                        onClick={() => handleAcceptOrder(order)}
+                        className="px-6 py-2 bg-[#F57C00] text-white text-[10px] font-black uppercase tracking-widest rounded shadow-lg active:scale-95 transition-all"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Content Area - This will push down structurally */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <Outlet />
         </div>
       </main>
+
       {/* Accept Order Configuration Modal */}
       <AnimatePresence>
         {acceptingOrder && (
@@ -190,13 +201,13 @@ export default function PosLayout() {
               </div>
 
               <div className="p-4 bg-gray-50 flex flex-wrap items-center justify-center gap-3">
-                <button onClick={handleConfirmAccept} className="bg-[#BE123C] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-900/10 active:scale-95 transition-all">
+                <button onClick={handleConfirmAccept} className="bg-[#5D4037] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
                   Save
                 </button>
-                <button onClick={handleConfirmAccept} className="bg-[#BE123C] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-900/10 active:scale-95 transition-all">
+                <button onClick={handleConfirmAccept} className="bg-[#5D4037] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
                   Save & Print
                 </button>
-                <button onClick={handleConfirmAccept} className="bg-[#BE123C] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-900/10 active:scale-95 transition-all">
+                <button onClick={handleConfirmAccept} className="bg-[#5D4037] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
                   Save & EBill
                 </button>
                 <button onClick={handleConfirmAccept} className="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest hover:bg-gray-50 active:scale-95 transition-all">

@@ -1,154 +1,180 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, Plus, Wifi, Clock, Printer, Trash2, CalendarCheck, MapPin } from 'lucide-react';
+import { RefreshCw, Plus, Info, Clock, Printer, Car, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PosTopNavbar from '../../components/PosTopNavbar';
 import { usePos } from '../../context/PosContext';
 import { printKOTReceipt } from '../../utils/printKOT';
 
+// ── Business logic status colors ───────────────────────────────────────────
+const S = {
+  // Grey → Available / Settled (no active order)
+  blank:    { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
+  available:{ bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
+  paid:     { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
+  settled:  { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
+
+  // Yellow → Running (active order placed, KOT running)
+  running:     { bg: '#EAB308', border: '#CA8A04', text: '#FFFFFF' },
+  'running-kot': { bg: '#EAB308', border: '#CA8A04', text: '#FFFFFF' },
+  active:      { bg: '#EAB308', border: '#CA8A04', text: '#FFFFFF' },
+
+  // Green → Bill generated (printed)
+  printed:  { bg: '#16A34A', border: '#15803D', text: '#FFFFFF' },
+  billed:   { bg: '#16A34A', border: '#15803D', text: '#FFFFFF' },
+
+  // Blue → Reserved
+  reserved: { bg: '#2563EB', border: '#1D4ED8', text: '#FFFFFF' },
+  Reserved: { bg: '#2563EB', border: '#1D4ED8', text: '#FFFFFF' },
+};
+
+const getS = (order, table) => {
+  // Reserved check from table data
+  if (table && (table.status === 'Reserved' || table.isReserved)) return S.reserved;
+  if (!order) return S.blank;
+
+  const st = (order.status || '').toLowerCase();
+  if (st.includes('paid') || st.includes('settled') || st.includes('complet')) return S.paid;
+  if (st.includes('print') || st.includes('bill') || st.includes('generat')) return S.printed;
+  if (st.includes('reserved')) return S.reserved;
+  // Default: order exists → running
+  return S.running;
+};
+
+const elapsed = (t) => {
+  if (!t) return '';
+  const m = Math.floor((Date.now() - new Date(t)) / 60000);
+  return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h${m % 60}m`;
+};
+
+// ── Mock sections (used when backend doesn't provide structured table data) ──
+const MOCK = {
+  'AC': ['AC1','AC2','AC3','AC4','AC5','AC6','AC8','AC2','AC6','AC17','AC18','AC17','AC3','AC3','AC3','AC29','PAI9'],
+  'GARDEN': ['AN6','AC2','AC2','A23','AC3','AC2','PAIN8','AC6','AC6','AC17','AC18','G27','G29','G229','G29'],
+  'NON-AC': ['NA11','NC2','NC3','NC3','NAC3','NAC3','NAC7','NAC3','NAC3','NA17','NAC3','G226','G226'],
+};
+
 export default function TableView() {
   const navigate = useNavigate();
-  const { orders, tables, fetchActiveTableOrders, loading, clearTable, toggleSidebar } = usePos();
+  const { orders, tables, carOrders, addCarOrder, clearCarOrder, fetchActiveTableOrders: sync } = usePos();
+  const [carSearch, setCarSearch] = useState('');
+  const [showAddCar, setShowAddCar] = useState(false);
+  const [newCarNum, setNewCarNum] = useState('');
 
-  const handleTableClick = (tableName) => {
-    navigate(`/pos/order/${tableName}`);
-  };
-
-  const handlePrintKOT = (e, order) => {
-    e.stopPropagation();
-    printKOTReceipt(order, { name: order.tableName });
-  };
-
-  const handleClearTable = (e, tableName) => {
-    e.stopPropagation();
-    if (window.confirm(`Settle ${tableName} and clear session?`)) {
-      // clearTable(tableName); // Ensure this is implemented in context or call settlement
+  // Build section data from backend or fallback to mock
+  const buildSections = () => {
+    if (tables && tables.length > 0) {
+      const bySection = {};
+      tables.forEach(t => {
+        const sec = (t.section || t.area || 'General').toUpperCase();
+        if (!bySection[sec]) bySection[sec] = [];
+        bySection[sec].push(t.tableName || t.name || t._id);
+      });
+      return bySection;
     }
+    return MOCK;
   };
 
-  const getElapsedTime = (startTime) => {
-    if (!startTime) return '0 Min';
-    const diff = Math.floor((new Date() - new Date(startTime)) / 60000);
-    return `${diff} Min`;
-  };
-
-  // Group real tables by area, but filter out Reserved ones for main display
-  const mainTables = tables.filter(t => t.status !== 'Reserved');
-  const reservedTables = tables.filter(t => t.status === 'Reserved');
-
-  const areas = [...new Set(mainTables.map(t => t.area))];
+  const sections = buildSections();
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] flex flex-col font-sans text-slate-800">
+    <div className="flex flex-col" style={{ height: '100%', background: '#fff' }}>
       <PosTopNavbar />
 
-      {/* Modern Sub-Header */}
-      <div className="bg-white px-8 py-4 border-b border-slate-200 flex items-center justify-between shadow-sm sticky top-0 z-40">
-        <div className="flex items-center gap-6">
-           <button 
-             onClick={toggleSidebar}
-             className="p-4 bg-slate-900 border border-slate-900 rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10"
-           >
-              <Plus size={20} className="text-white rotate-45" />
-           </button>
-           <div className="flex items-center gap-5">
-              <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-slate-900/20 rotate-3">
-                 <MapPin size={24} />
-              </div>
-              <div>
-                 <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Table Management</h1>
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Global Table Layout Sync
-                 </p>
-              </div>
-           </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={fetchActiveTableOrders}
-            className="p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all active:scale-95 group"
-            title="Refresh All"
+      {/* ── Sub-Header ── */}
+      <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h1 style={{ fontWeight: 900, fontSize: 14, color: '#111827', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+          TABLE VIEW
+        </h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => sync()}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
           >
-            <RefreshCw size={20} className={`text-slate-600 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform'}`} />
+            <RefreshCw size={16} color="#6B7280" />
           </button>
-          <div className="h-10 w-px bg-slate-200 mx-2" />
-          <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl text-[11px] font-black hover:opacity-90 transition-all uppercase shadow-xl shadow-slate-900/10 active:scale-95">
-             Direct Delivery
+          <button
+            style={{ background: '#2563EB', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 14px', fontWeight: 900, fontSize: 12, textTransform: 'uppercase', cursor: 'pointer', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            <Plus size={13} strokeWidth={3} /> Delivery
           </button>
-          <button className="bg-[#5D4037] text-white px-8 py-4 rounded-2xl text-[11px] font-black hover:opacity-90 transition-all flex items-center gap-2 uppercase shadow-xl shadow-stone-900/20 active:scale-95">
-            <Plus size={18} /> New Table
+          <button
+            style={{ background: '#1E293B', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 14px', fontWeight: 900, fontSize: 12, textTransform: 'uppercase', cursor: 'pointer', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            <Plus size={13} strokeWidth={3} /> Add Table
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-10 space-y-16 no-scrollbar">
-        {/* Main Area Groupings */}
-        {areas.map((area) => (
-          <div key={area}>
-            <div className="flex items-center gap-5 mb-8">
-               <h2 className="text-slate-400 font-black text-[11px] uppercase tracking-[0.4em] whitespace-nowrap">
-                 {area} Section
-               </h2>
-               <div className="h-[1px] bg-slate-200 flex-1" />
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-8">
-              {mainTables.filter(t => t.area === area).map((table) => {
-                const order = orders[table.tableName];
-                const isOccupied = table.status === 'Occupied' || !!order;
-                
+      {/* ── Legend / Filter Bar ── */}
+      <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '8px 20px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+        <button style={{ background: 'none', border: '1.5px solid #D1D5DB', borderRadius: 5, padding: '5px 12px', fontWeight: 800, fontSize: 11, textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, color: '#374151' }}>
+          <Plus size={11} strokeWidth={3} /> Contactless
+        </button>
+        <button style={{ background: 'none', border: '1.5px solid #D1D5DB', borderRadius: 5, padding: '5px 12px', fontWeight: 800, fontSize: 11, textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, color: '#374151' }}>
+          <Info size={11} /> Reconnect Bridge
+        </button>
+
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Legend dots */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <LegendDot color="#F3F4F6" border="#D1D5DB" label="AVAILABLE" />
+          <LegendDot color="#EAB308" label="RUNNING" />
+          <LegendDot color="#16A34A" label="BILL GENERATED" />
+          <LegendDot color="#2563EB" label="RESERVED" />
+        </div>
+      </div>
+
+      {/* ── Main Scrollable Content ── */}
+      <div style={{ flex: 1, overflowY: 'auto', background: '#fff', padding: '16px 20px 24px' }}>
+        {Object.entries(sections).map(([sectionName, tableArr]) => (
+          <div key={sectionName} style={{ marginBottom: 24 }}>
+            {/* Section label */}
+            <p style={{ fontWeight: 700, fontSize: 11, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, marginTop: 0 }}>
+              {sectionName}
+            </p>
+            {/* Table grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 85px)', gap: 8 }}>
+              {tableArr.map((tableId, idx) => {
+                const id = typeof tableId === 'string' ? tableId : (tableId.id || tableId.name);
+                const tableObj = typeof tableId === 'object' ? tableId : null;
+                const order = orders[id];
+                const cfg = getS(order, tableObj);
+                const total = order?.total || order?.items?.reduce((s, i) => s + i.price * i.quantity, 0) || 0;
+
                 return (
                   <motion.div
-                    key={table._id}
-                    whileHover={{ y: -6, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleTableClick(table.tableName)}
-                    className={`aspect-square rounded-[2.5rem] flex flex-col items-center justify-center relative transition-all duration-300 border-2 cursor-pointer p-8 shadow-sm group ${
-                      isOccupied 
-                        ? 'bg-white border-slate-900 shadow-[0_15px_40px_rgba(0,0,0,0.06)]' 
-                        : 'bg-white border-transparent hover:border-slate-300 hover:shadow-lg'
-                    }`}
+                    key={`${id}-${idx}`}
+                    whileHover={{ scale: 1.05, zIndex: 5 }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => navigate(`/pos/order/${id}`)}
+                    style={{
+                      height: 62,
+                      background: cfg.bg,
+                      border: `1.5px solid ${cfg.border}`,
+                      borderRadius: 8,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      userSelect: 'none',
+                    }}
                   >
-                    {isOccupied ? (
+                    {order ? (
                       <>
-                        <div className="absolute top-6 right-6 w-3 h-3 rounded-full bg-amber-400 animate-pulse border-4 border-white shadow-lg" />
-                        
-                        <div className="flex flex-col items-center text-center">
-                          <span className="text-3xl font-black text-slate-900 tracking-tighter mb-1">
-                            {table.tableName}
-                          </span>
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full mb-6">
-                            {order?.orderNumber?.split('-').pop() || 'ACTIVE'}
-                          </span>
-                          <span className="font-black text-2xl text-slate-900 tracking-tighter">
-                             ₹{order?.grandTotal?.toFixed(0) || 0}
-                          </span>
-                        </div>
-
-                        <div className="mt-4 flex items-center gap-2">
-                           <div className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-full shadow-lg shadow-slate-900/10">
-                              <Clock size={12} className="text-amber-400" />
-                              <span className="text-[9px] font-black uppercase tracking-tight">{getElapsedTime(order?.createdAt)}</span>
-                           </div>
-                        </div>
-
-                        {/* Hover Quick Actions */}
-                        <div className="absolute inset-x-0 bottom-6 px-6 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 flex justify-center gap-3">
-                           <button onClick={(e) => handlePrintKOT(e, order)} className="flex-1 py-3 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center" title="Print KOT"><Printer size={14} /></button>
-                           <button onClick={(e) => handleClearTable(e, table.tableName)} className="flex-1 py-3 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-colors flex items-center justify-center" title="Clear/Settle"><Trash2 size={14} /></button>
-                        </div>
+                        <span style={{ fontSize: 7, fontWeight: 700, color: cfg.text, opacity: 0.8, position: 'absolute', top: 4 }}>
+                          <Clock size={6} style={{ display: 'inline', marginRight: 1 }} />{elapsed(order.sessionStartTime || order.startTime)}
+                        </span>
+                        <span style={{ fontWeight: 900, fontSize: 12, color: cfg.text, letterSpacing: '-0.02em' }}>{id}</span>
+                        <span style={{ fontWeight: 700, fontSize: 10, color: cfg.text, marginTop: 1 }}>₹{total}</span>
                       </>
                     ) : (
-                      <>
-                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-5 text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all">
-                           <Plus size={24} />
-                        </div>
-                        <span className="font-black text-lg text-slate-900 tracking-tighter uppercase mb-1">
-                          {table.tableName}
-                        </span>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic opacity-60">Available</span>
-                      </>
+                      <span style={{ fontWeight: 800, fontSize: 12, color: cfg.text, letterSpacing: '-0.01em' }}>{id}</span>
                     )}
                   </motion.div>
                 );
@@ -157,74 +183,85 @@ export default function TableView() {
           </div>
         ))}
 
-        {/* Dedicated Reserved Tables Section - At Bottom */}
-        {reservedTables.length > 0 && (
-          <div className="pt-16 border-t-4 border-dashed border-slate-200">
-             <div className="flex items-center gap-5 mb-10">
-                <div className="p-3 bg-amber-500 rounded-2xl text-white shadow-xl shadow-amber-500/20">
-                   <CalendarCheck size={28} />
-                </div>
-                <div>
-                   <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Reserved Tables</h2>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">{reservedTables.length} Active Reservations Pending</p>
-                </div>
-                <div className="h-[1px] bg-slate-200 flex-1" />
-             </div>
-
-             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-8">
-                {reservedTables.map((table) => (
+        {/* Car Service */}
+        {Object.keys(carOrders).length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <p style={{ fontWeight: 700, fontSize: 12, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Car size={12} /> Car Service
+              </p>
+              <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 85px)', gap: 8 }}>
+              {Object.values(carOrders)
+                .filter(c => !carSearch || c.carNumber.toLowerCase().includes(carSearch.toLowerCase()))
+                .map(car => (
                   <motion.div
-                    key={table._id}
+                    key={car.carNumber}
                     whileHover={{ scale: 1.05 }}
-                    className="bg-[#FFF9EA] border-2 border-amber-200 rounded-[2.5rem] p-8 flex flex-col items-center justify-center relative shadow-xl shadow-amber-200/10 cursor-not-allowed group overflow-hidden"
+                    whileTap={{ scale: 0.96 }}
+                    style={{ height: 62, background: S.running.bg, border: `1.5px solid ${S.running.border}`, borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
                   >
-                    <div className="absolute top-0 right-0 p-3 bg-amber-500 text-white rounded-bl-3xl">
-                       <CalendarCheck size={18} strokeWidth={2.5} />
-                    </div>
-                    
-                    <span className="text-4xl font-black text-amber-900 tracking-tighter mb-2">
-                       {table.tableName}
-                    </span>
-                    <span className="text-[10px] font-black text-amber-600/60 uppercase tracking-[0.2em] mb-4">Reserved</span>
-                    
-                    <div className="w-full h-1 bg-amber-200 rounded-full mb-6 opacity-40" />
-                    
-                    <div className="space-y-1 text-center">
-                       <p className="text-[9px] font-black text-amber-900 uppercase tracking-widest italic">{table.capacity} Capacity</p>
-                       <p className="text-[8px] font-bold text-amber-600/80 uppercase tracking-widest">{table.area}</p>
-                    </div>
-
-                    <button className="absolute inset-0 bg-amber-600/0 hover:bg-amber-600/5 transition-all flex items-center justify-center">
-                       <span className="opacity-0 group-hover:opacity-100 bg-white text-amber-600 text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-widest shadow-lg transition-opacity border border-amber-100">Details</span>
+                    <span style={{ fontSize: 10, fontWeight: 900, color: '#fff' }}>🚗 {car.carNumber.slice(-4)}</span>
+                    <button onClick={(e) => { e.stopPropagation(); clearCarOrder(car.carNumber); }}
+                      style={{ position: 'absolute', top: 3, right: 3, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                      <X size={10} color="rgba(255,255,255,0.7)" />
                     </button>
                   </motion.div>
                 ))}
-             </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Legend Footer */}
-      <footer className="bg-white border-t border-slate-200 px-10 py-6 flex items-center justify-between">
-         <div className="flex items-center gap-10">
-            <div className="flex items-center gap-3">
-               <div className="w-3 h-3 rounded-full bg-white border-2 border-slate-200 shadow-sm" />
-               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Available</span>
-            </div>
-            <div className="flex items-center gap-3">
-               <div className="w-3 h-3 rounded-full bg-slate-900 shadow-lg shadow-slate-900/20" />
-               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Occupied</span>
-            </div>
-            <div className="flex items-center gap-3">
-               <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center text-[7px] text-white">R</div>
-               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Reserved</span>
-            </div>
-         </div>
-         <div className="flex items-center gap-4 bg-[#F8FAF9] px-6 py-3 rounded-2xl border border-slate-100">
-            <Wifi size={14} className="text-emerald-500" />
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Terminal Synced v4.2.1</span>
-         </div>
-      </footer>
+
+      {/* Add Car Modal */}
+      <AnimatePresence>
+        {showAddCar && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={() => setShowAddCar(false)}
+          >
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+              onClick={e => e.stopPropagation()}
+              style={{ background: '#fff', borderRadius: 12, padding: 24, width: 280, boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 900, textTransform: 'uppercase', color: '#111' }}>New Car Order</h3>
+                <button onClick={() => setShowAddCar(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} color="#9CA3AF" /></button>
+              </div>
+              <input
+                type="text" autoFocus
+                placeholder="Car Number e.g. MP09 AB 1234"
+                value={newCarNum}
+                onChange={e => setNewCarNum(e.target.value.toUpperCase())}
+                onKeyDown={e => { if (e.key === 'Enter' && newCarNum.trim()) { addCarOrder(newCarNum); setNewCarNum(''); setShowAddCar(false); } }}
+                style={{ width: '100%', border: '1.5px solid #E5E7EB', borderRadius: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', outline: 'none', marginBottom: 14, boxSizing: 'border-box', background: '#F9FAFB' }}
+              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setShowAddCar(false)}
+                  style={{ flex: 1, padding: '10px 0', border: '1.5px solid #E5E7EB', borderRadius: 8, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', background: '#fff', cursor: 'pointer', color: '#6B7280' }}>
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { if (!newCarNum.trim()) return; addCarOrder(newCarNum); setNewCarNum(''); setShowAddCar(false); }}
+                  style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: 8, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', background: '#F57C00', color: '#fff', cursor: 'pointer' }}>
+                  🚗 Create
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function LegendDot({ color, border, label }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, border: border ? `1px solid ${border}` : 'none' }} />
+      <span style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', color: '#6B7280', letterSpacing: '0.04em' }}>{label}</span>
     </div>
   );
 }

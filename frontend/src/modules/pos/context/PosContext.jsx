@@ -7,10 +7,50 @@ const socket = io(import.meta.env.VITE_API_URL.replace('/api', ''));
 
 export function PosProvider({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [orders, setOrders] = useState({}); // Local cache of active table orders
-  const [tables, setTables] = useState([]); // Real-time tables from backend
+  const [isCustomerSectionOpen, setIsCustomerSectionOpen] = useState(false);
+  const [user, setUser] = useState({ name: 'Biller' });
+
+  // ── Backend-synced orders (active table orders from API) ──
+  const [orders, setOrders] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // ── Backend-synced tables ──
+  const [tables, setTables] = useState([]);
+
+  // ── Dynamic Sections (for TableView UI grouping) ──
+  const [sections, setSections] = useState(() => {
+    try {
+      const saved = localStorage.getItem('rms_pos_sections');
+      if (saved) return JSON.parse(saved);
+      return [
+        { id: 'ac', label: 'AC' },
+        { id: 'garden', label: 'Garden' },
+        { id: 'non-ac', label: 'Non-AC' },
+        { id: 'rooftops', label: 'Rooftops' },
+        { id: 'second-floor', label: 'Second Floor' },
+        { id: 'car-service', label: 'Car Service' }
+      ];
+    } catch { return []; }
+  });
+
+  // ── Car Service Orders (fully local, no backend yet) ──
+  const [carOrders, setCarOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem('rms_pos_car_orders');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+
+  // ── Persist sections and car orders ──
+  useEffect(() => {
+    localStorage.setItem('rms_pos_sections', JSON.stringify(sections));
+  }, [sections]);
+
+  useEffect(() => {
+    localStorage.setItem('rms_pos_car_orders', JSON.stringify(carOrders));
+  }, [carOrders]);
+
+  // ── Backend Fetch Functions ──
   const fetchActiveTableOrders = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/active`);
@@ -50,7 +90,6 @@ export function PosProvider({ children }) {
   useEffect(() => {
     syncAll();
 
-    // Listen for real-time updates
     socket.on('orderCreated', syncAll);
     socket.on('kotAdded', syncAll);
     socket.on('statusUpdated', syncAll);
@@ -66,6 +105,7 @@ export function PosProvider({ children }) {
     };
   }, []);
 
+  // ── Backend Actions ──
   const placeKOT = async (tableName, cart, financials, waiter) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
@@ -129,13 +169,67 @@ export function PosProvider({ children }) {
     }
   };
 
+  // ── Car Service Helpers (local) ──
+  const addCarOrder = (carNumber, initialCart = [], total = 0, staff = null) => {
+    const key = carNumber.trim().toUpperCase();
+    setCarOrders(prev => ({
+      ...prev,
+      [key]: {
+        carNumber: key,
+        type: 'CAR',
+        status: 'running-kot',
+        sessionStartTime: new Date().toISOString(),
+        waiter: staff,
+        kots: [
+          {
+            id: 1,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            items: initialCart,
+            total,
+            staff
+          }
+        ]
+      }
+    }));
+  };
+
+  const updateCarOrderStatus = (carNumber, status) => {
+    const key = carNumber.trim().toUpperCase();
+    setCarOrders(prev => ({
+      ...prev,
+      [key]: { ...prev[key], status }
+    }));
+  };
+
+  const clearCarOrder = (carNumber) => {
+    const key = carNumber.trim().toUpperCase();
+    setCarOrders(prev => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  // ── UI Toggles ──
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
   const closeSidebar = () => setIsSidebarOpen(false);
+  const toggleCustomerSection = () => setIsCustomerSectionOpen(prev => !prev);
 
   return (
     <PosContext.Provider value={{
-      isSidebarOpen, orders, tables, toggleSidebar, closeSidebar,
-      loading, fetchActiveTableOrders: syncAll, placeKOT, settleOrder, voidItem
+      // UI state
+      isSidebarOpen, toggleSidebar, closeSidebar,
+      isCustomerSectionOpen, toggleCustomerSection,
+      user, setUser,
+
+      // Backend-synced data
+      orders, tables, loading,
+      fetchActiveTableOrders: syncAll,
+      placeKOT, settleOrder, voidItem,
+
+      // Local state
+      sections, setSections,
+      carOrders, addCarOrder, updateCarOrderStatus, clearCarOrder,
     }}>
       {children}
     </PosContext.Provider>

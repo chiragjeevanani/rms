@@ -1,129 +1,163 @@
+
 import React, { useState } from 'react';
 import { 
-  CalendarCheck, Search, Filter, Plus, 
-  MoreVertical, Edit2, Trash2, Users,
-  Monitor, Layout, CheckCircle2, Clock, MapPin, RefreshCw, AlertCircle, Table
+  Calendar, Clock, Users, Phone, 
+  Search, Plus, Filter, CheckCircle2,
+  XCircle, ArrowRight, User, Menu
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { usePos } from '../../context/PosContext';
+import PosTopNavbar from '../../components/PosTopNavbar';
+
+const MOCK_RESERVATIONS = [
+  { id: 1, name: 'Rahul Sharma', time: '19:30', date: 'TODAY', guests: 4, table: 'T-05', status: 'confirmed' },
+  { id: 2, name: 'Anita Verma', time: '20:00', date: 'TODAY', guests: 2, table: 'T-02', status: 'pending' },
+  { id: 3, name: 'Vikram Das', time: '21:15', date: 'TOMORROW', guests: 6, table: 'T-VIP', status: 'confirmed' },
+  { id: 4, name: 'Priya Singh', time: '13:00', date: 'TOMORROW', guests: 2, table: 'T-01', status: 'confirmed' },
+];
 
 export default function Reservations() {
-  const navigate = useNavigate();
-  const { tables, orders, loading, fetchActiveTableOrders, toggleSidebar } = usePos();
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const reservedTables = tables.filter(t => 
-    t.status === 'Occupied' && 
-    (t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-     t.area.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const getElapsedTime = (startTime) => {
-    if (!startTime) return '0 Min';
-    const diff = Math.floor((new Date() - new Date(startTime)) / 60000);
-    return `${diff} Min`;
-  };
+  const [activeView, setActiveView] = useState('upcoming');
+  const { toggleSidebar } = usePos();
 
   return (
-    <div className="h-full flex flex-col bg-[#F8F9FB] animate-in fade-in duration-500 overflow-hidden font-sans select-none">
-      <header className="px-10 py-8 bg-white border-b border-slate-200 shrink-0 shadow-sm relative z-10">
+    <div className="h-full flex flex-col bg-[#F8F9FB] animate-in fade-in duration-500 font-sans select-none">
+      <PosTopNavbar />
+      <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-6">
-             <button 
-               onClick={toggleSidebar}
-               className="p-4 bg-slate-900 border border-slate-900 rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10"
-             >
-                <CalendarCheck size={20} className="text-white" />
-             </button>
-             <div>
-                <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 italic leading-none">Occupied Tables</h1>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                   {reservedTables.length} Active Sessions On Floor
-                </p>
-             </div>
+          <div className="flex items-center gap-5">
+            <button 
+              onClick={toggleSidebar}
+              className="p-3 bg-[#5D4037] border border-[#5D4037] rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-[#5D4037]/10"
+            >
+               <Menu size={20} className="text-white" />
+            </button>
+            <div>
+              <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none">Restaurant Reservations</h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                 <span className="w-1.5 h-1.5 rounded-full bg-[#5D4037] animate-pulse" />
+                 Guest Bookings & Table Assignments
+              </p>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-4">
-             <button 
-               onClick={fetchActiveTableOrders}
-               className="p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all active:scale-95 group"
-             >
-               <RefreshCw size={20} className={`text-slate-600 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform'}`} />
-             </button>
+          <div className="flex bg-slate-50 p-1 border border-slate-100 rounded">
+            <button 
+              onClick={() => setActiveView('upcoming')}
+              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${activeView === 'upcoming' ? 'bg-[#5D4037] text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
+            >
+              List View
+            </button>
+            <button 
+              onClick={() => setActiveView('calendar')}
+              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${activeView === 'calendar' ? 'bg-[#5D4037] text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
+            >
+              Calendar View
+            </button>
           </div>
         </div>
 
-        <div className="max-w-4xl relative group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="SEARCH OCCUPIED TABLES OR AREAS..."
-            className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-16 pr-8 text-[11px] font-bold uppercase tracking-widest outline-none focus:ring-1 focus:ring-slate-900 focus:bg-white transition-all shadow-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1 group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={16} />
+            <input 
+              type="text" 
+              placeholder="SEARCH RESERVATIONS BY NAME OR CONTACT ID..."
+              className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-[#5D4037] focus:bg-white transition-all underline decoration-transparent"
+            />
+          </div>
+          <button className="h-10 px-6 bg-[#F57C00] text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2 outline-none">
+            <Plus size={14} />
+            Register Booking
+          </button>
         </div>
       </header>
 
-      <div className="flex-1 p-10 overflow-y-auto no-scrollbar scroll-smooth">
-        {reservedTables.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center py-40 opacity-40">
-             <div className="w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 border-2 border-dashed border-slate-200">
-                <Table size={40} className="text-slate-300" />
-             </div>
-             <p className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">No Active Sessions</p>
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">All tables are currently vacant or reserved</p>
-          </div>
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm overflow-hidden">
-             <table className="w-full text-left border-collapse">
-                <thead>
-                   <tr className="bg-slate-50 border-b border-slate-100">
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Table Node</th>
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Area</th>
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Session Time</th>
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Guests</th>
-                      <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Running Total</th>
-                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                   {reservedTables.map(table => {
-                      const order = orders[table.tableName];
-                      return (
-                         <tr key={table._id} className="transition-all">
-                            <td className="px-10 py-6">
-                               <div className="flex items-center gap-5">
-                                  <div className="w-12 h-12 rounded-[1rem] bg-slate-900 text-white flex items-center justify-center shadow-lg shadow-slate-900/10">
-                                     <Table size={20} />
-                                  </div>
-                                  <span className="text-lg font-black text-slate-900 tracking-tighter italic">{table.tableName}</span>
-                               </div>
-                            </td>
-                            <td className="px-10 py-6">
-                               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-lg">{table.area}</span>
-                            </td>
-                            <td className="px-10 py-6 text-center">
-                               <div className="inline-flex items-center gap-2 text-[10px] font-black text-amber-500 uppercase tracking-widest px-4 py-1.5 bg-amber-50 border border-amber-100 rounded-full">
-                                  <Clock size={12} />
-                                  {getElapsedTime(order?.createdAt)} Active
-                               </div>
-                            </td>
-                            <td className="px-10 py-6 text-center">
-                               <span className="text-[11px] font-black text-slate-900 uppercase italic">{table.capacity} Seated</span>
-                            </td>
-                            <td className="px-10 py-6 text-right">
-                               <span className="text-xl font-black text-slate-950 tracking-tighter">₹{order?.grandTotal?.toFixed(2) || '0.00'}</span>
-                            </td>
-                         </tr>
-                      );
-                   })}
-                </tbody>
-             </table>
-          </div>
-        )}
+      <div className="flex-1 p-8 overflow-y-auto no-scrollbar">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {['TODAY', 'TOMORROW'].map(day => (
+            <div key={day} className="space-y-4">
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">{day} BOOKINGS</span>
+                <div className="h-px bg-slate-100 flex-1" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {MOCK_RESERVATIONS.filter(r => r.date === day).map(res => (
+                  <motion.div 
+                    key={res.id}
+                    whileHover={{ scale: 1.01, x: 4 }}
+                    className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:border-blue-300 transition-all group relative overflow-hidden"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[#5D4037] group-hover:text-white transition-all">
+                          <User size={18} />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{res.name}</h4>
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">+91 98765 432XX</span>
+                        </div>
+                      </div>
+                      <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border transition-all ${
+                        res.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
+                      }`}>
+                        {res.status}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 border-t border-slate-50 pt-4">
+                       <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5 text-slate-400">
+                             <Clock size={10} />
+                             <span className="text-[8px] font-black uppercase tracking-widest leading-none">Arrival</span>
+                          </div>
+                          <span className="text-[11px] font-black text-slate-900 leading-none">{res.time}</span>
+                       </div>
+                       <div className="flex flex-col gap-1 border-x border-slate-50 px-3">
+                          <div className="flex items-center gap-1.5 text-slate-400">
+                             <Users size={10} />
+                             <span className="text-[8px] font-black uppercase tracking-widest leading-none">Guests</span>
+                          </div>
+                          <span className="text-[11px] font-black text-slate-900 leading-none">{res.guests} PAX</span>
+                       </div>
+                       <div className="flex flex-col gap-1 pl-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5 text-slate-400">
+                             <span className="text-[8px] font-black uppercase tracking-widest leading-none">Assigned</span>
+                          </div>
+                          <span className="text-[11px] font-black text-[#5D4037] leading-none">{res.table}</span>
+                       </div>
+                    </div>
+
+                    <div className="mt-4 flex items-center gap-2 pt-4 border-t border-slate-50 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                       <button className="flex-1 py-1.5 bg-[#5D4037] text-white rounded text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
+                          <CheckCircle2 size={10} />
+                          Check-In
+                       </button>
+                       <button className="flex-1 py-1.5 bg-slate-50 text-slate-400 border border-slate-200 rounded text-[8px] font-black uppercase tracking-widest hover:text-rose-600 transition-all flex items-center justify-center gap-2">
+                          <XCircle size={10} />
+                          No Show
+                       </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      <footer className="h-16 bg-white border-t border-slate-100 px-8 flex items-center justify-center shrink-0">
+         <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2">
+               <div className="w-2.5 h-2.5 rounded bg-blue-600 shadow-lg shadow-blue-600/20" />
+               <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Online Booking</span>
+            </div>
+            <div className="flex items-center gap-2">
+               <div className="w-2.5 h-2.5 rounded bg-slate-400 shadow-sm" />
+               <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Direct Booking</span>
+            </div>
+         </div>
+      </footer>
     </div>
   );
 }
