@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
 
 const PosContext = createContext();
-const socket = io(import.meta.env.VITE_API_URL.replace('/api', ''));
+const socket = io((import.meta.env.VITE_API_URL || '').replace('/api', ''));
 
 export function PosProvider({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

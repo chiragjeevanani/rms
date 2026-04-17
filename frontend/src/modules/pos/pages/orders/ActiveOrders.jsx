@@ -14,7 +14,7 @@ import { usePos } from '../../context/PosContext';
 import { useNavigate } from 'react-router-dom';
 import PosTopNavbar from '../../components/PosTopNavbar';
 
-const socket = io(import.meta.env.VITE_API_URL.replace('/api', ''));
+const socket = io((import.meta.env.VITE_API_URL || '').replace('/api', ''));
 
 export default function ActiveOrders() {
   const navigate = useNavigate();
