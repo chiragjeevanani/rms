@@ -38,12 +38,12 @@ export default function KdsSidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
 
   return (
-    <aside className={`fixed left-0 top-0 h-full bg-[#5D4037] text-stone-300 z-50 transition-all duration-300 shadow-2xl flex flex-col ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`fixed left-0 top-0 h-full bg-[#ff7a00] text-stone-300 z-50 transition-all duration-300 shadow-2xl flex flex-col ${isCollapsed ? 'w-20' : 'w-64'}`}>
       {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0 bg-[#4E342E]">
+      <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0 bg-[#ea6c00]">
         {!isCollapsed ? (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#D4AF37] rounded-lg flex items-center justify-center text-[#5D4037] shadow-lg shadow-[#D4AF37]/20">
+            <div className="w-8 h-8 bg-[#D4AF37] rounded-lg flex items-center justify-center text-[#ff7a00] shadow-lg shadow-[#D4AF37]/20">
               <ChefHat size={18} />
             </div>
             <div className="flex flex-col">
@@ -53,7 +53,7 @@ export default function KdsSidebar({ isCollapsed, setIsCollapsed }) {
           </div>
         ) : (
           <div className="w-full flex justify-center">
-            <div className="w-8 h-8 bg-[#D4AF37] rounded-lg flex items-center justify-center text-[#5D4037]">
+            <div className="w-8 h-8 bg-[#D4AF37] rounded-lg flex items-center justify-center text-[#ff7a00]">
               <ChefHat size={18} />
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function KdsSidebar({ isCollapsed, setIsCollapsed }) {
 
                     {/* Tooltip for collapsed mode */}
                     {isCollapsed && (
-                      <div className="absolute left-full ml-4 px-3 py-2 bg-[#4E342E] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all whitespace-nowrap border border-white/10 shadow-2xl overflow-hidden z-[100]">
+                      <div className="absolute left-full ml-4 px-3 py-2 bg-[#ea6c00] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all whitespace-nowrap border border-white/10 shadow-2xl overflow-hidden z-[100]">
                         {item.label}
                       </div>
                     )}
@@ -119,7 +119,7 @@ export default function KdsSidebar({ isCollapsed, setIsCollapsed }) {
       </div>
 
       {/* Footer Actions */}
-      <div className="p-4 border-t border-white/5 bg-[#4E342E]/50 space-y-2">
+      <div className="p-4 border-t border-white/5 bg-[#ea6c00]/50 space-y-2">
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="w-full h-10 flex items-center justify-center gap-3 rounded-xl border border-white/5 text-stone-400 hover:text-white hover:bg-white/5 transition-all outline-none"
@@ -145,3 +145,6 @@ export default function KdsSidebar({ isCollapsed, setIsCollapsed }) {
     </aside>
   );
 }
+
+
+

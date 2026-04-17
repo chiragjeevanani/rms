@@ -85,3 +85,6 @@ export const printKOTReceipt = (orderData, tableInfo) => {
   // Direct Download
   doc.save(`KOT_${tableNo}_${now.getTime()}.pdf`);
 };
+
+
+

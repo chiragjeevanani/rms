@@ -149,3 +149,6 @@ export const printBillReceipt = (orderData, tableInfo, billingDetails) => {
   // Direct Download
   doc.save(`Bill_${tableInfo.name}_${new Date().getTime()}.pdf`);
 };
+
+
+

@@ -71,7 +71,7 @@ export function KdsOrderCard({ order, onClick }) {
                  )}
                </div>
                <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px] border shadow-sm ${
-                 isDarkMode ? 'bg-black border-white/10 text-[#D4AF37]' : 'bg-white border-stone-200 text-[#5D4037]'
+                 isDarkMode ? 'bg-black border-white/10 text-[#D4AF37]' : 'bg-white border-stone-200 text-[#ff7a00]'
                }`}>
                  {item.quantity}
                </div>
@@ -113,7 +113,7 @@ export function KdsOrderCard({ order, onClick }) {
           </span>
         </div>
         <div className={`flex items-center gap-1.5 font-mono text-sm font-black transition-colors ${
-          isDelayed ? 'text-red-400' : (isDarkMode ? 'text-[#D4AF37]' : 'text-[#8D6E63]')
+          isDelayed ? 'text-red-400' : (isDarkMode ? 'text-[#D4AF37]' : 'text-[#fdba74]')
         }`}>
           <Clock size={13} />
           <span className="uppercase whitespace-nowrap">
@@ -124,3 +124,6 @@ export function KdsOrderCard({ order, onClick }) {
     </motion.div>
   );
 }
+
+
+

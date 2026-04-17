@@ -29,14 +29,14 @@ export default function CustomerList() {
           <div className="flex items-center gap-5">
             <button 
               onClick={toggleSidebar}
-              className="p-3 bg-[#5D4037] border border-[#5D4037] rounded-xl hover:brightness-110 transition-all active:scale-95 shadow-xl shadow-[#5D4037]/10"
+              className="p-3 bg-[#ff7a00] border border-[#ff7a00] rounded-xl hover:brightness-110 transition-all active:scale-95 shadow-xl shadow-[#ff7a00]/10"
             >
                <Menu size={20} className="text-white" />
             </button>
             <div>
               <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none">Customer Directory</h1>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                 <span className="w-1.5 h-1.5 rounded-full bg-[#5D4037] animate-pulse" />
+                 <span className="w-1.5 h-1.5 rounded-full bg-[#ff7a00] animate-pulse" />
                  Guest Profiles & Loyalty Rewards Tracking
               </p>
             </div>
@@ -53,7 +53,7 @@ export default function CustomerList() {
             <input 
               type="text" 
               placeholder="SEARCH BY CUSTOMER NAME, PHONE, OR ID..."
-              className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-[#5D4037] focus:bg-white transition-all underline decoration-transparent"
+              className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-[#ff7a00] focus:bg-white transition-all underline decoration-transparent"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -87,9 +87,9 @@ export default function CustomerList() {
                     <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-tight mb-1">{cust.name}</h3>
                     <div className="flex items-center gap-2">
                       <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${
-                        cust.tier === 'PLATINUM' ? 'bg-[#5D4037] text-white border-[#5D4037]' :
+                        cust.tier === 'PLATINUM' ? 'bg-[#ff7a00] text-white border-[#ff7a00]' :
                         cust.tier === 'GOLD' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                        'bg-amber-50 text-[#5D4037] border-amber-100'
+                        'bg-amber-50 text-[#ff7a00] border-amber-100'
                       }`}>
                         {cust.tier} Tier
                       </span>
@@ -120,14 +120,14 @@ export default function CustomerList() {
                  <div className="text-right">
                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Available Points</p>
                     <div className="flex items-center justify-end gap-1 px-1.5 py-0.5 bg-amber-50 rounded-sm border border-amber-100 inline-flex">
-                       <Star size={10} className="text-[#5D4037] fill-[#5D4037]/20" />
-                       <span className="text-[10px] font-black text-[#5D4037]">{cust.points}</span>
+                       <Star size={10} className="text-[#ff7a00] fill-[#ff7a00]/20" />
+                       <span className="text-[10px] font-black text-[#ff7a00]">{cust.points}</span>
                     </div>
                  </div>
               </div>
 
               <div className="mt-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                <button className="flex-1 py-2 bg-[#5D4037] text-white rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md flex items-center justify-center gap-2">
+                <button className="flex-1 py-2 bg-[#ff7a00] text-white rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md flex items-center justify-center gap-2">
                   <CreditCard size={12} />
                   POS Link
                 </button>
@@ -145,3 +145,6 @@ export default function CustomerList() {
     </div>
   );
 }
+
+
+

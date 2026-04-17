@@ -45,3 +45,6 @@ export function CategoryScroller({ categories, activeCategory, onSelect }) {
     </div>
   );
 }
+
+
+

@@ -104,3 +104,6 @@ export function PromoInput({ onApply, onRemove, appliedCode }) {
     </div>
   );
 }
+
+
+

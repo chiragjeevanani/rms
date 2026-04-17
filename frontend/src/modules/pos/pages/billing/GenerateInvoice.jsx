@@ -135,7 +135,7 @@ export default function GenerateInvoice() {
 
       <header className="px-8 py-5 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-5">
-          <button onClick={toggleSidebar} className="p-2.5 bg-[#5D4037] text-white rounded-lg hover:bg-slate-800 transition-all active:scale-95">
+          <button onClick={toggleSidebar} className="p-2.5 bg-[#ff7a00] text-white rounded-lg hover:bg-slate-800 transition-all active:scale-95">
              <Menu size={18} />
           </button>
           <div className="space-y-0.5">
@@ -210,7 +210,7 @@ export default function GenerateInvoice() {
                              </td>
                              <td className="px-8 py-5">
                                 <div className="flex items-center gap-3">
-                                   <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#5D4037] group-hover:text-white transition-all">
+                                   <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#ff7a00] group-hover:text-white transition-all">
                                       <TableIcon size={14} />
                                    </div>
                                    <span className="text-[12px] font-bold text-slate-700 uppercase">{order.tableName}</span>
@@ -220,7 +220,7 @@ export default function GenerateInvoice() {
                                 <span className="text-[10px] font-bold uppercase text-slate-600 bg-slate-100 px-3 py-1 rounded-lg group-hover:bg-white transition-all border border-slate-200/50">{order.items.length} Items</span>
                              </td>
                              <td className="px-8 py-5 text-right">
-                                <span className="text-xl font-bold text-[#5D4037] tracking-tighter block leading-none">₹{order.grandTotal}</span>
+                                <span className="text-xl font-bold text-[#ff7a00] tracking-tighter block leading-none">₹{order.grandTotal}</span>
                              </td>
                              <td className="px-8 py-5 text-center">
                                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all text-[9px] font-bold uppercase tracking-widest">
@@ -257,7 +257,7 @@ export default function GenerateInvoice() {
                    {/* Modal Header */}
                    <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
                       <div className="flex items-center gap-4">
-                         <div className="p-3 bg-[#5D4037] text-white rounded-xl">
+                         <div className="p-3 bg-[#ff7a00] text-white rounded-xl">
                             <Receipt size={20} />
                          </div>
                          <div>
@@ -283,7 +283,7 @@ export default function GenerateInvoice() {
                             </div>
                             <div className="text-right">
                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Total Due</p>
-                               <p className="text-4xl font-black text-[#5D4037] tracking-tighter leading-none italic">₹{selectedOrder.grandTotal}</p>
+                               <p className="text-4xl font-black text-[#ff7a00] tracking-tighter leading-none italic">₹{selectedOrder.grandTotal}</p>
                             </div>
                          </div>
 
@@ -298,7 +298,7 @@ export default function GenerateInvoice() {
                                     placeholder="Enter Guest Name"
                                     value={customer.name}
                                     onChange={(e) => setCustomer({...customer, name: e.target.value})}
-                                    className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl pl-11 text-xs font-semibold outline-none focus:ring-1 focus:ring-[#5D4037] transition-all"
+                                    className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl pl-11 text-xs font-semibold outline-none focus:ring-1 focus:ring-[#ff7a00] transition-all"
                                   />
                                </div>
                             </div>
@@ -311,7 +311,7 @@ export default function GenerateInvoice() {
                                     placeholder="Enter Mobile No."
                                     value={customer.mobile}
                                     onChange={(e) => setCustomer({...customer, mobile: e.target.value})}
-                                    className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl pl-11 text-xs font-semibold outline-none focus:ring-1 focus:ring-[#5D4037] transition-all"
+                                    className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl pl-11 text-xs font-semibold outline-none focus:ring-1 focus:ring-[#ff7a00] transition-all"
                                   />
                                </div>
                             </div>
@@ -325,7 +325,7 @@ export default function GenerateInvoice() {
                                  placeholder="Enter Email Address"
                                  value={customer.email}
                                  onChange={(e) => setCustomer({...customer, email: e.target.value})}
-                                 className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl pl-11 text-xs font-semibold outline-none focus:ring-1 focus:ring-[#5D4037] transition-all font-sans"
+                                 className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl pl-11 text-xs font-semibold outline-none focus:ring-1 focus:ring-[#ff7a00] transition-all font-sans"
                                />
                             </div>
                          </div>
@@ -344,7 +344,7 @@ export default function GenerateInvoice() {
                                         <p className="text-[8px] font-bold text-slate-400">{item.quantity} QTY @ ₹{item.price}</p>
                                      </div>
                                   </div>
-                                  <span className="text-sm font-bold text-[#5D4037]">₹{item.price * item.quantity}</span>
+                                  <span className="text-sm font-bold text-[#ff7a00]">₹{item.price * item.quantity}</span>
                                </div>
                             ))}
                          </div>
@@ -359,13 +359,13 @@ export default function GenerateInvoice() {
                                   {[
                                      { id: 'Cash', icon: Banknote, color: 'text-emerald-500' },
                                      { id: 'Card', icon: CreditCard, color: 'text-amber-500' },
-                                     { id: 'UPI', icon: Smartphone, color: 'text-[#5D4037]' }
+                                     { id: 'UPI', icon: Smartphone, color: 'text-[#ff7a00]' }
                                   ].map(mode => (
                                      <button
                                        key={mode.id}
                                        onClick={() => setPaymentMethod(mode.id)}
                                        className={`w-full h-16 rounded-2xl border flex items-center px-6 gap-4 transition-all ${
-                                          paymentMethod === mode.id ? 'bg-[#5D4037] border-[#5D4037] text-white shadow-xl shadow-[#5D4037]/10' : 'bg-white border-slate-100 text-slate-400 hover:text-slate-900'
+                                          paymentMethod === mode.id ? 'bg-[#ff7a00] border-[#ff7a00] text-white shadow-xl shadow-[#ff7a00]/10' : 'bg-white border-slate-100 text-slate-400 hover:text-slate-900'
                                        }`}
                                      >
                                         <div className={`p-2.5 rounded-lg ${paymentMethod === mode.id ? 'bg-white/10 text-white' : mode.color} transition-all`}>
@@ -395,7 +395,7 @@ export default function GenerateInvoice() {
                                <button 
                                  onClick={handleSettle}
                                  disabled={isProcessing}
-                                 className="h-12 bg-[#5D4037] text-white rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-[#5D4037]/10 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                                 className="h-12 bg-[#ff7a00] text-white rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-[#ff7a00]/10 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                                >
                                   {isProcessing ? <RefreshCw className="animate-spin" size={16} /> : <><Wallet size={16} /> Settle</>}
                                </button>
@@ -410,3 +410,6 @@ export default function GenerateInvoice() {
     </div>
   );
 }
+
+
+

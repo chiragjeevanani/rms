@@ -18,3 +18,6 @@ export default function Skeleton({ className, circle = false }) {
     </div>
   );
 }
+
+
+

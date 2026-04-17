@@ -28,3 +28,6 @@ export function ResponsiveLayout({ children, showNav = true, maxWidth = 'mobile'
     </div>
   );
 }
+
+
+

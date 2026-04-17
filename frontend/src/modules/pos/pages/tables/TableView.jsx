@@ -265,3 +265,6 @@ function LegendDot({ color, border, label }) {
     </div>
   );
 }
+
+
+

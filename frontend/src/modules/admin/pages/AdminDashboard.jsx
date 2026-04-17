@@ -80,7 +80,7 @@ export default function AdminDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <div className="flex items-center gap-3 mb-1">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#5D4037] bg-[#5D4037]/10 px-2 py-0.5 rounded">Management Node</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ff7a00] bg-[#ff7a00]/10 px-2 py-0.5 rounded">Management Node</span>
            </div>
            <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none uppercase italic">Dashboard</h1>
            <p className="text-xs font-semibold text-slate-400 mt-2 uppercase tracking-wide flex items-center gap-2">
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
       {/* Row 2: Menu Resource Grid (Clickable) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {[
-          { label: 'Categories', total: content?.categories?.total, active: content?.categories?.active, inactive: content?.categories?.inactive, icon: LayoutGrid, accent: 'bg-[#5D4037]', path: '/admin/menu/categories' },
+          { label: 'Categories', total: content?.categories?.total, active: content?.categories?.active, inactive: content?.categories?.inactive, icon: LayoutGrid, accent: 'bg-[#ff7a00]', path: '/admin/menu/categories' },
           { label: 'Menu Inventory', total: content?.items?.total, active: content?.items?.active, inactive: content?.items?.inactive, icon: Utensils, accent: 'bg-slate-900', path: '/admin/menu/items' },
           { label: 'Combo Packages', total: content?.combos?.total, active: content?.combos?.active, inactive: content?.combos?.inactive, icon: Layers, accent: 'bg-indigo-900', path: '/admin/menu/combos' },
         ].map((c, i) => (
@@ -290,3 +290,6 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+
+

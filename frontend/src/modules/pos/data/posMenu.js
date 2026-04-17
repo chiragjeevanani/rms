@@ -37,3 +37,6 @@ export const POS_MENU_ITEMS = [
   { id: 's2', catId: 'soft', name: 'Sprite', price: 60, code: '502', shortcut: 'SP', image: null },
   { id: 's3', catId: 'soft', name: 'Thumbs Up', price: 60, code: '503', shortcut: 'TU', image: null },
 ];
+
+
+

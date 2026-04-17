@@ -12,7 +12,7 @@ import {
 import { useOrders } from '../../../context/OrderContext';
 import { useTheme } from '../../user/context/ThemeContext';
 
-const COLORS = ['#D4AF37', '#5D4037', '#8D6E63', '#BDBDBD', '#4E342E'];
+const COLORS = ['#D4AF37', '#ff7a00', '#fdba74', '#BDBDBD', '#ea6c00'];
 
 export default function KdsDashboard() {
   const { orders, isLoading, fetchOrders, updateOrderStatus } = useOrders();
@@ -187,7 +187,7 @@ export default function KdsDashboard() {
           </div>
           <button 
             onClick={() => { fetchOrders(); fetchAnalytics(); }}
-            className="flex items-center gap-3 px-6 py-3 bg-[#5D4037] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#4E342E] transition-all"
+            className="flex items-center gap-3 px-6 py-3 bg-[#ff7a00] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#ea6c00] transition-all"
           >
             <Activity size={16} className="animate-pulse" />
             Refresh Dashboard
@@ -197,7 +197,7 @@ export default function KdsDashboard() {
         {orders.filter(o => o.status !== 'ready' && o.status !== 'completed' && o.status !== 'cancelled').length === 0 ? (
           <div className="py-24 rounded-[3rem] border border-dashed flex flex-col items-center justify-center opacity-40">
             <Package size={64} className="mb-6 text-stone-500" />
-            <h4 className="text-lg font-black uppercase tracking-widest text-[#5D4037]">No Active Orders</h4>
+            <h4 className="text-lg font-black uppercase tracking-widest text-[#ff7a00]">No Active Orders</h4>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
@@ -218,7 +218,7 @@ function KdsDashboardOrderCard({ order, onUpdate }) {
   return (
     <motion.div layout className={`p-7 rounded-[2.5rem] border transition-all flex flex-col ${isDarkMode ? 'bg-[#1a1c1e] border-white/5' : 'bg-white border-stone-100 shadow-sm'}`}>
       <div className="flex items-center justify-between mb-6">
-        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border ${isDarkMode ? 'bg-black/40 border-white/5 text-[#D4AF37]' : 'bg-stone-50 border-stone-100 text-[#5D4037]'}`}>
+        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border ${isDarkMode ? 'bg-black/40 border-white/5 text-[#D4AF37]' : 'bg-stone-50 border-stone-100 text-[#ff7a00]'}`}>
           #{order.orderNum}
         </div>
         <span className="text-[10px] font-black uppercase tracking-widest text-stone-500">{order.status}</span>
@@ -238,7 +238,7 @@ function KdsDashboardOrderCard({ order, onUpdate }) {
 
       <div className="pt-6 border-t border-stone-100 dark:border-white/5 space-y-3">
         {order.status === 'new' && (
-          <button onClick={() => onUpdate(order.id, 'preparing')} className="w-full bg-[#5D4037] text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-[#4E342E] transition-all">
+          <button onClick={() => onUpdate(order.id, 'preparing')} className="w-full bg-[#ff7a00] text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-[#ea6c00] transition-all">
             Start Preparing
           </button>
         )}
@@ -257,3 +257,6 @@ function KdsDashboardOrderCard({ order, onUpdate }) {
     </motion.div>
   );
 }
+
+
+

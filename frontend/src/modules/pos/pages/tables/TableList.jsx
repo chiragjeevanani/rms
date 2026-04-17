@@ -91,7 +91,7 @@ export default function TableList() {
               <input 
                 type="text" 
                 placeholder="Search Tables/Zone..."
-                className="pl-9 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:ring-1 focus:ring-[#5D4037] focus:bg-white outline-none w-48 transition-all"
+                className="pl-9 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:ring-1 focus:ring-[#ff7a00] focus:bg-white outline-none w-48 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -117,7 +117,7 @@ export default function TableList() {
             onClick={() => setActiveArea(area)}
             className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
               activeArea === area 
-                ? 'bg-[#5D4037] text-white shadow-md shadow-[#5D4037]/20' 
+                ? 'bg-[#ff7a00] text-white shadow-md shadow-[#ff7a00]/20' 
                 : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
             }`}
           >
@@ -195,7 +195,7 @@ export default function TableList() {
                            </button>
                            <button 
                              onClick={(e) => { e.stopPropagation(); navigate(`/pos/order/${table.tableName}`); }}
-                             className="flex-1 py-1.5 bg-[#5D4037] text-white rounded text-[8px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[#5D4037]/10 transition-all flex items-center justify-center gap-1.5"
+                             className="flex-1 py-1.5 bg-[#ff7a00] text-white rounded text-[8px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[#ff7a00]/10 transition-all flex items-center justify-center gap-1.5"
                            >
                               <Zap size={10} /> BILLING
                            </button>
@@ -219,7 +219,7 @@ export default function TableList() {
                <div className="h-px bg-gray-200 flex-1" />
                <button 
                 onClick={() => setIsAddCarModalOpen(true)}
-                className="p-1 px-3 bg-[#5D4037] text-white text-[9px] font-black uppercase rounded shadow-lg shadow-[#5D4037]/10 active:scale-95"
+                className="p-1 px-3 bg-[#ff7a00] text-white text-[9px] font-black uppercase rounded shadow-lg shadow-[#ff7a00]/10 active:scale-95"
                >
                  + Add Car
                </button>
@@ -230,15 +230,15 @@ export default function TableList() {
                  <motion.div
                    key={car.id}
                    whileHover={{ scale: 1.05 }}
-                   className="aspect-square rounded-xl border-2 border-[#5D4037]/20 bg-[#5D4037]/5 flex flex-col items-center justify-center relative shadow-sm cursor-pointer group"
+                   className="aspect-square rounded-xl border-2 border-[#ff7a00]/20 bg-[#ff7a00]/5 flex flex-col items-center justify-center relative shadow-sm cursor-pointer group"
                  >
                     <div className="absolute top-1 right-1 bg-white/60 px-1 rounded text-[8px] font-black">
                        {calculateElapsedTime(car.startTime)}
                     </div>
-                    <span className="text-[10px] font-black text-[#5D4037] uppercase tracking-tighter text-center px-1">
+                    <span className="text-[10px] font-black text-[#ff7a00] uppercase tracking-tighter text-center px-1">
                        {car.carNumber}
                     </span>
-                    <span className="text-[10px] font-bold text-[#5D4037] mt-1">₹{car.total}</span>
+                    <span className="text-[10px] font-bold text-[#ff7a00] mt-1">₹{car.total}</span>
 
                     <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 flex flex-col p-1 gap-1 transition-opacity">
                         <button className="flex-1 bg-white/90 rounded text-[8px] font-black text-slate-700 hover:bg-white">EDIT</button>
@@ -286,7 +286,7 @@ export default function TableList() {
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 w-80 z-[101] border border-gray-100"
             >
                <h3 className="text-sm font-black uppercase tracking-widest text-gray-800 mb-6 flex items-center gap-2">
-                  <Car size={18} className="text-[#5D4037]" /> Car Registry
+                  <Car size={18} className="text-[#ff7a00]" /> Car Registry
                </h3>
                <div className="space-y-4">
                   <div className="space-y-2">
@@ -298,12 +298,12 @@ export default function TableList() {
                        onChange={(e) => setNewCarNumber(e.target.value)}
                        onKeyDown={(e) => e.key === 'Enter' && handleAddCar()}
                        placeholder="DL 4C AB 1234"
-                       className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl py-3 px-4 text-sm font-black placeholder:text-gray-300 focus:border-[#5D4037] focus:bg-white outline-none transition-all uppercase"
+                       className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl py-3 px-4 text-sm font-black placeholder:text-gray-300 focus:border-[#ff7a00] focus:bg-white outline-none transition-all uppercase"
                      />
                   </div>
                   <div className="flex gap-3 pt-2">
                      <button onClick={() => setIsAddCarModalOpen(false)} className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 bg-gray-50 rounded-xl transition-all">Cancel</button>
-                     <button onClick={handleAddCar} className="flex-1 py-3 bg-[#5D4037] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#5D4037]/20 active:scale-95 transition-all">Create Session</button>
+                     <button onClick={handleAddCar} className="flex-1 py-3 bg-[#ff7a00] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#ff7a00]/20 active:scale-95 transition-all">Create Session</button>
                   </div>
                </div>
             </motion.div>
@@ -313,4 +313,7 @@ export default function TableList() {
     </div>
   );
 }
+
+
+
 

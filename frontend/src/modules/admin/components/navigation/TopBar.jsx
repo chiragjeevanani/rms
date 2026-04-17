@@ -95,7 +95,7 @@ export default function TopBar() {
               </p>
            </div>
            <div 
-             className={`w-9 h-9 rounded-xl border transition-all flex items-center justify-center cursor-pointer overflow-hidden ${showUserMenu ? 'bg-[#5D4037] border-[#FFC107] text-white shadow-[0_0_15px_rgba(255,193,7,0.3)]' : 'bg-[#5D4037]/40 border-white/10 text-white/80 hover:bg-[#5D4037]/60'}`}
+             className={`w-9 h-9 rounded-xl border transition-all flex items-center justify-center cursor-pointer overflow-hidden ${showUserMenu ? 'bg-[#ff7a00] border-[#FFC107] text-white shadow-[0_0_15px_rgba(255,193,7,0.3)]' : 'bg-[#ff7a00]/40 border-white/10 text-white/80 hover:bg-[#ff7a00]/60'}`}
              onClick={() => { playClickSound(); setShowUserMenu(!showUserMenu); setShowNotifications(false); }}
            >
               {adminData?.profileImg ? (
@@ -142,3 +142,6 @@ export default function TopBar() {
     </header>
   );
 }
+
+
+

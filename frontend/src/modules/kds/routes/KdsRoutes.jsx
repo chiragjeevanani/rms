@@ -50,3 +50,6 @@ function KdsProtectedWrapper() {
   return isKdsAuthenticated ? <KdsLayout /> : <Navigate to="/kds/login" replace />;
 }
 
+
+
+

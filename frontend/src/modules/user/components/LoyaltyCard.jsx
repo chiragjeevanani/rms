@@ -48,3 +48,6 @@ export function LoyaltyCard({ points, tier = 'Gold', nextTierPoints = 1000 }) {
     </motion.div>
   );
 }
+
+
+

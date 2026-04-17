@@ -242,3 +242,6 @@ export const CUSTOMER_PROFILE = {
     { id: 'ORD-2385', date: '2023-12-28', items: ['Samosa (2 pcs)', 'Palak Paneer', 'Butter Naan ×3'], total: 560, status: 'Delivered' },
   ],
 };
+
+
+

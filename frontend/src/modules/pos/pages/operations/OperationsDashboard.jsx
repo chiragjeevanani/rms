@@ -58,7 +58,7 @@ export default function OperationsDashboard() {
               <ArrowLeft size={20} className="text-gray-600" />
            </button>
            <div className="flex flex-col">
-              <h1 className="text-xl font-bold text-[#5D4037] tracking-tight leading-none uppercase">Operations</h1>
+              <h1 className="text-xl font-bold text-[#ff7a00] tracking-tight leading-none uppercase">Operations</h1>
               <span className="text-[10px] text-gray-400 font-bold mt-1">Version: 107.0.1</span>
            </div>
         </div>
@@ -73,11 +73,11 @@ export default function OperationsDashboard() {
 
       {/* Info Bar */}
       <div className="bg-white/50 px-6 py-3 border-b border-gray-100 flex items-center justify-end gap-10 shrink-0">
-         <div className="flex items-center gap-2 text-gray-500 hover:text-[#5D4037] cursor-pointer transition-colors group">
+         <div className="flex items-center gap-2 text-gray-500 hover:text-[#ff7a00] cursor-pointer transition-colors group">
             <Phone size={14} className="group-hover:scale-110 transition-transform" />
             <span className="text-xs font-bold tabular-nums">07969 223344</span>
          </div>
-         <div className="flex items-center gap-2 text-gray-500 hover:text-[#5D4037] cursor-pointer transition-colors group">
+         <div className="flex items-center gap-2 text-gray-500 hover:text-[#ff7a00] cursor-pointer transition-colors group">
             <Mail size={14} className="group-hover:scale-110 transition-transform" />
             <span className="text-xs font-bold lowercase">support@petpooja.com</span>
          </div>
@@ -94,7 +94,7 @@ export default function OperationsDashboard() {
                 onClick={() => playClickSound()}
                 className="bg-white border border-gray-100 rounded-lg p-4 flex flex-col items-center justify-center text-center gap-3 cursor-pointer transition-all hover:bg-gray-50 group min-h-[140px]"
               >
-                 <div className="text-gray-500 group-hover:text-[#5D4037] transition-colors duration-300">
+                 <div className="text-gray-500 group-hover:text-[#ff7a00] transition-colors duration-300">
                     {tile.icon}
                  </div>
                  <span className="text-[11px] font-black text-gray-600 uppercase tracking-tight leading-tight px-2 group-hover:text-gray-800 transition-colors">
@@ -107,3 +107,6 @@ export default function OperationsDashboard() {
     </div>
   );
 }
+
+
+

@@ -150,7 +150,7 @@ export default function PaymentHistory() {
 
       <header className="px-8 py-5 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-5">
-          <button onClick={toggleSidebar} className="p-2.5 bg-[#5D4037] text-white rounded-lg hover:brightness-110 transition-all active:scale-95">
+          <button onClick={toggleSidebar} className="p-2.5 bg-[#ff7a00] text-white rounded-lg hover:brightness-110 transition-all active:scale-95">
              <Menu size={18} />
           </button>
           <div className="space-y-0.5">
@@ -209,7 +209,7 @@ export default function PaymentHistory() {
                        key={m}
                        onClick={() => setFilterMethod(m)}
                        className={`px-5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all ${
-                         filterMethod === m ? 'bg-[#5D4037] text-white shadow-lg' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
+                         filterMethod === m ? 'bg-[#ff7a00] text-white shadow-lg' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
                        }`}
                      >
                         {m}
@@ -294,3 +294,6 @@ export default function PaymentHistory() {
     </div>
   );
 }
+
+
+

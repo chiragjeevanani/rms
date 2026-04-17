@@ -87,3 +87,4 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-family-sans); }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+

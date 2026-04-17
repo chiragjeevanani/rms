@@ -72,7 +72,7 @@ export default function PosLayout() {
                     className="bg-white rounded-lg shadow-xl border border-gray-300 w-[340px] shrink-0"
                   >
                     {/* Header: Coffee with Globe Icon & Delivery Badge */}
-                    <div className="bg-[#5D4037] p-3 flex items-center justify-between">
+                    <div className="bg-[#ff7a00] p-3 flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white">
                         <Globe size={14} />
                         <span className="text-xs font-black tracking-tight uppercase">
@@ -201,13 +201,13 @@ export default function PosLayout() {
               </div>
 
               <div className="p-4 bg-gray-50 flex flex-wrap items-center justify-center gap-3">
-                <button onClick={handleConfirmAccept} className="bg-[#5D4037] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
+                <button onClick={handleConfirmAccept} className="bg-[#ff7a00] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
                   Save
                 </button>
-                <button onClick={handleConfirmAccept} className="bg-[#5D4037] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
+                <button onClick={handleConfirmAccept} className="bg-[#ff7a00] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
                   Save & Print
                 </button>
-                <button onClick={handleConfirmAccept} className="bg-[#5D4037] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
+                <button onClick={handleConfirmAccept} className="bg-[#ff7a00] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
                   Save & EBill
                 </button>
                 <button onClick={handleConfirmAccept} className="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest hover:bg-gray-50 active:scale-95 transition-all">
@@ -224,3 +224,6 @@ export default function PosLayout() {
     </div>
   );
 }
+
+
+

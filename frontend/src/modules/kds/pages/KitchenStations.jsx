@@ -15,16 +15,16 @@ export default function KitchenStations() {
       }`}>
         <div className="flex items-center gap-6">
           <div className="flex flex-col">
-            <h1 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-[#5D4037]'}`}>
+            <h1 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-[#ff7a00]'}`}>
               Kitchen Stations
             </h1>
-            <p className="text-[9px] font-black uppercase tracking-widest text-[#8D6E63]">
+            <p className="text-[9px] font-black uppercase tracking-widest text-[#fdba74]">
               Configure & Manage Prep Nodes
             </p>
           </div>
         </div>
 
-        <button className="flex items-center gap-2 px-6 py-2 bg-[#5D4037] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#4E342E] transition-all shadow-lg shadow-[#5D4037]/20">
+        <button className="flex items-center gap-2 px-6 py-2 bg-[#ff7a00] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#ea6c00] transition-all shadow-lg shadow-[#ff7a00]/20">
           <Plus size={14} strokeWidth={3} />
           Create New Station
         </button>
@@ -43,7 +43,7 @@ export default function KitchenStations() {
               }`}
             >
               <div className="flex items-start justify-between mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-[#5D4037]/10 text-[#5D4037] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-[#ff7a00]/10 text-[#ff7a00] flex items-center justify-center">
                   <ChefHat size={24} />
                 </div>
                 <div className="flex gap-2">
@@ -56,7 +56,7 @@ export default function KitchenStations() {
                 </div>
               </div>
 
-              <h3 className={`text-xl font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-white' : 'text-[#5D4037]'}`}>
+              <h3 className={`text-xl font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-white' : 'text-[#ff7a00]'}`}>
                 {station.name}
               </h3>
               <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">
@@ -80,3 +80,6 @@ export default function KitchenStations() {
     </div>
   );
 }
+
+
+

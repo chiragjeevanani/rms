@@ -534,3 +534,6 @@ export default function ItemDetailPage() {
     </div>
   );
 }
+
+
+

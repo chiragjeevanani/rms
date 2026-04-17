@@ -38,7 +38,7 @@ export default function KdsOrderQueueTemplate({
       }`}>
         <div className="flex items-center gap-6">
           <div className="flex flex-col">
-            <h1 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-[#5D4037]'}`}>
+            <h1 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-[#ff7a00]'}`}>
               {title}
             </h1>
             <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export default function KdsOrderQueueTemplate({
           <button 
             onClick={fetchOrders}
             className={`p-2.5 rounded-xl border transition-all ${
-              isDarkMode ? 'bg-white/5 text-stone-400 border-white/5 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50 hover:text-[#5D4037]'
+              isDarkMode ? 'bg-white/5 text-stone-400 border-white/5 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50 hover:text-[#ff7a00]'
             }`}
           >
             <RefreshCw size={18} />
@@ -80,8 +80,8 @@ export default function KdsOrderQueueTemplate({
       }`}>
         {filteredOrders.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
-            <ChefHat size={80} strokeWidth={1} className="mb-6 text-[#5D4037]" />
-            <h2 className="text-4xl font-black uppercase tracking-tighter text-[#5D4037]">{emptyMessage}</h2>
+            <ChefHat size={80} strokeWidth={1} className="mb-6 text-[#ff7a00]" />
+            <h2 className="text-4xl font-black uppercase tracking-tighter text-[#ff7a00]">{emptyMessage}</h2>
             <p className="text-sm font-bold mt-2 uppercase tracking-widest text-stone-500">Everything is up to date.</p>
           </div>
         ) : (
@@ -101,3 +101,6 @@ export default function KdsOrderQueueTemplate({
     </div>
   );
 }
+
+
+

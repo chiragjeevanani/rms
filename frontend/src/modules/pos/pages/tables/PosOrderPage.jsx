@@ -14,12 +14,12 @@ import toast from 'react-hot-toast';
 
 // ── Color tokens ──────────────────────────────────────────────────────────────
 const C = {
-  sidebarBg:  '#4A3728',
-  sidebarHover: '#5D4037',
-  sidebarActive: '#6D4C41',
-  tabActive:  '#3E2723',
+  sidebarBg:  '#ff7a00',
+  sidebarHover: '#ff7a00',
+  sidebarActive: '#ff7a00',
+  tabActive:  '#ea6c00',
   tabInactive:'#EEEEEE',
-  billingBg:  '#2D1F14',
+  billingBg:  '#c2540a',
   accentTeal: '#00ACC1',
   orange:     '#F57C00',
   amber:      '#FFC107',
@@ -451,14 +451,14 @@ function InfoBox({ label, icon, active }) {
       cursor: 'pointer',
       background: active ? '#FAFAFA' : 'transparent'
     }}>
-      <div style={{ color: active ? '#5D4037' : '#9E9E9E' }}>
+      <div style={{ color: active ? '#ff7a00' : '#9E9E9E' }}>
         {icon}
       </div>
       {label && (
         <span style={{
           fontSize: 9,
           fontWeight: 900,
-          color: active ? '#4E342E' : '#9E9E9E',
+          color: active ? '#ea6c00' : '#9E9E9E',
           textTransform: 'uppercase',
           letterSpacing: '0.02em'
         }}>
@@ -484,7 +484,7 @@ function ActionBtn({ label, onClick, dark }) {
         textTransform: 'uppercase',
         letterSpacing: '0.02em',
         whiteSpace: 'nowrap',
-        background: dark ? '#5D4037' : '#FFFFFF',
+        background: dark ? '#ff7a00' : '#FFFFFF',
         color: dark ? '#FFF' : '#1A1A1A',
         transition: 'opacity 0.1s',
       }}
@@ -495,3 +495,6 @@ function ActionBtn({ label, onClick, dark }) {
     </button>
   );
 }
+
+
+

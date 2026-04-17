@@ -121,7 +121,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       <div className="h-14 flex items-center justify-between px-4 border-b border-white/8 shrink-0 bg-[#222222]">
         {!isCollapsed ? (
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-[#5D4037] rounded flex items-center justify-center text-white font-black text-sm shadow-lg shadow-stone-900/30">R</div>
+            <div className="w-8 h-8 bg-[#ff7a00] rounded flex items-center justify-center text-white font-black text-sm shadow-lg shadow-stone-900/30">R</div>
             <div className="flex flex-col">
               <span className="font-black text-[13px] tracking-tight uppercase text-white">RMS System</span>
               <span className="text-[9px] font-black text-[#FFC107] uppercase tracking-widest mt-0.5">Administrator</span>
@@ -129,7 +129,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
           </div>
         ) : (
           <div className="w-full flex justify-center">
-            <div className="w-8 h-8 bg-[#5D4037] rounded flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-900/40">R</div>
+            <div className="w-8 h-8 bg-[#ff7a00] rounded flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-900/40">R</div>
           </div>
         )}
       </div>
@@ -159,7 +159,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded transition-all relative group h-12 ${
                       isActive 
-                      ? 'bg-[#5D4037] text-white shadow-lg shadow-stone-900/30' 
+                      ? 'bg-[#ff7a00] text-white shadow-lg shadow-stone-900/30' 
                       : 'text-white/80 hover:bg-white/8 hover:text-white'
                     }`}
                   >
@@ -199,7 +199,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                               onClick={() => { playClickSound(); navigate(subItem.path); }}
                               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded transition-all group ${
                                 isSubActive 
-                                ? 'text-white bg-[#5D4037]/30 border-l-2 border-[#FFC107]' 
+                                ? 'text-white bg-[#ff7a00]/30 border-l-2 border-[#FFC107]' 
                                 : 'text-white/60 hover:text-white hover:bg-white/6'
                               }`}
                             >
@@ -228,7 +228,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
             localStorage.removeItem('admin_access');
             navigate('/admin/login');
           }}
-          className={`w-full flex items-center gap-3 px-3 py-3 rounded text-white/55 hover:text-white hover:bg-[#5D4037] transition-all ${isCollapsed ? 'justify-center' : ''}`}
+          className={`w-full flex items-center gap-3 px-3 py-3 rounded text-white/55 hover:text-white hover:bg-[#ff7a00] transition-all ${isCollapsed ? 'justify-center' : ''}`}
         >
           <LogOut size={16} />
           {!isCollapsed && <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>}
@@ -238,10 +238,13 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       {/* Toggle Button */}
       <button 
         onClick={() => { playClickSound(); setIsCollapsed(!isCollapsed); }}
-        className="absolute -right-3 top-20 w-6 h-6 bg-[#5D4037] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-[#2C2C2C] z-50 hover:scale-110 active:scale-95 transition-all"
+        className="absolute -right-3 top-20 w-6 h-6 bg-[#ff7a00] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-[#2C2C2C] z-50 hover:scale-110 active:scale-95 transition-all"
       >
         {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
     </aside>
   );
 }
+
+
+

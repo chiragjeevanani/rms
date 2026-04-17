@@ -94,3 +94,6 @@ export function FoodCard({ item }) {
     </motion.div>
   );
 }
+
+
+

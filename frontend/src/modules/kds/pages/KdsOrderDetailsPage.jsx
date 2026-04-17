@@ -68,7 +68,7 @@ export default function KdsOrderDetailsPage() {
           <h2 className="text-4xl font-black uppercase tracking-tighter mb-2">Registry Mismatch</h2>
           <p className="text-stone-500 font-bold uppercase tracking-widest text-xs">The requested Order ID does not exist in the active buffer.</p>
         </div>
-        <button onClick={() => navigate(-1)} className="px-10 py-4 bg-[#5D4037] text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-2xl shadow-[#5D4037]/40 hover:scale-105 transition-all">
+        <button onClick={() => navigate(-1)} className="px-10 py-4 bg-[#ff7a00] text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-2xl shadow-[#ff7a00]/40 hover:scale-105 transition-all">
           Return to Queue
         </button>
       </div>
@@ -257,7 +257,7 @@ export default function KdsOrderDetailsPage() {
                     {order.status === 'new' && (
                       <button 
                         onClick={() => handleStatusChange('preparing')}
-                        className="w-full h-24 bg-[#5D4037] text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-[#5D4037]/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                        className="w-full h-24 bg-[#ff7a00] text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-[#ff7a00]/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
                       >
                         <ChefHat size={24} />
                         Start Preparing
@@ -329,3 +329,6 @@ export default function KdsOrderDetailsPage() {
     </div>
   );
 }
+
+
+

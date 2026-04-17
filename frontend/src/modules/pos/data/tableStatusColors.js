@@ -7,3 +7,6 @@ export const TABLE_STATUS_COLORS = {
   available:   { color: '#F0F0F0', textColor: '#999', borderColor: '#ddd', borderStyle: 'solid', dot: 'transparent' }, // Fallback for 'Available'
   Occupied:    { color: '#BBDEFB', textColor: '#1565C0', borderColor: '#42A5F5', borderStyle: 'solid', dot: '#3b82f6' }, // Fallback for 'Occupied'
 };
+
+
+

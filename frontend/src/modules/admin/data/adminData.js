@@ -21,3 +21,6 @@ export const ADMIN_NOTIFICATIONS = [
   { id: 2, title: 'New Vendor Quotation received', time: '1h ago', type: 'info' },
   { id: 3, title: 'Order #8824 Cancelled by Admin', time: '2h ago', type: 'error' },
 ];
+
+
+
