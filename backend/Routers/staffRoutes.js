@@ -15,20 +15,15 @@ const {
   deleteProfile
 } = require('../Controllers/staffController');
 const { protectAdmin, protectStaff } = require('../Middleware/authMiddleware');
-const { upload } = require('../Config/cloudinary');
+const { upload, processImage } = require('../Config/uploadConfig');
 
-router.post('/upload', protectStaff, (req, res) => {
-  upload.single('profileImg')(req, res, (err) => {
-    if (err) {
-      console.error("Upload Error:", err);
-      return res.status(500).json({ message: 'Upload Error', error: err.message || err });
-    }
-    if (req.file && req.file.path) {
-      res.json({ imageUrl: req.file.path });
-    } else {
-      res.status(400).json({ message: 'No file uploaded or upload rejected' });
-    }
-  });
+router.post('/upload', protectStaff, upload.single('profileImg'), processImage, (req, res) => {
+  if (req.file && req.file.path) {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    res.json({ imageUrl: `${baseUrl}${req.file.path}` });
+  } else {
+    res.status(400).json({ message: 'No file uploaded or upload rejected' });
+  }
 });
 
 // Public auth routes
