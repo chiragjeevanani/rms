@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, Clock, ShoppingBag, Plus, Minus, Check, Sparkles } from 'lucide-react';
 import { QuantityStepper } from '../components/QuantityStepper';
 import { useCart } from '../context/CartContext';
+import { CartDrawer } from '../components/CartDrawer';
 import toast from 'react-hot-toast';
 
 export default function ItemDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart, tableNumber, setTable } = useCart();
+  const { addToCart, tableNumber, setTable, itemCount } = useCart();
   
   const [item, setItem] = useState(null);
   const [tables, setTables] = useState([]);
@@ -20,6 +21,7 @@ export default function ItemDetailPage() {
   const [addedToCart, setAddedToCart] = useState(false);
   const [tempTable, setTempTable] = useState(null);
   const [isBooking, setIsBooking] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewData, setReviewData] = useState({ userName: '', rating: 5, comment: '' });
@@ -58,6 +60,7 @@ export default function ItemDetailPage() {
               id: data.id || data._id,
               price,
               originalPrice,
+              preparationTime: data.preparationTime || 15,
               prepTime: data.preparationTime ? `${data.preparationTime} min` : '15 min',
               ratingFallback: data.rating || 4.8,
               isVeg: data.foodType === 'Veg' || data.isVeg,
@@ -268,8 +271,20 @@ export default function ItemDetailPage() {
         <div className="relative w-full aspect-[4/5] overflow-hidden rounded-b-[4rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
           <img src={item?.image} className="w-full h-full object-cover" alt={item?.name} />
           <div className="absolute inset-0 bg-gradient-to-t from-cream-50 dark:from-charcoal-900 via-transparent to-black/20" />
-          <button onClick={() => navigate(-1)} className="absolute top-10 left-6 w-12 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-2xl flex items-center justify-center text-charcoal-900 dark:text-white border border-charcoal-900/10 dark:border-white/10">
+          <button onClick={() => navigate(-1)} className="absolute top-10 left-6 w-12 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-2xl flex items-center justify-center text-charcoal-900 dark:text-white border border-charcoal-900/10 dark:border-white/10 z-20">
             <ArrowLeft size={20} />
+          </button>
+
+          <button 
+            onClick={() => setIsCartOpen(true)} 
+            className="absolute top-10 right-6 w-12 h-12 bg-brand-500 rounded-2xl flex items-center justify-center text-charcoal-900 border border-brand-500/20 shadow-lg shadow-brand-500/20 z-20"
+          >
+            <ShoppingBag size={20} />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-charcoal-900 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand-500">
+                {itemCount}
+              </span>
+            )}
           </button>
 
           <div className="absolute bottom-10 left-8 right-8">
@@ -289,7 +304,7 @@ export default function ItemDetailPage() {
                   </div>
                   <div className="h-4 w-[1px] bg-white/20 mx-1" />
                   <div className="flex items-center gap-1.5 font-black text-[10px] uppercase tracking-widest">
-                     <Clock size={14} /> {item?.prepTime}
+                     <Clock size={14} /> {item?.preparationTime || 15} Mins
                   </div>
               </div>
 
@@ -436,32 +451,48 @@ export default function ItemDetailPage() {
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-charcoal-900/80 backdrop-blur-3xl border-t border-charcoal-900/10 dark:border-white/5 p-4 z-50 transition-colors duration-300">
-         <div className="max-w-lg mx-auto flex items-center justify-center">
+         <div className="max-w-lg mx-auto flex items-center gap-4 px-6 py-2">
+            <motion.button 
+               onClick={() => {
+                  handleAddToCart();
+                  setIsCartOpen(true);
+               }} 
+               whileTap={{ scale: 0.95 }} 
+               className="flex-1 h-14 bg-white dark:bg-white/5 text-charcoal-900 dark:text-white rounded-2xl font-black flex flex-col items-center justify-center gap-0 border border-charcoal-900/10 dark:border-white/10 shadow-sm group"
+            >
+               <ShoppingBag size={14} className="mb-0.5 group-hover:scale-110 transition-transform" />
+               <span className="text-[10px] uppercase tracking-widest">Add to Cart</span>
+            </motion.button>
+
             <motion.button 
                onClick={handleMainOrderAction} 
                disabled={isBooking}
-               whileTap={{ scale: 0.97 }} 
-               className="w-full max-w-sm bg-brand-500 text-charcoal-900 py-4 rounded-[1.2rem] font-black flex items-center justify-center gap-3 shadow-2xl shadow-brand-500/20 font-display disabled:opacity-50"
+               whileTap={{ scale: 0.95 }} 
+               className="flex-[2] h-14 bg-brand-500 text-charcoal-900 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-brand-500/20 disabled:opacity-50 active:shadow-inner"
             >
               <AnimatePresence mode="wait">
                  {isBooking ? (
                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-charcoal-900/20 border-t-charcoal-900 rounded-full animate-spin" />
-                      Ordering...
+                      <span className="text-xs uppercase tracking-widest">Processing</span>
                    </motion.div>
                  ) : addedToCart ? (
                    <motion.div key="conf" initial={{ y: 20 }} animate={{ y: 0 }} className="flex items-center gap-2">
-                      <Check size={20} strokeWidth={4} /> Order Placed
+                      <Check size={18} strokeWidth={4} /> 
+                      <span className="text-xs uppercase tracking-widest">Added</span>
                    </motion.div>
                  ) : (
-                   <motion.div key="order" initial={{ y: 20 }} animate={{ y: 0 }} className="flex items-center gap-2">
-                      Order Now · ₹{currentPrice * quantity}
+                   <motion.div key="order" initial={{ y: 20 }} animate={{ y: 0 }} className="flex flex-col items-center leading-none">
+                      <span className="text-[10px] uppercase tracking-[0.2em] opacity-60 mb-1">Direct Order</span>
+                      <span className="text-sm font-bold">₹{currentPrice * quantity}</span>
                    </motion.div>
                  )}
               </AnimatePresence>
             </motion.button>
          </div>
       </div>
+
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       <AnimatePresence>
         {showTableModal && (

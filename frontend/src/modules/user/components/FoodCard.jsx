@@ -2,9 +2,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { Plus, Star, Leaf, Flame, Clock, ArrowRight } from 'lucide-react';
+import { Plus, Star, Leaf, Flame, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
 
-export function FoodCard({ item }) {
+export function FoodCard({ item, onAdd }) {
   const [isAdding, setIsAdding] = useState(false);
   const navigate = useNavigate();
   const { addToCart, isOrderOnline } = useCart();
@@ -14,6 +14,7 @@ export function FoodCard({ item }) {
     if (!isOrderOnline) return;
     setIsAdding(true);
     addToCart(item, 1, [], 0);
+    if (onAdd) onAdd();
     setTimeout(() => setIsAdding(false), 900);
   };
 
@@ -67,7 +68,7 @@ export function FoodCard({ item }) {
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <Clock size={10} />
-                  <span className="text-[10px] font-black uppercase tracking-tight">{item.prepTime}</span>
+                  <span className="text-[10px] font-black uppercase tracking-tight">{item.preparationTime || 15} Mins</span>
                 </div>
                 {item.originalPrice > item.price && (
                   <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border border-emerald-500/10">
@@ -75,16 +76,42 @@ export function FoodCard({ item }) {
                   </div>
                 )}
              </div>
-             <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-2xl font-display font-bold text-brand-500 text-nowrap">
-                  ₹{item.price}
-                </span>
-                {item.originalPrice && (
-                  <span className="text-[13px] font-bold text-charcoal-400/60 line-through text-nowrap">
-                    ₹{item.originalPrice}
-                  </span>
-                )}
+             <div className="flex items-center justify-between mt-auto">
+                <div className="flex items-center gap-2 flex-wrap">
+                   <span className="text-2xl font-display font-bold text-brand-500 text-nowrap">
+                     ₹{item.price}
+                   </span>
+                   {item.originalPrice && (
+                     <span className="text-[13px] font-bold text-charcoal-400/60 line-through text-nowrap">
+                       ₹{item.originalPrice}
+                     </span>
+                   )}
+                </div>
+
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleQuickAdd}
+                  disabled={!isOrderOnline || isAdding}
+                  className={`relative overflow-hidden px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    isAdding 
+                    ? 'bg-emerald-500 text-white border-emerald-500' 
+                    : 'bg-brand-500 text-charcoal-900 border-brand-500 hover:shadow-lg hover:shadow-brand-500/30'
+                  } border`}
+                >
+                  <AnimatePresence mode="wait">
+                    {isAdding ? (
+                      <motion.div key="check" initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }} className="flex items-center gap-2">
+                         <CheckCircle2 size={12} strokeWidth={3} /> Added
+                      </motion.div>
+                    ) : (
+                      <motion.div key="add" initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }} className="flex items-center gap-2">
+                         <Plus size={12} strokeWidth={3} /> Add
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
              </div>
+             
              <p className="text-xs text-charcoal-500 font-medium line-clamp-2 mt-2 leading-relaxed italic opacity-80">
                {item.description}
              </p>

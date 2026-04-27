@@ -124,7 +124,7 @@ export default function CartPage() {
 
            <div className="bg-brand-500/5 rounded-2xl p-4 flex gap-3 text-brand-400 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-10 border border-brand-500/10">
               <AlertCircle size={16} className="shrink-0" />
-              <p>Estimated preparation time is 22 mins. High volume orders may take slightly longer.</p>
+              <p>Actual preparation time will be {items.reduce((total, i) => total + (Number(i.preparationTime || 15) * i.quantity), 0)} mins. High volume orders may take slightly longer.</p>
            </div>
 
            <Link to="/checkout" className="block w-full">

@@ -5,7 +5,7 @@ export default function IncomingOrders() {
   return (
     <KdsOrderQueueTemplate 
       title="Incoming Orders" 
-      statusFilter="new" 
+      statusFilter={['pending', 'confirmed']} 
       emptyMessage="No new orders"
       accentColor="blue"
     />

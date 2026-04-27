@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, Camera, Save, Loader2, Lock, 
-  ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Package 
+  ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Package,
+  Sliders, Check
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useAdminTheme } from '../../context/AdminThemeContext';
 
 export default function AccountSettings() {
+  const { 
+    themeMode, setThemeMode, 
+    primaryColor, setPrimaryColor,
+    borderRadius, setBorderRadius,
+    sidebarStyle, setSidebarStyle,
+    fontFamily, setFontFamily
+  } = useAdminTheme();
+  
   // Profile State
   const [admin, setAdmin] = useState({ name: '', email: '', profileImg: '', restaurantName: '', mobileNumber: '', address: '' });
   const [isProfileLoading, setIsProfileLoading] = useState(true);
@@ -304,99 +314,254 @@ export default function AccountSettings() {
         </motion.div>
 
         {/* Security Section */}
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-stone-200"
-        >
-          <div className="bg-[#2C2C2C] px-8 py-8 text-white relative flex items-center justify-between">
-            <div>
-               <h2 className="text-xl font-black uppercase tracking-widest leading-tight">Security</h2>
-               <p className="text-amber-400 text-[9px] font-bold uppercase tracking-[0.3em] mt-1">Change Password</p>
-            </div>
-            <Lock size={24} className="text-white/20" />
-          </div>
-
-          <form onSubmit={handlePasswordChange} className="p-8 space-y-6">
-            <div className="flex items-center gap-4 bg-stone-50 p-6 rounded-3xl border border-stone-200">
-               <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 border border-amber-500/20">
-                  <ShieldAlert size={24} />
-               </div>
-               <div>
-                  <p className="text-xs font-black text-stone-800 uppercase tracking-tight">Important Notice</p>
-                  <p className="text-[10px] font-medium text-stone-500 mt-0.5">Please use a strong password to keep your account safe.</p>
-               </div>
+        <div className="space-y-8">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-stone-200"
+          >
+            <div className="bg-[#2C2C2C] px-8 py-8 text-white relative flex items-center justify-between">
+              <div>
+                 <h2 className="text-xl font-black uppercase tracking-widest leading-tight">Security</h2>
+                 <p className="text-amber-400 text-[9px] font-bold uppercase tracking-[0.3em] mt-1">Change Password</p>
+              </div>
+              <Lock size={24} className="text-white/20" />
             </div>
 
-            <div className="space-y-6">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Current Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
-                    <input 
-                      type={showPass.old ? "text" : "password"} 
-                      value={passwords.oldPassword}
-                      onChange={(e) => setPasswords({...passwords, oldPassword: e.target.value})}
-                      placeholder="Enter your current password"
-                      className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
-                      required
-                    />
-                    <button type="button" onClick={() => setShowPass({...showPass, old: !showPass.old})} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-500">
-                      {showPass.old ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
+            <form onSubmit={handlePasswordChange} className="p-8 space-y-6">
+              <div className="flex items-center gap-4 bg-stone-50 p-6 rounded-3xl border border-stone-200">
+                 <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 border border-amber-500/20">
+                    <ShieldAlert size={24} />
+                 </div>
+                 <div>
+                    <p className="text-xs font-black text-stone-800 uppercase tracking-tight">Important Notice</p>
+                    <p className="text-[10px] font-medium text-stone-500 mt-0.5">Please use a strong password to keep your account safe.</p>
+                 </div>
+              </div>
+
+              <div className="space-y-6">
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Current Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                      <input 
+                        type={showPass.old ? "text" : "password"} 
+                        value={passwords.oldPassword}
+                        onChange={(e) => setPasswords({...passwords, oldPassword: e.target.value})}
+                        placeholder="Enter your current password"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
+                        required
+                      />
+                      <button type="button" onClick={() => setShowPass({...showPass, old: !showPass.old})} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-500">
+                        {showPass.old ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">New Password</label>
+                       <div className="relative">
+                         <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                         <input 
+                           type={showPass.new ? "text" : "password"} 
+                           value={passwords.newPassword}
+                           onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
+                           placeholder="Enter new password"
+                           className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
+                           required
+                         />
+                         <button type="button" onClick={() => setShowPass({...showPass, new: !showPass.new})} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-500">
+                           {showPass.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                         </button>
+                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Confirm New Password</label>
+                       <div className="relative">
+                         <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                         <input 
+                           type={showPass.confirm ? "text" : "password"} 
+                           value={passwords.confirmPassword}
+                           onChange={(e) => setPasswords({...passwords, confirmPassword: e.target.value})}
+                           placeholder="Repeat new password"
+                           className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
+                           required
+                         />
+                         <button type="button" onClick={() => setShowPass({...showPass, confirm: !showPass.confirm})} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-500">
+                           {showPass.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                         </button>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  type="submit"
+                  disabled={isChangingPass}
+                  className="w-full bg-amber-500 text-stone-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-amber-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
+                >
+                  {isChangingPass ? <Loader2 className="animate-spin" size={18} /> : <><ShieldCheck size={18} /> Update Password</>}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+
+          {/* Theme Settings Section - Advanced Design Studio */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-stone-100"
+          >
+            <div className="bg-[#2C2C2C] px-10 py-10 text-white relative overflow-hidden group">
+              <div className="relative z-10">
+                 <h2 className="text-2xl font-black uppercase tracking-widest leading-tight">Design Studio</h2>
+                 <p className="text-amber-400 text-[10px] font-bold uppercase tracking-[0.4em] mt-2 italic">Craft your workspace aesthetics</p>
+              </div>
+              <Sliders size={120} className="absolute -right-10 -top-10 text-white/5 group-hover:rotate-12 transition-transform duration-700" />
+            </div>
+
+            <div className="p-10 space-y-12">
+               {/* Mode & Sidebar Style */}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Visual Mode</p>
+                    <div className="grid grid-cols-2 gap-2 bg-stone-50 p-2 rounded-3xl border border-stone-200">
+                       <button 
+                         onClick={() => setThemeMode('light')}
+                         className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${themeMode === 'light' ? 'bg-white text-stone-800 shadow-xl' : 'text-stone-400 hover:text-stone-600'}`}
+                       >Light</button>
+                       <button 
+                         onClick={() => setThemeMode('dark')}
+                         className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${themeMode === 'dark' ? 'bg-[#2C2C2C] text-white shadow-xl' : 'text-stone-400 hover:text-stone-600'}`}
+                       >Dark</button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Sidebar Aesthetic</p>
+                    <div className="flex gap-3">
+                       {['solid', 'glass', 'minimal'].map(style => (
+                         <button 
+                           key={style}
+                           onClick={() => setSidebarStyle(style)}
+                           className={`flex-1 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest border transition-all ${sidebarStyle === style ? 'bg-white border-amber-500 text-stone-800 shadow-lg scale-105' : 'bg-stone-50 border-stone-200 text-stone-400'}`}
+                         >{style}</button>
+                       ))}
+                    </div>
                   </div>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                  <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">New Password</label>
-                     <div className="relative">
-                       <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+               {/* Advanced Color System */}
+               <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Color Palette</p>
+                    <div className="relative">
                        <input 
-                         type={showPass.new ? "text" : "password"} 
-                         value={passwords.newPassword}
-                         onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
-                         placeholder="Enter new password"
-                         className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
-                         required
+                         type="color" 
+                         value={primaryColor} 
+                         onChange={(e) => setPrimaryColor(e.target.value)}
+                         className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                        />
-                       <button type="button" onClick={() => setShowPass({...showPass, new: !showPass.new})} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-500">
-                         {showPass.new ? <EyeOff size={18} /> : <Eye size={18} />}
-                       </button>
+                       <div className="flex items-center gap-2 bg-stone-50 px-4 py-2 rounded-xl border border-stone-200 shadow-sm cursor-pointer hover:bg-white transition-all">
+                          <div className="w-4 h-4 rounded-full shadow-inner" style={{ backgroundColor: primaryColor }} />
+                          <span className="text-[10px] font-black text-stone-800 uppercase">Custom Tint</span>
+                       </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-4">
+                    {[
+                      { color: '#2C2C2C', name: 'Industrial' },
+                      { color: '#3B82F6', name: 'Electric' },
+                      { color: '#EF4444', name: 'Passion' },
+                      { color: '#10B981', name: 'Emerald' },
+                      { color: '#F59E0B', name: 'Amber' },
+                      { color: '#8B5CF6', name: 'Purple' },
+                      { color: '#EC4899', name: 'Ruby' },
+                      { color: '#06B6D4', name: 'Ocean' }
+                    ].map((preset) => (
+                      <button
+                        key={preset.color}
+                        onClick={() => setPrimaryColor(preset.color)}
+                        className={`group relative w-12 h-12 rounded-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center ${primaryColor === preset.color ? 'ring-4 ring-offset-4 ring-amber-500 scale-110' : 'hover:ring-2 hover:ring-stone-200'}`}
+                        style={{ backgroundColor: preset.color }}
+                        title={preset.name}
+                      >
+                         {primaryColor === preset.color && <div className="w-2 h-2 rounded-full bg-white shadow-xl animate-pulse" />}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+
+               {/* Layout Controls */}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <div className="space-y-6">
+                     <div className="flex items-center justify-between">
+                        <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Corner Radius</p>
+                        <span className="text-[10px] font-black text-stone-900 bg-stone-100 px-3 py-1 rounded-full">{borderRadius}</span>
+                     </div>
+                     <input 
+                       type="range" 
+                       min="0" 
+                       max="3" 
+                       step="0.5" 
+                       value={parseFloat(borderRadius)} 
+                       onChange={(e) => setBorderRadius(`${e.target.value}rem`)}
+                       className="w-full h-2 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                     />
+                     <div className="flex justify-between text-[9px] font-black text-stone-300 uppercase tracking-widest">
+                        <span>Sharp</span>
+                        <span>Soft</span>
+                        <span>Cloud</span>
                      </div>
                   </div>
 
-                  <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Confirm New Password</label>
-                     <div className="relative">
-                       <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
-                       <input 
-                         type={showPass.confirm ? "text" : "password"} 
-                         value={passwords.confirmPassword}
-                         onChange={(e) => setPasswords({...passwords, confirmPassword: e.target.value})}
-                         placeholder="Repeat new password"
-                         className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
-                         required
-                       />
-                       <button type="button" onClick={() => setShowPass({...showPass, confirm: !showPass.confirm})} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-500">
-                         {showPass.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                       </button>
+                  <div className="space-y-6">
+                     <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Typography</p>
+                     <div className="grid grid-cols-2 gap-3">
+                        {['Outfit', 'Karla', 'Roboto', 'Inter'].map(font => (
+                           <button 
+                             key={font}
+                             onClick={() => setFontFamily(font)}
+                             className={`py-4 rounded-2xl border transition-all text-xs font-bold ${fontFamily === font ? 'bg-white border-amber-500 text-stone-800 shadow-xl scale-105' : 'bg-stone-50 border-stone-200 text-stone-400 hover:border-stone-300'}`}
+                             style={{ fontFamily: font }}
+                           >
+                             {font}
+                           </button>
+                        ))}
                      </div>
                   </div>
                </div>
-            </div>
 
-            <div className="pt-4">
-              <button 
-                type="submit"
-                disabled={isChangingPass}
-                className="w-full bg-amber-500 text-stone-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-amber-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
-              >
-                {isChangingPass ? <Loader2 className="animate-spin" size={18} /> : <><ShieldCheck size={18} /> Update Password</>}
-              </button>
+               <div className="pt-6 border-t border-stone-100">
+                  <div className="bg-stone-50 p-6 rounded-[2.5rem] border-2 border-dashed border-stone-200 flex flex-col md:flex-row items-center justify-between gap-6">
+                     <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 shadow-2xl rounded-3xl flex items-center justify-center text-white transition-all transform hover:rotate-6" style={{ backgroundColor: primaryColor, borderRadius }}>
+                           <Check size={24} strokeWidth={3} />
+                        </div>
+                        <div>
+                           <p className="text-xs font-black text-stone-800 uppercase tracking-tight">Real-time Preview</p>
+                           <p className="text-[10px] font-medium text-stone-500 mt-1 uppercase tracking-widest">Style: {themeMode} • Radius: {borderRadius} • Font: {fontFamily}</p>
+                        </div>
+                     </div>
+                     <button 
+                        onClick={() => {
+                           setThemeMode('light');
+                           setPrimaryColor('#2C2C2C');
+                           setBorderRadius('2rem');
+                           setSidebarStyle('solid');
+                           setFontFamily('Outfit');
+                        }}
+                        className="px-8 py-3 bg-white text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-sm hover:bg-rose-500 hover:text-white transition-all border border-rose-100"
+                     >Reset Defaults</button>
+                  </div>
+               </div>
             </div>
-          </form>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

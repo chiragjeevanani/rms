@@ -14,7 +14,22 @@ const getAllStaff = async (req, res) => {
 const createStaff = async (req, res) => {
   try {
     const { name, email, role, status, pin } = req.body;
-    const password = '123456';
+
+    const generateRandomPassword = (length = 10) => {
+      const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+      let retVal = "";
+      for (let i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+      }
+      return retVal;
+    };
+
+    const generateRandomPIN = () => {
+      return Math.floor(1000 + Math.random() * 9000).toString();
+    };
+
+    const password = generateRandomPassword();
+    const staffPIN = pin || generateRandomPIN();
     
     // Check if staff already exists
     const existing = await Staff.findOne({ email });
@@ -25,7 +40,7 @@ const createStaff = async (req, res) => {
       email, 
       role, 
       status, 
-      pin: pin || '1234',
+      pin: staffPIN,
       password
     });
 
@@ -38,17 +53,43 @@ const createStaff = async (req, res) => {
         email: staff.email,
         subject: 'Welcome to RMS - Your Staff Account Details',
         html: `
-          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 600px;">
-            <h2 style="color: #2C2C2C; border-bottom: 2px solid #FACC15; padding-bottom: 10px; display: inline-block;">Welcome to the Team, ${name}!</h2>
-            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <strong>User Email:</strong> ${email}<br/>
-              <strong>Temporary Password:</strong> ${password}
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background-color: #fcfcfc;">
+            <div style="max-width: 600px; margin: 0 auto; bg: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;">
+              <div style="padding: 40px;">
+                <h1 style="color: #0f172a; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.5px; margin-bottom: 8px;">Welcome to the Team!</h1>
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 32px;">Hello ${name}, your operational identity has been successfully enrolled in the system.</p>
+                
+                <div style="background-color: #f8fafc; border-radius: 16px; padding: 24px; border: 1px solid #f1f5f9;">
+                  <div style="margin-bottom: 20px;">
+                    <p style="color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px 0;">Access ID / Email</p>
+                    <p style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0;">${email}</p>
+                  </div>
+                  
+                  <div style="margin-bottom: 20px;">
+                    <p style="color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px 0;">Temporary Password</p>
+                    <p style="color: #2563eb; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0;">${password}</p>
+                  </div>
+
+                  <div>
+                    <p style="color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px 0;">Terminal Access PIN</p>
+                    <p style="color: #059669; font-size: 18px; font-weight: 800; letter-spacing: 4px; margin: 0;">${staffPIN}</p>
+                  </div>
+                </div>
+
+                <div style="margin-top: 32px; padding-top: 32px; border-top: 1px solid #f1f5f9;">
+                  <p style="color: #94a3b8; font-size: 11px; line-height: 1.6;"><strong>Security Protocol:</strong> Please log in to the staff portal using these credentials and update your password immediately. Never share your Terminal PIN with anyone.</p>
+                </div>
+              </div>
+              <div style="padding: 20px; background-color: #0f172a; text-align: center;">
+                <p style="color: #94a3b8; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;">RMS OPERATIONAL SIGNAL</p>
+              </div>
             </div>
-            <p style="color: #666; font-size: 12px;">Login at the staff portal and reset your password for security.</p>
           </div>
         `
       });
-    } catch (e) {}
+    } catch (e) {
+      console.error('Email sending failed:', e);
+    }
 
     res.status(201).json(populated);
   } catch (error) {

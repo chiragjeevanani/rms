@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
+import { AdminThemeProvider } from '../context/AdminThemeContext';
 import AdminDashboard from '../pages/AdminDashboard';
 import OutletManagement from '../pages/OutletManagement';
 import MenuManagement from '../pages/MenuManagement';
@@ -14,6 +15,7 @@ import AnalyticsDashboard from '../pages/AnalyticsDashboard';
 import CustomerManagement from '../pages/CustomerManagement';
 import AdminLoginPage from '../pages/AdminLoginPage';
 import TableManagement from '../pages/TableManagement';
+import OccupiedTables from '../pages/OccupiedTables';
 
 import Categories from '../pages/menu/Categories';
 import MenuItems from '../pages/menu/MenuItems';
@@ -30,6 +32,7 @@ import PurchaseOrders from '../pages/inventory/PurchaseOrders';
 import Wastage from '../pages/inventory/Wastage';
 
 import AllOrders from '../pages/orders/AllOrders';
+import RecentOrders from '../pages/orders/RecentOrders';
 import OnlineOrders from '../pages/orders/OnlineOrders';
 import CancelledOrders from '../pages/orders/CancelledOrders';
 
@@ -60,63 +63,68 @@ export default function AdminRoutes() {
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={<AdminLoginPage />} />
-      <Route element={<AdminLayout />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="outlets" element={<OutletManagement />} />
-        <Route path="tables" element={<TableManagement />} />
+    <AdminThemeProvider>
+      <Routes>
+        <Route path="/login" element={<AdminLoginPage />} />
+        <Route element={<AdminLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="outlets" element={<OutletManagement />} />
+          <Route path="tables" element={<TableManagement />} />
+          <Route path="tables/all" element={<TableManagement />} />
+          <Route path="tables/occupied" element={<OccupiedTables />} />
 
-        {/* Menu Management */}
-        <Route path="menu" element={<MenuManagement />} />
-        <Route path="menu/categories" element={<Categories />} />
-        <Route path="menu/items" element={<MenuItems />} />
-        <Route path="menu/modifiers" element={<Modifiers />} />
-        <Route path="menu/combos" element={<ComboMeals />} />
-        <Route path="menu/items/:id" element={<ItemDetails />} />
-        <Route path="menu/combos/:id" element={<ComboDetails />} />
+          {/* Menu Management */}
+          <Route path="menu" element={<MenuManagement />} />
+          <Route path="menu/categories" element={<Categories />} />
+          <Route path="menu/items" element={<MenuItems />} />
+          <Route path="menu/modifiers" element={<Modifiers />} />
+          <Route path="menu/combos" element={<ComboMeals />} />
+          <Route path="menu/items/:id" element={<ItemDetails />} />
+          <Route path="menu/combos/:id" element={<ComboDetails />} />
 
-        {/* Inventory Management */}
-        <Route path="inventory" element={<InventoryManagement />} />
-        <Route path="inventory/stock" element={<StockManagement />} />
-        <Route path="inventory/vendors" element={<Vendors />} />
-        <Route path="inventory/orders" element={<PurchaseOrders />} />
-        <Route path="inventory/wastage" element={<Wastage />} />
+          {/* Inventory Management */}
+          <Route path="inventory" element={<InventoryManagement />} />
+          <Route path="inventory/stock" element={<StockManagement />} />
+          <Route path="inventory/vendors" element={<Vendors />} />
+          <Route path="inventory/orders" element={<PurchaseOrders />} />
+          <Route path="inventory/wastage" element={<Wastage />} />
 
-        {/* Order Management */}
-        <Route path="orders" element={<OrderManagement />} />
-        <Route path="orders/all" element={<AllOrders />} />
-        <Route path="orders/online" element={<OnlineOrders />} />
-        <Route path="orders/cancelled" element={<CancelledOrders />} />
+          {/* Order Management */}
+          <Route path="orders" element={<OrderManagement />} />
+          <Route path="orders/recent" element={<RecentOrders />} />
+          <Route path="orders/all" element={<AllOrders />} />
+          <Route path="orders/online" element={<OnlineOrders />} />
+          <Route path="orders/cancelled" element={<CancelledOrders />} />
 
-        {/* Staff & User Management */}
-        <Route path="staff" element={<StaffManagement />} />
-        <Route path="staff/list" element={<StaffList />} />
-        <Route path="staff/roles" element={<Roles />} />
-        <Route path="staff/attendance" element={<Attendance />} />
+          {/* Staff & User Management */}
+          <Route path="staff" element={<StaffManagement />} />
+          <Route path="staff/list" element={<StaffList />} />
+          <Route path="staff/roles" element={<Roles />} />
+          <Route path="staff/attendance" element={<Attendance />} />
 
-        {/* Reports & Analytics */}
-        <Route path="reports/sales" element={<SalesReports />} />
-        <Route path="reports/inventory" element={<InventoryReports />} />
-        <Route path="reports/customers" element={<CustomerReports />} />
+          {/* Reports & Analytics */}
+          <Route path="reports/sales" element={<SalesReports />} />
+          <Route path="reports/inventory" element={<InventoryReports />} />
+          <Route path="reports/customers" element={<CustomerReports />} />
 
-        {/* Misc & Settings */}
-        <Route path="customers" element={<CustomerManagement />} />
-        <Route path="analytics" element={<AnalyticsDashboard />} />
-        <Route path="audit" element={<AuditLogs />} />
-        <Route path="finance" element={<FinancialManagement />} />
-        
-        {/* Settings Routes */}
-        <Route path="settings" element={<SystemSettings />} />
-        <Route path="settings/profile" element={<AccountSettings />} />
-        <Route path="settings/security" element={<AccountSettings />} />
-        <Route path="settings/:section" element={<SystemSettings />} />
+          {/* Misc & Settings */}
+          <Route path="customers" element={<CustomerManagement />} />
+          <Route path="analytics" element={<AnalyticsDashboard />} />
+          <Route path="audit" element={<AuditLogs />} />
+          <Route path="finance" element={<FinancialManagement />} />
+          
+          {/* Settings Routes */}
+          <Route path="settings" element={<SystemSettings />} />
+          <Route path="settings/profile" element={<AccountSettings />} />
+          <Route path="settings/security" element={<AccountSettings />} />
+          <Route path="settings/:section" element={<SystemSettings />} />
 
-        {/* Handle missing sub-routes by redirecting to Admin Dashboard */}
-        <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
-      </Route>
-    </Routes>
+          {/* Handle missing sub-routes by redirecting to Admin Dashboard */}
+          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+        </Route>
+      </Routes>
+    </AdminThemeProvider>
   );
 }
 

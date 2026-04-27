@@ -6,8 +6,8 @@ export function useKdsTimer(startTime, orderStatus, prepTime, readyTime, estimat
   const [isNegative, setIsNegative] = useState(false);
 
   useEffect(() => {
-    // 1. New Orders (Static/Paused state)
-    if (orderStatus === 'new') {
+    // 1. New/Incoming Orders (Static/Paused state)
+    if (['new', 'pending', 'confirmed'].includes(orderStatus)) {
       const start = new Date(startTime).getTime();
       const now = Date.now();
       const ingestDuration = Math.floor((now - start) / 1000);
@@ -69,8 +69,10 @@ export function useKdsTimer(startTime, orderStatus, prepTime, readyTime, estimat
 
   }, [startTime, orderStatus, prepTime, readyTime, estimatedMinutes]);
 
+  const isDelayed = estimatedMinutes ? isNegative : totalDuration > 600;
+
   const formatTime = (seconds) => {
-    if (estimatedMinutes && isNegative && !['new', 'ready', 'completed', 'served'].includes(orderStatus)) {
+    if (isDelayed && !['ready', 'completed', 'served'].includes(orderStatus)) {
       return "TIME OVER";
     }
 
@@ -78,8 +80,6 @@ export function useKdsTimer(startTime, orderStatus, prepTime, readyTime, estimat
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-
-  const isDelayed = estimatedMinutes ? isNegative : totalDuration > 600;
 
   return { 
     elapsed, 

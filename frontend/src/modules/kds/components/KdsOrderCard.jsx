@@ -3,14 +3,17 @@ import { Clock, AlertCircle, ShoppingBag, Hash, CheckCircle } from 'lucide-react
 import { useKdsTimer } from '../hooks/useKdsTimer';
 import { useTheme } from '../../user/context/ThemeContext';
 
-export function KdsOrderCard({ order, onClick }) {
+export function KdsOrderCard({ order, onClick, onStatusChange }) {
   const maxPrepTimeEst = order.items.reduce((max, item) => Math.max(max, item.prepTimeEst || 0), 0);
   const { elapsed, totalDuration, formatTime, isDelayed, isNegative } = useKdsTimer(order.startTime, order.status, order.prepTime, order.readyTime, maxPrepTimeEst);
   const { isDarkMode } = useTheme();
 
   const getStatusInfo = (status) => {
     switch (status) {
-      case 'new': return { color: 'bg-blue-600', text: 'New', border: 'border-blue-600/30' };
+      case 'new': 
+      case 'pending':
+      case 'confirmed':
+        return { color: 'bg-blue-600', text: 'Incoming', border: 'border-blue-600/30' };
       case 'preparing': return { color: 'bg-orange-600', text: 'Preparing', border: 'border-orange-600/30' };
       case 'delayed': return { color: 'bg-red-700', text: 'Delayed', border: 'border-red-700/40' };
       case 'ready': 
@@ -37,19 +40,21 @@ export function KdsOrderCard({ order, onClick }) {
       }`}
     >
       {/* Header — compact */}
-      <div className={`${effectiveStatusColor} px-4 py-3 flex items-center gap-2.5 overflow-hidden`}>
-        <div className="flex-shrink-0 w-8 h-8 bg-white/15 border border-white/10 rounded-lg flex items-center justify-center text-white">
-          <Hash size={14} />
+      <div className={`${effectiveStatusColor} px-4 py-3 flex items-center justify-between overflow-hidden`}>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex-shrink-0 w-8 h-8 bg-white/15 border border-white/10 rounded-lg flex items-center justify-center text-white">
+            <Hash size={14} />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base font-black text-white leading-none mb-0.5 truncate">
+              #{order.orderNum}
+            </h3>
+            <p className="text-[10px] font-bold text-white/75 uppercase tracking-widest truncate">
+              {order.source}
+            </p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-base font-black text-white leading-none mb-0.5 truncate">
-            #{order.orderNum}
-          </h3>
-          <p className="text-[10px] font-bold text-white/75 uppercase tracking-widest truncate">
-            {order.source}
-          </p>
-        </div>
-        <div className="flex-shrink-0 bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-md border border-white/10">
+        <div className="flex-shrink-0 bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-md border border-white/10 ml-2">
           <span className="text-[10px] font-black text-white uppercase tracking-wide leading-none whitespace-nowrap">
             {order.table.startsWith('T') ? order.table : `T${order.table}`}
           </span>
@@ -101,25 +106,45 @@ export function KdsOrderCard({ order, onClick }) {
       </div>
 
       {/* Footer — compact */}
-      <div className={`px-4 py-3 border-t flex items-center justify-between mt-auto transition-colors ${
+      <div className={`px-4 py-3 border-t flex flex-col gap-3 mt-auto transition-colors ${
         isDarkMode ? 'bg-black/30 border-white/6' : 'bg-stone-50 border-stone-100'
       }`}>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${effectiveStatusColor} animate-pulse`} />
-          <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
-            isDarkMode ? 'text-stone-400' : 'text-stone-500'
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${effectiveStatusColor} animate-pulse`} />
+            <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
+              isDarkMode ? 'text-stone-400' : 'text-stone-500'
+            }`}>
+              {isDelayed ? 'TIME OVER' : statusInfo.text}
+            </span>
+          </div>
+          <div className={`flex items-center gap-1.5 font-mono text-sm font-black transition-colors ${
+            isDelayed ? 'text-red-400' : (isDarkMode ? 'text-[#D4AF37]' : 'text-[#fdba74]')
           }`}>
-            {isDelayed ? 'Delayed' : statusInfo.text}
-          </span>
+            <Clock size={13} />
+            <span className="uppercase whitespace-nowrap">
+              {isFinalized ? `Ready in ${Math.ceil(totalDuration / 60)} min` : formatTime}
+            </span>
+          </div>
         </div>
-        <div className={`flex items-center gap-1.5 font-mono text-sm font-black transition-colors ${
-          isDelayed ? 'text-red-400' : (isDarkMode ? 'text-[#D4AF37]' : 'text-[#fdba74]')
-        }`}>
-          <Clock size={13} />
-          <span className="uppercase whitespace-nowrap">
-            {isFinalized ? `Ready in ${Math.ceil(totalDuration / 60)} min` : formatTime}
-          </span>
-        </div>
+
+        {/* Quick Action Button */}
+        {!isFinalized && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const nextStatus = ['pending', 'confirmed', 'new'].includes(order.status) ? 'Preparing' : 'Ready';
+              onStatusChange(order.id, nextStatus);
+            }}
+            className={`w-full py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              ['pending', 'confirmed', 'new'].includes(order.status)
+                ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20'
+            }`}
+          >
+            {['pending', 'confirmed', 'new'].includes(order.status) ? 'Start Preparing' : 'Mark Ready'}
+          </button>
+        )}
       </div>
     </motion.div>
   );

@@ -109,6 +109,28 @@ const changePassword = async (req, res) => {
   }
 };
 
+const updateTheme = async (req, res) => {
+  const { mode, primaryColor, borderRadius, sidebarStyle, fontFamily } = req.body;
+  try {
+    const admin = await Admin.findById(req.admin.id);
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+    if (!admin.theme) admin.theme = {};
+    
+    if (mode) admin.theme.mode = mode;
+    if (primaryColor) admin.theme.primaryColor = primaryColor;
+    if (borderRadius) admin.theme.borderRadius = borderRadius;
+    if (sidebarStyle) admin.theme.sidebarStyle = sidebarStyle;
+    if (fontFamily) admin.theme.fontFamily = fontFamily;
+
+    await admin.save();
+    res.json({ message: 'Theme updated successfully', theme: admin.theme });
+  } catch (error) {
+    console.error('Update Theme Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const Order = require('../Models/Order');
 const Staff = require('../Models/Staff');
 const Stock = require('../Models/Stock');
@@ -219,5 +241,6 @@ module.exports = {
   getPublicRestaurantInfo,
   updateProfile,
   changePassword,
+  updateTheme,
   getDashboardStats
 };

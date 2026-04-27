@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, Trash2, Edit2, Grid, ChevronLeft, ChevronRight, CheckCircle2, Square, Circle, RectangleVertical as Rect, AlertTriangle, Hash, RefreshCw, QrCode, StickyNote, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../components/ui/AdminModal';
@@ -17,6 +18,17 @@ export default function TableManagement() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState(null);
   const [selectedQrTable, setSelectedQrTable] = useState(null);
+  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'occupied'
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const filter = searchParams.get('filter');
+    if (filter === 'occupied') {
+      setActiveTab('occupied');
+    } else {
+      setActiveTab('all');
+    }
+  }, [searchParams]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -185,10 +197,15 @@ export default function TableManagement() {
     return `${window.location.origin}/menu?t=${encodeURIComponent(cipher)}`;
   };
 
-  const filteredTables = tables.filter(t => 
-    t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    t.tableCode.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTables = tables.filter(t => {
+    const matchesSearch = t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         t.tableCode.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (activeTab === 'occupied') {
+      return matchesSearch && (t.status === 'Occupied' || t.status === 'Reserved');
+    }
+    return matchesSearch;
+  });
 
   const totalPages = Math.ceil(filteredTables.length / itemsPerPage);
   const currentItems = filteredTables.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -196,6 +213,8 @@ export default function TableManagement() {
   const getStatusStyle = (status) => {
     switch(status) {
       case 'Available': return 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100';
+      case 'Occupied': return 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100';
+      case 'Reserved': return 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100';
       case 'Damaged': return 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100';
       default: return 'bg-slate-50 text-slate-400 border-slate-100';
     }
@@ -210,134 +229,126 @@ export default function TableManagement() {
   };
 
   return (
-    <div className="p-8 space-y-10 max-w-[1400px] mx-auto min-h-screen pb-40">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-           <div className="flex items-center gap-3 mb-2">
-              <div className="p-2.5 bg-slate-900 text-white rounded-2xl shadow-xl shadow-slate-900/20">
-                 <Grid size={22} strokeWidth={2.5} className="text-amber-400" />
-              </div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase tracking-tighter italic">Table Management</h1>
-           </div>
-           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Restaurant ka layout aur table codes manage karein</p>
-        </div>
-        
-        <button 
-          onClick={() => handleOpenModal()}
-          className="h-14 px-8 bg-[#2C2C2C] text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all group"
-        >
-          <div className="p-2 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-slate-900 transition-colors">
-            <Plus size={16} strokeWidth={3} />
+    <div className="h-screen flex flex-col bg-[#F8F9FA] overflow-hidden admin-layout">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-slate-900 text-white rounded-xl shadow-lg">
+            <Grid size={20} strokeWidth={2.5} className="text-amber-400" />
           </div>
-          Add New Table
-        </button>
-      </div>
+          <div>
+            <h1 className="text-lg font-black text-slate-900 tracking-tight uppercase leading-none italic">Table Management</h1>
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Floor Plan Control</p>
+          </div>
+        </div>
 
-      {/* Modern Search */}
-      <div className="bg-white/40 backdrop-blur-md sticky top-0 z-10 py-4 -mx-4 px-4 border-b border-transparent">
-        <div className="relative group w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search by code or name..."
-            className="w-full bg-white border border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-[11px] font-bold uppercase tracking-widest focus:ring-4 focus:ring-slate-900/5 transition-all outline-none shadow-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative group w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <input 
+              type="text" 
+              placeholder="Search nodes..."
+              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 pl-9 pr-4 text-[10px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-slate-900/10 outline-none transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <button 
+            onClick={async () => {
+              const status = window.confirm("Reset all tables to Available?") ? "Available" : (window.confirm("Set all tables to Occupied?") ? "Occupied" : null);
+              if (!status) return;
+              try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/table/bulk-status`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` },
+                  body: JSON.stringify({ status })
+                });
+                if (res.ok) { toast.success(`All tables are now ${status}`); fetchTables(); }
+              } catch (err) { toast.error('Bulk update failed'); }
+            }}
+            className="h-10 px-4 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+          >
+            <RefreshCw size={12} strokeWidth={3} />
+            Bulk
+          </button>
+
+          <button 
+            onClick={() => handleOpenModal()}
+            className="h-10 px-5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg hover:scale-105 transition-all"
+          >
+            <Plus size={14} strokeWidth={3} />
+            New Node
+          </button>
         </div>
       </div>
 
-      {/* Layout Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-           {[1, 2, 3].map(i => (
-             <div key={i} className="bg-white rounded-[3rem] h-64 animate-pulse border border-slate-100 shadow-sm" />
-           ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-           {currentItems.map((table) => (
-             <motion.div 
-               layout
-               initial={{ opacity: 0, scale: 0.98 }}
-               animate={{ opacity: 1, scale: 1 }}
-               key={table._id} 
-               className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-xl hover:shadow-2xl transition-all group relative overflow-hidden"
-             >
-                <div className="mb-6">
-                   <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-2">
-                         <span className="p-2 bg-slate-50 text-slate-400 rounded-xl border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm shrink-0">
-                            {getShapeIcon(table.shape)}
-                         </span>
-                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{table.floor}</span>
-                      </div>
-                      <button 
-                         onClick={(e) => toggleStatus(e, table)}
-                         className={`px-3 py-1.5 rounded-xl border font-black text-[8px] uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95 whitespace-nowrap shrink-0 shadow-sm ${getStatusStyle(table.status)}`}
-                      >
-                         {table.status === 'Damaged' ? <AlertTriangle size={8} /> : <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />}
-                         {table.status === 'Damaged' ? 'Not Available' : 'Available'}
-                      </button>
-                   </div>
-                   
-                   <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-1">
-                      {table.tableName}
-                   </h3>
-                   <div className="flex items-center gap-2 text-slate-400">
-                      <Hash size={10} className="text-amber-500 shrink-0" />
-                      <span className="text-[9px] font-black uppercase tracking-widest leading-none">{table.tableCode}</span>
-                   </div>
-                </div>
+      {/* High Density Layout Grid */}
+      <div className="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-50/30">
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+             {[1, 2, 3, 4, 5, 6].map(i => (
+               <div key={i} className="bg-white rounded-2xl h-32 animate-pulse border border-slate-100 shadow-sm" />
+             ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 content-start">
+             {filteredTables.map((table) => (
+               <motion.div 
+                 layout
+                 initial={{ opacity: 0, scale: 0.95 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 key={table._id} 
+                 className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex flex-col justify-between h-44"
+               >
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                       <span className="p-1.5 bg-slate-50 text-slate-400 rounded-lg border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm shrink-0">
+                          {getShapeIcon(table.shape)}
+                       </span>
+                       <button 
+                          onClick={(e) => toggleStatus(e, table)}
+                          className={`px-2 py-0.5 rounded-lg border font-black text-[7px] uppercase tracking-widest flex items-center gap-1.5 transition-all active:scale-95 whitespace-nowrap shrink-0 shadow-sm ${getStatusStyle(table.status)}`}
+                       >
+                          {table.status === 'Damaged' ? <AlertTriangle size={8} /> : <div className={`w-1 h-1 rounded-full animate-pulse ${table.status === 'Available' ? 'bg-emerald-500' : 'bg-amber-500'}`} />}
+                          {table.status === 'Damaged' ? 'N/A' : table.status}
+                       </button>
+                    </div>
+                    
+                    <h3 className="text-sm font-black text-slate-900 tracking-tight uppercase leading-tight truncate">
+                       {table.tableName}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-slate-400 mt-1">
+                       <Hash size={10} className="text-amber-500 shrink-0" />
+                       <span className="text-[8px] font-black uppercase tracking-widest leading-none">{table.tableCode}</span>
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                   <div className="bg-slate-50/50 py-3 px-4 rounded-2xl border border-slate-50 text-center">
-                      <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Capacity</p>
-                      <p className="font-black text-slate-900 text-[11px] tracking-tight">{table.capacity} SEATER</p>
-                   </div>
-                   <div className="bg-slate-50/50 py-3 px-4 rounded-2xl border border-slate-50 text-center">
-                      <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Area</p>
-                      <p className="font-black text-slate-900 text-[9px] truncate uppercase">{table.area}</p>
-                   </div>
-                </div>
+                  <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-50 gap-2">
+                     <div className="flex gap-1.5">
+                       <button onClick={() => handleOpenModal(table)} className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                          <Edit2 size={12} strokeWidth={2.5} />
+                       </button>
+                       <button onClick={() => { setTableToDelete(table); setIsDeleteModalOpen(true); }} className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                          <Trash2 size={12} strokeWidth={2.5} />
+                       </button>
+                       <button 
+                          onClick={() => setSelectedQrTable(table)}
+                          className="p-2 bg-slate-900 text-amber-400 rounded-lg hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                       >
+                          <QrCode size={12} strokeWidth={2.5} />
+                       </button>
+                     </div>
+                  </div>
+                  
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-slate-50 rounded-full group-hover:scale-[2.5] transition-all duration-700 opacity-20" />
+               </motion.div>
+             ))}
+          </div>
+        )}
+      </div>
 
-                <div className="flex items-center justify-between pt-5 border-t border-slate-50">
-                   <div className="flex gap-2">
-                     <button onClick={() => handleOpenModal(table)} className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                        <Edit2 size={14} strokeWidth={2.5} />
-                     </button>
-                     <button onClick={() => { setTableToDelete(table); setIsDeleteModalOpen(true); }} className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm">
-                        <Trash2 size={14} strokeWidth={2.5} />
-                     </button>
-                     <button 
-                        onClick={() => setSelectedQrTable(table)}
-                        className="p-3 bg-slate-900 text-amber-400 rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
-                     >
-                        <QrCode size={14} strokeWidth={2.5} />
-                     </button>
-                   </div>
-                   <div className="flex items-center gap-2 bg-slate-50 text-slate-400 border border-slate-100 px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-sm">
-                      <CheckCircle2 size={10} className="text-emerald-400" /> SYSTEM SYNC
-                   </div>
-                </div>
-                
-                {/* Visual Floor Decor */}
-                <div className="absolute -bottom-6 -right-6 w-12 h-12 bg-slate-100 rounded-full group-hover:scale-[3] transition-all duration-700 opacity-30" />
-             </motion.div>
-           ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {!isLoading && filteredTables.length > itemsPerPage && (
-        <div className="flex items-center justify-center gap-2 pt-10">
-            <button disabled={currentPage === 1} onClick={() => setCurrentPage(d => d - 1)} className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm disabled:opacity-30"><ChevronLeft size={18}/></button>
-            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(d => d + 1)} className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm disabled:opacity-30"><ChevronRight size={18}/></button>
-        </div>
-      )}
-
-      {/* QR Modal */}
+      {/* Modals */}
       <AdminModal
         isOpen={!!selectedQrTable}
         onClose={() => setSelectedQrTable(null)}

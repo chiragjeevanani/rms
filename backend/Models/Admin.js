@@ -30,6 +30,13 @@ const adminSchema = new mongoose.Schema({
   address: {
     type: String,
     default: '',
+  },
+  theme: {
+    mode: { type: String, default: 'light' },
+    primaryColor: { type: String, default: '#2C2C2C' },
+    borderRadius: { type: String, default: '2rem' },
+    sidebarStyle: { type: String, default: 'solid' },
+    fontFamily: { type: String, default: 'Outfit' }
   }
 }, { timestamps: true });
 

@@ -88,3 +88,107 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-family-sans); }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* ─── Admin Dynamic Design Studio ─── */
+:root {
+  --admin-primary: #2C2C2C;
+  --admin-radius: 2rem;
+  --admin-font: 'Outfit';
+}
+
+/* Global Typography Override */
+.admin-layout, .admin-layout * {
+  font-family: var(--admin-font), 'Outfit', sans-serif !important;
+}
+
+/* Dynamic Primary Color System */
+.admin-bg-primary {
+  background-color: var(--admin-primary) !important;
+}
+
+.admin-text-primary {
+  color: var(--admin-primary) !important;
+}
+
+.admin-border-primary {
+  border-color: var(--admin-primary) !important;
+}
+
+/* Dynamic Radius System */
+.rounded-2xl, .rounded-\[2rem\], .rounded-\[2\.5rem\], .rounded-3xl, .rounded-\[3rem\] {
+  border-radius: var(--admin-radius) !important;
+}
+
+/* Legacy Overrides for hardcoded primary colors */
+.bg-\[\#2C2C2C\], .bg-\[\#ff7a00\], .bg-slate-900 {
+  background-color: var(--admin-primary) !important;
+}
+
+.hover\:bg-amber-500:hover, .hover\:bg-\[\#ff7a00\]:hover {
+  background-color: var(--admin-primary) !important;
+  opacity: 0.9;
+}
+
+.text-amber-500, .text-amber-600, .text-\[\#ff7a00\] {
+  color: var(--admin-primary) !important;
+}
+
+.border-amber-500, .border-\[\#ff7a00\] {
+  border-color: var(--admin-primary) !important;
+}
+
+/* Admin Sidebar Variants */
+.sidebar-glass {
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.admin-dark .sidebar-glass {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.sidebar-minimal {
+  background: transparent !important;
+  border-right: none !important;
+}
+
+/* Admin Dark Mode Overrides */
+.admin-dark {
+  background-color: #0B0E14 !important;
+  color: #E2E8F0;
+}
+
+.admin-dark .bg-white {
+  background-color: #161B22 !important;
+  border-color: #21262D !important;
+}
+
+.admin-dark .bg-slate-50, .admin-dark .bg-stone-50, .admin-dark .bg-stone-100 {
+  background-color: #0D1117 !important;
+  border-color: #21262D !important;
+}
+
+.admin-dark .text-slate-900, .admin-dark .text-stone-800, .admin-dark .text-stone-900 {
+  color: #F0F6FC !important;
+}
+
+.admin-dark .text-slate-400, .admin-dark .text-stone-400, .admin-dark .text-stone-500 {
+  color: #8B949E !important;
+}
+
+.admin-dark .border-slate-100, .admin-dark .border-stone-200, .admin-dark .border-stone-100 {
+  border-color: #30363D !important;
+}
+
+.admin-dark input, .admin-dark textarea, .admin-dark select {
+  background-color: #0D1117 !important;
+  color: #C9D1D9 !important;
+  border-color: #30363D !important;
+}
+
+.admin-dark .glass-effect {
+  background: rgba(13, 17, 23, 0.7) !important;
+}
+

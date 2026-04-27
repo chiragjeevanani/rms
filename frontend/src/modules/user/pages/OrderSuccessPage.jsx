@@ -37,16 +37,8 @@ export default function OrderSuccessPage() {
         <div className="space-y-4 mb-16">
            <motion.button
              whileTap={{ scale: 0.95 }}
-             onClick={() => navigate('/order-tracking')}
-             className="w-full bg-charcoal-900 dark:bg-white text-white dark:text-charcoal-900 py-5 rounded-[1.5rem] font-black flex items-center justify-center gap-2 shadow-xl group border-b-4 border-black/20 dark:border-charcoal-200"
-           >
-             Track Progress <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-           </motion.button>
-           
-           <motion.button
-             whileTap={{ scale: 0.95 }}
              onClick={() => navigate('/menu')}
-             className="w-full bg-charcoal-900/5 dark:bg-white/5 border border-charcoal-900/10 dark:border-white/10 text-charcoal-600 dark:text-white py-5 rounded-[1.5rem] font-black uppercase tracking-widest text-[10px]"
+             className="w-full bg-charcoal-900 dark:bg-white text-white dark:text-charcoal-900 py-6 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-2xl shadow-charcoal-900/20"
            >
              Back to Main Menu
            </motion.button>
@@ -68,14 +60,6 @@ export default function OrderSuccessPage() {
            </p>
         </motion.div>
       </div>
-
-      {/* Floating Icons */}
-      <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 4, repeat: Infinity }} className="absolute top-[20%] right-[15%] opacity-10">
-         <Heart size={48} />
-      </motion.div>
-      <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 3, repeat: Infinity }} className="absolute bottom-[20%] left-[15%] opacity-10">
-         <Share2 size={48} />
-      </motion.div>
     </div>
   );
 }

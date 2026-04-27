@@ -78,7 +78,7 @@ export default function KdsOrderDetailsPage() {
   const allItemsCompleted = order.items.every(i => i.status === 'completed');
 
   return (
-    <div className={`h-screen flex flex-col transition-colors duration-500 ${
+    <div className={`flex-1 flex flex-col overflow-hidden transition-colors duration-500 ${
       isDarkMode ? 'bg-[#0A0A0B] text-white' : 'bg-stone-50 text-stone-900'
     }`}>
       
@@ -127,8 +127,8 @@ export default function KdsOrderDetailsPage() {
       <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         
         {/* Left Side: Order Geometry & Geometry Details */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-12 no-scrollbar">
-           <div className="max-w-4xl mx-auto space-y-12">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 no-scrollbar">
+           <div className="max-w-4xl mx-auto space-y-8">
               
               {/* Table Identity Billboard */}
               <motion.div 
@@ -141,7 +141,7 @@ export default function KdsOrderDetailsPage() {
                       <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                       <span className="text-xs font-black uppercase tracking-[0.3em] text-stone-500">Active Order</span>
                    </div>
-                   <h1 className="text-6xl font-black uppercase tracking-tighter leading-none mb-4">
+                   <h1 className="text-3xl lg:text-4xl font-black uppercase tracking-tighter leading-none mb-4">
                       Table <span className="text-[#D4AF37]">#{order.table}</span>
                    </h1>
                    <div className="flex items-center gap-4">
@@ -160,7 +160,7 @@ export default function KdsOrderDetailsPage() {
                    </div>
                 </div>
 
-                <div className={`p-8 rounded-[2.5rem] border flex flex-col items-center justify-center text-center ${
+                <div className={`p-6 rounded-[2rem] border flex flex-col items-center justify-center text-center ${
                   isDarkMode ? 'bg-white/5 border-white/5' : 'bg-white border-stone-100 shadow-xl'
                 }`}>
                    <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] mb-2">Items</span>
@@ -186,7 +186,7 @@ export default function KdsOrderDetailsPage() {
                       }`}
                     >
                       {/* Product Thumbnail */}
-                      <div className="w-40 lg:w-48 bg-stone-900 border-r border-white/5 relative overflow-hidden shrink-0">
+                      <div className="w-32 lg:w-36 bg-stone-900 border-r border-white/5 relative overflow-hidden shrink-0">
                          {item.image ? (
                            <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                          ) : (
@@ -200,9 +200,9 @@ export default function KdsOrderDetailsPage() {
                       </div>
 
                       {/* Item Details */}
-                      <div className="flex-1 p-6 lg:p-8 flex flex-col justify-center">
+                      <div className="flex-1 p-4 lg:p-6 flex flex-col justify-center">
                          <div className="flex items-center justify-between mb-2">
-                           <h4 className={`text-2xl lg:text-3xl font-black uppercase tracking-tight transition-all ${
+                           <h4 className={`text-xl lg:text-2xl font-black uppercase tracking-tight transition-all ${
                              item.status === 'completed' ? 'line-through text-stone-500' : ''
                            }`}>
                              {item.name}
@@ -243,21 +243,21 @@ export default function KdsOrderDetailsPage() {
         </div>
 
         {/* Right Side: Operational Sidebar */}
-        <aside className={`w-full lg:w-[400px] shrink-0 border-l p-8 lg:p-12 transition-colors flex flex-col ${
+        <aside className={`w-full lg:w-[320px] shrink-0 border-l p-6 transition-colors flex flex-col overflow-y-auto no-scrollbar ${
           isDarkMode ? 'bg-[#0F1113] border-white/5' : 'bg-white border-stone-200'
         }`}>
-           <div className="flex-1 space-y-12">
+           <div className="flex-1 space-y-8">
               <section>
-                 <div className="flex items-center gap-3 mb-8">
+                 <div className="flex items-center gap-3 mb-6">
                     <Activity size={18} className="text-[#D4AF37]" />
                     <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#D4AF37]">Order Status</h3>
                  </div>
                  
-                 <div className="space-y-4">
-                    {order.status === 'new' && (
+                  <div className="space-y-4">
+                    {['new', 'pending', 'confirmed'].includes(order.status) && (
                       <button 
-                        onClick={() => handleStatusChange('preparing')}
-                        className="w-full h-24 bg-[#ff7a00] text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-[#ff7a00]/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                        onClick={() => handleStatusChange('Preparing')}
+                        className="w-full h-20 bg-[#ff7a00] text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-[#ff7a00]/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
                       >
                         <ChefHat size={24} />
                         Start Preparing
@@ -266,8 +266,8 @@ export default function KdsOrderDetailsPage() {
                     
                     {order.status === 'preparing' && (
                       <button 
-                        onClick={() => handleStatusChange('ready')}
-                        className="w-full h-24 bg-emerald-600 border-2 border-emerald-500 text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                        onClick={() => handleStatusChange('Ready')}
+                        className="w-full h-20 bg-emerald-600 border-2 border-emerald-500 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
                       >
                         <CheckCircle size={24} />
                         Mark Ready

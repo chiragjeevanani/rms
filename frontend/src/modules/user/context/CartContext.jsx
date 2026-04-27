@@ -6,7 +6,7 @@ const initialState = {
   items: [],
   promoCode: '',
   promoDiscount: 0,
-  orderType: 'dine-in', // 'dine-in' | 'takeaway'
+  orderType: 'Dine-In', // 'Dine-In' | 'Takeaway'
   tableNumber: '7',
   specialInstructions: '',
   isOrderOnline: true, // Master toggle for ordering
@@ -42,6 +42,7 @@ function cartReducer(state, action) {
             image: item.image,
             quantity,
             isVeg: item.isVeg,
+            preparationTime: Number(item.preparationTime || 15),
           },
         ],
       };

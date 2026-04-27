@@ -11,6 +11,7 @@ import { OrderProvider } from './context/OrderContext';
 import { PosProvider } from './modules/pos/context/PosContext';
 import { Toaster } from 'react-hot-toast';
 import PageLoader from './components/ui/PageLoader';
+import ErrorBoundary from './components/error/ErrorBoundary';
 
 function RootRedirect() {
   const isAdmin = localStorage.getItem('admin_access');
@@ -20,7 +21,7 @@ function RootRedirect() {
   const isUser = localStorage.getItem('user_token');
 
   if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
-  if (isStaff) return <Navigate to="/staff/dashboard" replace />;
+  if (isStaff) return <Navigate to="/staff/profile" replace />;
   if (isPos) return <Navigate to="/pos/tables/list" replace />;
   if (isKds) return <Navigate to="/kds/dashboard" replace />;
   if (isUser) return <Navigate to="/menu" replace />;
@@ -44,22 +45,24 @@ function App() {
 
   return (
     <BrowserRouter>
-      <ThemeProvider>
-        <CartProvider>
-          <PosProvider>
-            <OrderProvider>
-              <Routes>
-                <Route path="/" element={<RootRedirect />} />
-                <Route path="/staff/*" element={<StaffRoutes />} />
-                <Route path="/kds/*" element={<KdsRoutes />} />
-                <Route path="/pos/*" element={<PosRoutes />} />
-                <Route path="/admin/*" element={<AdminRoutes />} />
-                <Route path="/*" element={<UserRoutes />} />
-              </Routes>
-            </OrderProvider>
-          </PosProvider>
-        </CartProvider>
-      </ThemeProvider>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <CartProvider>
+            <PosProvider>
+              <OrderProvider>
+                <Routes>
+                  <Route path="/" element={<RootRedirect />} />
+                  <Route path="/staff/*" element={<StaffRoutes />} />
+                  <Route path="/kds/*" element={<KdsRoutes />} />
+                  <Route path="/pos/*" element={<PosRoutes />} />
+                  <Route path="/admin/*" element={<AdminRoutes />} />
+                  <Route path="/*" element={<UserRoutes />} />
+                </Routes>
+              </OrderProvider>
+            </PosProvider>
+          </CartProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
       <Toaster position="top-center" reverseOrder={false} />
     </BrowserRouter>
   );

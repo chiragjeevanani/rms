@@ -77,10 +77,26 @@ const updateTableStatus = async (req, res) => {
     }
 };
 
+const bulkUpdateTables = async (req, res) => {
+  const { status } = req.body;
+  try {
+    const isAvailable = status === 'Available';
+    await Table.updateMany({}, { status, isAvailable });
+    
+    const io = req.app.get('socketio');
+    if (io) io.emit('tableStatusChanged');
+    
+    res.json({ message: `All tables set to ${status}` });
+  } catch (error) {
+    res.status(500).json({ message: 'Error in bulk update' });
+  }
+};
+
 module.exports = {
   getTables,
   addTable,
   updateTable,
   deleteTable,
-  updateTableStatus
+  updateTableStatus,
+  bulkUpdateTables
 };

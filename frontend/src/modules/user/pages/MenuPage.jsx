@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useCart } from '../context/CartContext';
 import { RESTAURANT_INFO } from '../data/mockData';
 import { BottomNav } from '../components/BottomNav';
+import { CartDrawer } from '../components/CartDrawer';
 import CryptoJS from 'crypto-js';
 
 const TABLE_SECRET = 'RMS_SECURE_DYNAMIC_PROTOCOL_2026';
@@ -24,6 +25,8 @@ export default function MenuPage() {
   const { isDarkMode, toggleTheme } = useTheme();
   
   const [showTablePicker, setShowTablePicker] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { itemCount, total } = useCart();
 
   useEffect(() => {
     // Check URL for table parameter
@@ -117,6 +120,7 @@ export default function MenuPage() {
       originalPrice: i.hasVariants ? i.variants.find(v => v.isDefault)?.originalPrice : (i.basePrice || i.originalPrice),
       rating: i.reviews?.length > 0 ? (i.reviews.reduce((acc, r) => acc + r.rating, 0) / i.reviews.length).toFixed(1) : (i.rating || 0),
       isVeg: i.foodType === 'Veg' || i.isVeg || (i.items && i.items.every(ci => ci.item?.foodType === 'Veg' || ci.item?.isVeg)),
+      preparationTime: i.preparationTime || 15,
     }));
   }, [activeCategory, items, combos, searchQuery, isVegOnly]);
 
@@ -223,10 +227,15 @@ export default function MenuPage() {
             <div className="flex items-center gap-3">
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={toggleTheme}
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors bg-charcoal-900/5 dark:bg-white/5 text-charcoal-600 dark:text-charcoal-300 hover:text-charcoal-900 dark:hover:text-white"
+                onClick={() => setIsCartOpen(true)}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors bg-brand-500/10 text-brand-500 hover:bg-brand-500 hover:text-charcoal-900 relative"
               >
-                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                <ShoppingBag size={18} />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-charcoal-900 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-brand-500">
+                    {itemCount}
+                  </span>
+                )}
               </motion.button>
             </div>
           </div>
@@ -289,7 +298,7 @@ export default function MenuPage() {
             <AnimatePresence mode="popLayout">
               {filteredItems.map((item, idx) => (
                 <motion.div key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: idx * 0.03 }}>
-                  <FoodCard item={item} />
+                  <FoodCard item={item} onAdd={() => setIsCartOpen(true)} />
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -297,6 +306,42 @@ export default function MenuPage() {
         </main>
 
         <BottomNav />
+
+        {/* Floating Cart Button */}
+        <AnimatePresence>
+          {itemCount > 0 && isOrderOnline && (
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-50"
+            >
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="w-full bg-brand-500 text-charcoal-900 h-16 rounded-[2rem] shadow-2xl shadow-brand-500/40 flex items-center justify-between px-6 border-4 border-white dark:border-charcoal-800 transition-transform active:scale-95"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-charcoal-900/10 rounded-xl flex items-center justify-center relative">
+                    <ShoppingBag size={20} />
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-charcoal-900 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand-500">
+                      {itemCount}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-start leading-none">
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">View Your Order</span>
+                    <span className="text-sm font-bold">₹{total}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                   <span className="text-[10px] font-black uppercase tracking-widest">Cart</span>
+                   <ChevronRight size={18} />
+                </div>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
     </div>
   );

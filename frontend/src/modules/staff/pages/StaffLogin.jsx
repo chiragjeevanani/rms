@@ -11,8 +11,8 @@ export default function StaffLogin() {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: 'waiter@rms.com',
+    password: 'password123',
     otp: '',
     newPassword: '',
     confirmPassword: ''
@@ -46,7 +46,7 @@ export default function StaffLogin() {
         localStorage.setItem('staff_access', data.token);
         localStorage.setItem('staff_info', JSON.stringify(data));
         toast.success(`Welcome back, ${data.name}`);
-        navigate('/staff/dashboard');
+        navigate('/staff/profile');
       } else {
         toast.error(data.message || 'Invalid Credentials');
       }

@@ -304,7 +304,13 @@ export default function Categories() {
                       </div>
                     </div>
                     
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-1">{cat.name}</h3>
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">{cat.name}</h3>
+                      <div className="bg-blue-50 px-2 py-1 rounded-lg flex items-center gap-1 border border-blue-100">
+                        <Utensils size={10} className="text-blue-500" />
+                        <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">{cat.itemCount || 0} Items</span>
+                      </div>
+                    </div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest line-clamp-2 h-8">
                       {cat.description || 'No description provided'}
                     </p>
@@ -316,7 +322,6 @@ export default function Categories() {
                           title="Edit"
                        >
                          <Edit2 size={12} />
-                         Edit
                        </button>
                        <button 
                           onClick={() => handleDelete(cat)}
@@ -360,7 +365,10 @@ export default function Categories() {
                            )}
                         </div>
                         <div className="flex-1 min-w-0">
-                           <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight truncate">{cat.name}</h3>
+                           <div className="flex items-center gap-3 mb-1">
+                              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight truncate">{cat.name}</h3>
+                              <span className="text-[9px] font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-widest">{cat.itemCount || 0} Assets</span>
+                           </div>
                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate max-w-md">
                              {cat.description || 'No description provided'}
                            </p>
@@ -504,9 +512,9 @@ export default function Categories() {
         onClose={() => setIsDeleteModalOpen(false)}
         title="Confirm Deletion"
         subtitle="Are you sure you want to remove this category?"
-        onSubmit={confirmDelete}
+        icon={Trash2}
       >
-        <div className="space-y-6">
+        <form onSubmit={confirmDelete} className="space-y-6">
           <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100 flex items-center gap-4">
              <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/20">
                 <Trash2 size={24} />
@@ -538,7 +546,7 @@ export default function Categories() {
                className="flex-1 py-5 bg-rose-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all outline-none"
              >Yes, Delete</button>
           </div>
-        </div>
+        </form>
       </AdminModal>
     </div>
   );

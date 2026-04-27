@@ -17,6 +17,7 @@ import PrivacySettingsPage from '../pages/PrivacySettingsPage';
 import AppSettingsPage from '../pages/AppSettingsPage';
 import UserLoginPage from '../pages/UserLoginPage';
 import UserSignupPage from '../pages/UserSignupPage';
+import ErrorPage from '../../../pages/ErrorPage';
 
 export default function UserRoutes() {
   const location = useLocation();
@@ -45,7 +46,7 @@ export default function UserRoutes() {
           <Route path="/privacy" element={<PrivacySettingsPage />} />
           <Route path="/settings" element={<AppSettingsPage />} />
           {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/welcome" replace />} />
+          <Route path="*" element={<ErrorPage code="404" message="This page does not exist in our kitchen." />} />
         </Routes>
       </AnimatePresence>
     </div>

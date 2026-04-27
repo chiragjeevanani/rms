@@ -6,6 +6,7 @@ const {
   getPublicRestaurantInfo,
   updateProfile, 
   changePassword,
+  updateTheme,
   getDashboardStats 
 } = require('../Controllers/adminController');
 const { protectAdmin } = require('../Middleware/authMiddleware');
@@ -16,6 +17,7 @@ router.get('/public-info', getPublicRestaurantInfo);
 router.get('/profile', protectAdmin, getProfile);
 router.get('/dashboard-stats', protectAdmin, getDashboardStats);
 router.put('/profile', protectAdmin, updateProfile);
+router.put('/update-theme', protectAdmin, updateTheme);
 router.put('/change-password', protectAdmin, changePassword);
 router.post('/upload', protectAdmin, upload.single('profileImg'), processImage, (req, res) => {
   if (req.file && req.file.path) {

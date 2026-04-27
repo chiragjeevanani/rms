@@ -6,8 +6,8 @@ import toast from 'react-hot-toast';
 
 export default function PosLoginPage() {
   const [formData, setFormData] = useState({
-    email: 'admin@pos.com',
-    password: '123456'
+    email: 'pos@rms.com',
+    password: 'password123'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

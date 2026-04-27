@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function CheckoutPage() {
-  const { subtotal, tax, total, items, orderType, tableNumber } = useCart();
+  const { subtotal, tax, total, items, orderType, tableNumber, clearCart } = useCart();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -34,7 +34,7 @@ export default function CheckoutPage() {
         quantity: item.quantity,
         price: item.price
       })),
-      orderType: orderType || 'Dine-In',
+      orderType: orderType === 'dine-in' ? 'Dine-In' : (orderType || 'Dine-In'),
       subTotal: subtotal,
       tax: tax,
       grandTotal: total,
@@ -42,6 +42,7 @@ export default function CheckoutPage() {
     };
 
     createOrder(newOrder);
+    clearCart();
 
     setTimeout(() => {
       navigate('/order-success');
@@ -74,53 +75,51 @@ export default function CheckoutPage() {
         </header>
 
         <main className="space-y-10">
-          {/* Order Info Summary */}
+          {/* Order Summary & Payment */}
           <section className="bg-white dark:bg-charcoal-800 rounded-[2.5rem] p-8 border border-charcoal-900/10 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-2xl">
              <div className="flex justify-between items-center mb-8 border-b border-charcoal-900/10 dark:border-white/5 pb-6">
                 <div className="flex items-center gap-3">
                    <div className="w-10 h-10 bg-brand-500/10 rounded-xl flex items-center justify-center text-brand-500">
                       <Utensils size={20} />
                    </div>
-                   <span className="font-display font-bold text-lg capitalize text-charcoal-900 dark:text-white">{orderType}</span>
+                   <span className="font-display font-bold text-lg capitalize text-charcoal-900 dark:text-white">Order Summary</span>
                 </div>
                 <div className="bg-charcoal-900/5 dark:bg-white/5 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-charcoal-700 dark:text-charcoal-400">
                    Table {tableNumber}
                 </div>
              </div>
 
-             <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-600 dark:text-charcoal-500 mb-6">Payment Method</h3>
-                <div className="space-y-3">
-                   {methods.map((method) => {
-                     const isSelected = paymentMethod === method.id;
-                     return (
-                       <motion.button
-                         key={method.id}
-                         onClick={() => setPaymentMethod(method.id)}
-                         whileTap={{ scale: 0.98 }}
-                         className={`w-full p-6 rounded-3xl border-2 transition-all flex items-center justify-between group ${
-                           isSelected 
-                             ? 'border-brand-500 bg-brand-500/5' 
-                             : 'border-charcoal-900/10 dark:border-white/5 bg-charcoal-900/5 dark:bg-white/5 hover:border-charcoal-900/20 dark:hover:border-white/10'
-                         }`}
-                       >
-                          <div className="flex items-center gap-5">
-                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
-                               isSelected ? 'bg-brand-500 text-charcoal-900 border-b-4 border-black/20' : 'bg-charcoal-700 text-charcoal-400'
-                             }`}>
-                                <method.icon size={22} strokeWidth={2.5} />
-                             </div>
-                             <div className="text-left">
-                                <p className={`font-bold transition-colors ${isSelected ? 'text-charcoal-900 dark:text-white' : 'text-charcoal-500 dark:text-charcoal-400'}`}>{method.name}</p>
-                                <p className={`text-[10px] uppercase font-black tracking-widest mt-1 ${isSelected ? 'text-brand-600 dark:text-brand-400' : 'text-charcoal-400 dark:text-charcoal-600'}`}>{method.sub}</p>
-                             </div>
-                          </div>
-                           <div className={`w-6 h-6 rounded-full border-2 transition-all ${
-                            isSelected ? 'border-brand-500 bg-brand-500 ring-4 ring-brand-500/20' : 'border-charcoal-200 dark:border-charcoal-700'
-                          }`} />
-                       </motion.button>
-                     );
-                   })}
+             {/* Order Details List */}
+             <div className="space-y-6 mb-8">
+                {items.map((item) => (
+                  <div key={item.cartId} className="flex gap-4 items-center">
+                    <div className="w-12 h-12 rounded-xl bg-charcoal-50 dark:bg-white/5 border border-charcoal-100 dark:border-white/10 overflow-hidden shrink-0">
+                       <img src={item.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1">
+                       <h4 className="text-sm font-bold text-charcoal-900 dark:text-white">{item.name}</h4>
+                       <p className="text-[10px] font-black text-charcoal-400 uppercase tracking-widest">{item.quantity} Unit · ₹{item.price}</p>
+                    </div>
+                    <span className="text-sm font-bold text-charcoal-900 dark:text-white">₹{item.price * item.quantity}</span>
+                  </div>
+                ))}
+             </div>
+
+             <div className="space-y-4 pt-6 border-t border-charcoal-900/10 dark:border-white/5">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-600 dark:text-charcoal-500 mb-4">Payment Method</h3>
+                <div className="p-6 rounded-[2rem] border-2 border-brand-500 bg-brand-500/5 flex items-center justify-between">
+                   <div className="flex items-center gap-5">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-brand-500 text-charcoal-900 border-b-4 border-black/20">
+                         <Banknote size={22} strokeWidth={2.5} />
+                      </div>
+                      <div className="text-left">
+                         <p className="font-bold text-charcoal-900 dark:text-white">Pay at Counter</p>
+                         <p className="text-[10px] uppercase font-black tracking-widest mt-1 text-brand-600 dark:text-brand-400">Settlement after your meal</p>
+                      </div>
+                   </div>
+                   <div className="w-6 h-6 rounded-full border-2 border-brand-500 bg-brand-500 ring-4 ring-brand-500/20 flex items-center justify-center">
+                      <ShieldCheck size={12} className="text-charcoal-900" />
+                   </div>
                 </div>
              </div>
           </section>
@@ -128,10 +127,12 @@ export default function CheckoutPage() {
           {/* Time Guarantee */}
           <div className="bg-white dark:bg-white/5 rounded-3xl p-6 text-charcoal-900 dark:text-white flex items-center justify-between border border-charcoal-900/10 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-charcoal-600 dark:text-charcoal-500 mb-1">Estimated Preparation</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-charcoal-600 dark:text-charcoal-500 mb-1">Preparation Time</p>
                 <div className="flex items-center gap-2 text-brand-500">
                    <Clock size={16} strokeWidth={3} />
-                   <span className="text-lg font-display font-bold">18-22 minutes</span>
+                   <span className="text-lg font-display font-bold">
+                     {items.reduce((total, i) => total + (Number(i.preparationTime || 15) * i.quantity), 0)} minutes
+                   </span>
                 </div>
              </div>
              <ShieldCheck size={32} className="text-charcoal-700" />
@@ -170,7 +171,7 @@ export default function CheckoutPage() {
                 {isProcessing ? (
                    <div className="w-5 h-5 border-2 border-charcoal-900 border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <>Confirm & Pay <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
+                  <>Confirm Order <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
                 )}
              </motion.button>
           </div>

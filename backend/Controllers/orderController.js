@@ -27,30 +27,7 @@ const createOrder = async (req, res) => {
       source 
     } = req.body;
     
-    // Check if an active order (Not Paid/Cancelled) exists for this table
-    let order = await Order.findOne({ tableName, status: { $nin: ['Paid', 'Cancelled', 'Void'] } });
-
-    if (order) {
-      // It's a new KOT for existing order
-      // Append items, update totals
-      order.items = [...order.items, ...items];
-      order.subTotal = subTotal;
-      order.tax = tax;
-      order.grandTotal = grandTotal;
-      if (status) order.status = status;
-      // In case they were updated
-      if (discount) order.discount = discount;
-      if (serviceCharge) order.serviceCharge = serviceCharge;
-      
-      await order.save();
-      
-      const io = req.app.get('socketio');
-      if (io) io.emit('kotAdded', order);
-      
-      return res.json({ success: true, message: 'Order created', data: order });
-    }
-
-    // New Order creation
+    // New Order creation (Always create a new record as requested)
     const orderNumber = await generateOrderNumber();
     
     // Find table to get its ID
@@ -259,8 +236,49 @@ const getKitchenAnalytics = async (req, res) => {
       completed: await Order.countDocuments({ status: { $in: ['Ready', 'Served', 'Paid'] } })
     };
 
-    res.json({ success: true, data: { counts } });
+    // 1. Weekly Trends (Last 7 Days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const dailyTrends = await Order.aggregate([
+      { $match: { createdAt: { $gte: sevenDaysAgo } } },
+      { $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          orders: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    // Fill gaps for trends
+    const trends = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(sevenDaysAgo);
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+      const match = dailyTrends.find(t => t._id === dateStr);
+      trends.push({
+        name: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        orders: match ? match.orders : 0
+      });
+    }
+
+    // 2. Category Distribution (Top Items)
+    const categories = await Order.aggregate([
+      { $unwind: "$items" },
+      { $group: { 
+          _id: "$items.name", 
+          value: { $sum: "$items.quantity" } 
+        } 
+      },
+      { $sort: { value: -1 } },
+      { $limit: 5 }
+    ]).then(items => items.map(p => ({ name: p._id, value: p.value })));
+
+    res.json({ success: true, data: { counts, trends, categories } });
   } catch (error) {
+    console.error('Kitchen analytics error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

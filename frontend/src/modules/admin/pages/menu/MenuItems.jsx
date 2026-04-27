@@ -390,7 +390,7 @@ export default function MenuItems() {
               <motion.div 
                 key={item._id}
                 whileHover={{ y: -6 }}
-                className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all group relative flex flex-col min-h-[410px]"
+                className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all group relative flex flex-col"
               >
                 <div className="aspect-square relative overflow-hidden bg-slate-50 border-b border-slate-100">
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -408,37 +408,32 @@ export default function MenuItems() {
                      <p className="text-[10px] font-black text-white uppercase tracking-widest">{item.category?.name}</p>
                   </div>
                 </div>
-                <div className="p-6 flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="p-6 flex-1 flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${item.foodType === 'Veg' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]'}`} />
+                    <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-tight">{item.name}</h3>
+                  </div>
+
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${item.foodType === 'Veg' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                      <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight line-clamp-none">{item.name}</h3>
+                      <span className="text-xl font-black text-[#2C2C2C] leading-none">
+                        ₹{item.hasVariants ? item.variants.find(v => v.isDefault)?.price : item.basePrice}
+                      </span>
+                      <span className="text-[11px] font-bold text-slate-300 line-through tracking-tighter">
+                        ₹{item.hasVariants ? item.variants.find(v => v.isDefault)?.originalPrice : item.originalPrice}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg">
+                    <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100/50">
                       <Clock size={10} className="text-slate-400" />
-                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{item.preparationTime || 20}m</span>
+                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{item.preparationTime || 20}M</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">#{item.sku}</span>
-                    </div>
-                    <div className="flex flex-col items-end">
-                       <div className="flex items-center gap-2 mb-1">
-                         <span className="text-xl font-black text-[#2C2C2C] leading-none">
-                           ₹{item.hasVariants ? item.variants.find(v => v.isDefault)?.price : item.basePrice}
-                         </span>
-                         <span className="text-xs font-bold text-slate-400 line-through tracking-tighter opacity-70">
-                           ₹{item.hasVariants ? item.variants.find(v => v.isDefault)?.originalPrice : item.originalPrice}
-                         </span>
-                       </div>
-                       
-                    </div>
-                  </div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest line-clamp-2 h-8 mb-4">{item.description}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest line-clamp-2 leading-relaxed">
+                    {item.description}
+                  </p>
                   
-                  <div className="flex items-center gap-2 pt-4 border-t border-slate-50 mt-auto">
+                  <div className="flex items-center gap-2 pt-4 border-t border-slate-50 mt-2">
                     <Link 
                       to={`/admin/menu/items/${item._id}`}
                       className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm flex-shrink-0"
@@ -448,7 +443,7 @@ export default function MenuItems() {
                     </Link>
                     <button 
                       onClick={() => handleOpenModal(item)}
-                      className="flex-1 h-10 bg-slate-50 text-slate-600 text-[8px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                      className="flex-1 h-10 bg-slate-50 text-slate-600 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2"
                     >
                       <Edit2 size={12} />
                     </button>
@@ -461,7 +456,7 @@ export default function MenuItems() {
                       className={`h-10 px-3 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 flex-shrink-0 ${item.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
                       title={`Status: ${item.status}`}
                     >
-                      <div className={`w-2 h-2 rounded-full ${item.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
+                      <div className={`w-2.5 h-2.5 rounded-full ${item.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-200'}`} />
                     </button>
                   </div>
                 </div>
@@ -903,9 +898,9 @@ export default function MenuItems() {
         onClose={() => setIsDeleteModalOpen(false)}
         title="Confirm Exclusion"
         subtitle="Remove this item from operational catalog?"
-        onSubmit={confirmDelete}
+        icon={Trash2}
       >
-        <div className="space-y-6">
+        <form onSubmit={confirmDelete} className="space-y-6">
           <div className="p-6 bg-rose-50 rounded-[2.5rem] border border-rose-100 flex items-center gap-4">
              <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/20">
                 <Trash2 size={24} />
@@ -937,7 +932,7 @@ export default function MenuItems() {
                className="flex-1 py-5 bg-rose-500 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all outline-none"
              >Yes, Exclude</button>
           </div>
-        </div>
+        </form>
       </AdminModal>
     </div>
   );

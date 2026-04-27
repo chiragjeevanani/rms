@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Filter, Clock, CheckCircle, XCircle, ChevronRight, Eye, Edit2, Trash2, Save, MapPin, User, Hash } from 'lucide-react';
+import { ShoppingBag, Search, Filter, Clock, Eye, MapPin, User, Hash } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 
 export default function AllOrders() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -73,11 +74,15 @@ export default function AllOrders() {
     }
   };
 
-  const filteredOrders = orders.filter(o => 
-    o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    o.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    o.waiterName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredOrders = orders.filter(o => {
+    const matchesSearch = o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         o.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         o.waiterName?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'All' || o.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500 min-h-screen bg-[#FDFCFB]">
@@ -97,7 +102,7 @@ export default function AllOrders() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={14} />
           <input 
@@ -108,10 +113,19 @@ export default function AllOrders() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button className="h-full px-6 border border-slate-100 bg-white text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-50 transition-all shadow-sm">
-          <Filter size={14} />
-          Protocol Filter
-        </button>
+        <div className="flex items-center gap-2 bg-white border border-slate-100 rounded-2xl px-4 py-2 shadow-sm min-w-[200px]">
+           <Filter size={14} className="text-slate-400" />
+           <select 
+             value={statusFilter}
+             onChange={(e) => setStatusFilter(e.target.value)}
+             className="w-full bg-transparent border-none text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer"
+           >
+              <option value="All">All Statuses</option>
+              {['Pending', 'Confirmed', 'Preparing', 'Ready', 'Served', 'Paid', 'Cancelled'].map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+           </select>
+        </div>
       </div>
 
       <div className="bg-white border border-slate-100 rounded-[2rem] overflow-hidden shadow-xl shadow-slate-900/5">
@@ -150,7 +164,7 @@ export default function AllOrders() {
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <span className="text-sm font-black text-slate-900 tracking-tighter">₹{order.totalAmount}</span>
+                    <span className="text-sm font-black text-slate-900 tracking-tighter">₹{order.grandTotal}</span>
                   </td>
                   <td className="px-8 py-6">
                     <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.status)}`}>
@@ -215,7 +229,7 @@ export default function AllOrders() {
                     className={`py-3 text-[9px] font-black uppercase tracking-widest rounded-xl border transition-all ${
                       formData.status === status 
                         ? 'bg-slate-900 text-white border-slate-900 shadow-xl' 
-                        : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
+                        : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50'
                     }`}
                   >
                     {status}
@@ -254,11 +268,11 @@ export default function AllOrders() {
               <div className="p-6 bg-slate-50/50 space-y-2 border-t border-slate-100">
                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
                   <span className="text-slate-400">Transaction Subtotal</span>
-                  <span className="text-slate-900">₹{viewingOrder.totalAmount}</span>
+                  <span className="text-slate-900">₹{viewingOrder.grandTotal}</span>
                 </div>
                 <div className="flex justify-between text-xs font-black uppercase tracking-widest pt-2 border-t border-slate-200">
                   <span className="text-slate-900">Fiscal Sum</span>
-                  <span className="text-brand-600">₹{viewingOrder.totalAmount}</span>
+                  <span className="text-brand-600">₹{viewingOrder.grandTotal}</span>
                 </div>
               </div>
             </div>
@@ -268,6 +282,3 @@ export default function AllOrders() {
     </div>
   );
 }
-
-
-

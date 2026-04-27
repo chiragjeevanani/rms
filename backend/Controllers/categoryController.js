@@ -2,7 +2,27 @@ const Category = require('../Models/Category');
 
 const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find().sort({ createdAt: -1 });
+    const categories = await Category.aggregate([
+      {
+        $lookup: {
+          from: 'items',
+          localField: '_id',
+          foreignField: 'category',
+          as: 'items'
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          image: 1,
+          description: 1,
+          status: 1,
+          createdAt: 1,
+          itemCount: { $size: '$items' }
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
     res.json(categories);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

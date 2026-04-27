@@ -10,7 +10,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { playClickSound } from '../../../pos/utils/sounds';
 
+import { useAdminTheme } from '../../context/AdminThemeContext';
+
 export default function Sidebar({ isCollapsed, setIsCollapsed }) {
+  const { primaryColor, sidebarStyle } = useAdminTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -61,15 +64,19 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
           path: '/admin/orders', 
           icon: ShoppingCart,
           subItems: [
+            
+            { label: 'Recent Orders', path: '/admin/orders/recent' },
             { label: 'All Orders', path: '/admin/orders/all' },
-            { label: 'Online Orders', path: '/admin/orders/online' },
-            { label: 'Cancelled Orders', path: '/admin/orders/cancelled' },
           ]
         },
         { 
           label: 'Table Management', 
           path: '/admin/tables', 
-          icon: Grid
+          icon: Grid,
+          subItems: [
+            { label: 'All Tables', path: '/admin/tables/all' },
+            { label: 'Occupied Tables', path: '/admin/tables/occupied' },
+          ]
         },
       ]
     },
@@ -116,20 +123,23 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   };
 
   return (
-    <aside className={`fixed left-0 top-0 h-full bg-[#2C2C2C] border-r border-white/8 z-50 transition-all duration-300 shadow-xl hidden lg:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`fixed left-0 top-0 h-full border-r z-50 transition-all duration-500 shadow-xl hidden lg:flex flex-col 
+      ${isCollapsed ? 'w-20' : 'w-64'} 
+      ${sidebarStyle === 'glass' ? 'sidebar-glass' : sidebarStyle === 'minimal' ? 'sidebar-minimal' : 'bg-[#2C2C2C] border-white/8'}`}
+    >
       {/* Brand Header */}
-      <div className="h-14 flex items-center justify-between px-4 border-b border-white/8 shrink-0 bg-[#222222]">
+      <div className={`h-14 flex items-center justify-between px-4 border-b shrink-0 transition-colors ${sidebarStyle === 'minimal' ? 'border-transparent' : 'border-white/5 bg-black/10'}`}>
         {!isCollapsed ? (
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-[#ff7a00] rounded flex items-center justify-center text-white font-black text-sm shadow-lg shadow-stone-900/30">R</div>
+            <div className="w-8 h-8 rounded flex items-center justify-center text-white font-black text-sm shadow-lg" style={{ backgroundColor: primaryColor }}>R</div>
             <div className="flex flex-col">
-              <span className="font-black text-[13px] tracking-tight uppercase text-white">RMS System</span>
-              <span className="text-[9px] font-black text-[#FFC107] uppercase tracking-widest mt-0.5">Administrator</span>
+              <span className={`font-black text-[13px] tracking-tight uppercase ${sidebarStyle === 'glass' && 'text-stone-800'} text-white`}>RMS System</span>
+              <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mt-0.5">Administrator</span>
             </div>
           </div>
         ) : (
           <div className="w-full flex justify-center">
-            <div className="w-8 h-8 bg-[#ff7a00] rounded flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-900/40">R</div>
+            <div className="w-8 h-8 rounded flex items-center justify-center text-white font-black text-sm shadow-md" style={{ backgroundColor: primaryColor }}>R</div>
           </div>
         )}
       </div>
