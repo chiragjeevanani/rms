@@ -52,7 +52,7 @@ const getProfile = async (req, res) => {
 
 const getPublicRestaurantInfo = async (req, res) => {
   try {
-    const admin = await Admin.findOne().select('restaurantName mobileNumber address profileImg');
+    const admin = await Admin.findOne().select('restaurantName mobileNumber address profileImg theme');
     if (!admin) return res.status(404).json({ message: 'Store info not found' });
     res.json(admin);
   } catch (error) {

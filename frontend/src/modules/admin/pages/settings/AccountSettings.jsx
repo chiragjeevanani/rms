@@ -10,11 +10,7 @@ import { useAdminTheme } from '../../context/AdminThemeContext';
 
 export default function AccountSettings() {
   const { 
-    themeMode, setThemeMode, 
-    primaryColor, setPrimaryColor,
-    borderRadius, setBorderRadius,
-    sidebarStyle, setSidebarStyle,
-    fontFamily, setFontFamily
+    primaryColor, setPrimaryColor
   } = useAdminTheme();
   
   // Profile State
@@ -424,40 +420,10 @@ export default function AccountSettings() {
             </div>
 
             <div className="p-10 space-y-12">
-               {/* Mode & Sidebar Style */}
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Visual Mode</p>
-                    <div className="grid grid-cols-2 gap-2 bg-stone-50 p-2 rounded-3xl border border-stone-200">
-                       <button 
-                         onClick={() => setThemeMode('light')}
-                         className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${themeMode === 'light' ? 'bg-white text-stone-800 shadow-xl' : 'text-stone-400 hover:text-stone-600'}`}
-                       >Light</button>
-                       <button 
-                         onClick={() => setThemeMode('dark')}
-                         className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${themeMode === 'dark' ? 'bg-[#2C2C2C] text-white shadow-xl' : 'text-stone-400 hover:text-stone-600'}`}
-                       >Dark</button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Sidebar Aesthetic</p>
-                    <div className="flex gap-3">
-                       {['solid', 'glass', 'minimal'].map(style => (
-                         <button 
-                           key={style}
-                           onClick={() => setSidebarStyle(style)}
-                           className={`flex-1 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest border transition-all ${sidebarStyle === style ? 'bg-white border-amber-500 text-stone-800 shadow-lg scale-105' : 'bg-stone-50 border-stone-200 text-stone-400'}`}
-                         >{style}</button>
-                       ))}
-                    </div>
-                  </div>
-               </div>
-
                {/* Advanced Color System */}
-               <div className="space-y-6">
+               <div className="space-y-8">
                   <div className="flex items-center justify-between">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Color Palette</p>
+                    <p className="text-sm font-black uppercase tracking-widest text-stone-800 ml-1">Color Palette</p>
                     <div className="relative">
                        <input 
                          type="color" 
@@ -465,14 +431,14 @@ export default function AccountSettings() {
                          onChange={(e) => setPrimaryColor(e.target.value)}
                          className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                        />
-                       <div className="flex items-center gap-2 bg-stone-50 px-4 py-2 rounded-xl border border-stone-200 shadow-sm cursor-pointer hover:bg-white transition-all">
-                          <div className="w-4 h-4 rounded-full shadow-inner" style={{ backgroundColor: primaryColor }} />
-                          <span className="text-[10px] font-black text-stone-800 uppercase">Custom Tint</span>
+                       <div className="flex items-center gap-2 bg-stone-50 px-6 py-3 rounded-2xl border border-stone-200 shadow-sm cursor-pointer hover:bg-white transition-all">
+                          <div className="w-5 h-5 rounded-full shadow-inner" style={{ backgroundColor: primaryColor }} />
+                          <span className="text-[11px] font-black text-stone-800 uppercase tracking-widest">Custom Tint</span>
                        </div>
                     </div>
                   </div>
                   
-                  <div className="flex flex-wrap gap-4">
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-4">
                     {[
                       { color: '#2C2C2C', name: 'Industrial' },
                       { color: '#3B82F6', name: 'Electric' },
@@ -486,77 +452,33 @@ export default function AccountSettings() {
                       <button
                         key={preset.color}
                         onClick={() => setPrimaryColor(preset.color)}
-                        className={`group relative w-12 h-12 rounded-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center ${primaryColor === preset.color ? 'ring-4 ring-offset-4 ring-amber-500 scale-110' : 'hover:ring-2 hover:ring-stone-200'}`}
+                        className={`group relative aspect-square rounded-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center ${primaryColor === preset.color ? 'ring-4 ring-offset-4 ring-amber-500 scale-110' : 'hover:ring-2 hover:ring-stone-200'}`}
                         style={{ backgroundColor: preset.color }}
                         title={preset.name}
                       >
-                         {primaryColor === preset.color && <div className="w-2 h-2 rounded-full bg-white shadow-xl animate-pulse" />}
+                         {primaryColor === preset.color && <div className="w-2.5 h-2.5 rounded-full bg-white shadow-xl animate-pulse" />}
                       </button>
                     ))}
                   </div>
                </div>
 
-               {/* Layout Controls */}
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                  <div className="space-y-6">
-                     <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Corner Radius</p>
-                        <span className="text-[10px] font-black text-stone-900 bg-stone-100 px-3 py-1 rounded-full">{borderRadius}</span>
-                     </div>
-                     <input 
-                       type="range" 
-                       min="0" 
-                       max="3" 
-                       step="0.5" 
-                       value={parseFloat(borderRadius)} 
-                       onChange={(e) => setBorderRadius(`${e.target.value}rem`)}
-                       className="w-full h-2 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                     />
-                     <div className="flex justify-between text-[9px] font-black text-stone-300 uppercase tracking-widest">
-                        <span>Sharp</span>
-                        <span>Soft</span>
-                        <span>Cloud</span>
-                     </div>
-                  </div>
-
-                  <div className="space-y-6">
-                     <p className="text-[11px] font-black uppercase tracking-widest text-stone-400 ml-1">Typography</p>
-                     <div className="grid grid-cols-2 gap-3">
-                        {['Outfit', 'Karla', 'Roboto', 'Inter'].map(font => (
-                           <button 
-                             key={font}
-                             onClick={() => setFontFamily(font)}
-                             className={`py-4 rounded-2xl border transition-all text-xs font-bold ${fontFamily === font ? 'bg-white border-amber-500 text-stone-800 shadow-xl scale-105' : 'bg-stone-50 border-stone-200 text-stone-400 hover:border-stone-300'}`}
-                             style={{ fontFamily: font }}
-                           >
-                             {font}
-                           </button>
-                        ))}
-                     </div>
-                  </div>
-               </div>
-
                <div className="pt-6 border-t border-stone-100">
-                  <div className="bg-stone-50 p-6 rounded-[2.5rem] border-2 border-dashed border-stone-200 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="bg-stone-50 p-8 rounded-[3rem] border-2 border-dashed border-stone-200 flex flex-col md:flex-row items-center justify-between gap-6">
                      <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 shadow-2xl rounded-3xl flex items-center justify-center text-white transition-all transform hover:rotate-6" style={{ backgroundColor: primaryColor, borderRadius }}>
-                           <Check size={24} strokeWidth={3} />
+                        <div className="w-20 h-20 shadow-2xl rounded-[2rem] flex items-center justify-center text-white transition-all transform hover:rotate-6" style={{ backgroundColor: primaryColor }}>
+                           <Check size={32} strokeWidth={3} />
                         </div>
                         <div>
-                           <p className="text-xs font-black text-stone-800 uppercase tracking-tight">Real-time Preview</p>
-                           <p className="text-[10px] font-medium text-stone-500 mt-1 uppercase tracking-widest">Style: {themeMode} • Radius: {borderRadius} • Font: {fontFamily}</p>
+                           <p className="text-sm font-black text-stone-800 uppercase tracking-tight leading-none">Theme Preview</p>
+                           <p className="text-[10px] font-bold text-stone-400 mt-2 uppercase tracking-[0.2em]">Dynamic primary color updated live</p>
                         </div>
                      </div>
                      <button 
                         onClick={() => {
-                           setThemeMode('light');
-                           setPrimaryColor('#2C2C2C');
-                           setBorderRadius('2rem');
-                           setSidebarStyle('solid');
-                           setFontFamily('Outfit');
+                           setPrimaryColor('#ff7a00'); // POS Default
                         }}
-                        className="px-8 py-3 bg-white text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-sm hover:bg-rose-500 hover:text-white transition-all border border-rose-100"
-                     >Reset Defaults</button>
+                        className="px-10 py-4 bg-white text-stone-500 text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-sm hover:bg-stone-100 transition-all border border-stone-200"
+                     >Reset to Default</button>
                   </div>
                </div>
             </div>

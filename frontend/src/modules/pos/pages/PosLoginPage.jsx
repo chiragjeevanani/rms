@@ -7,19 +7,14 @@ import toast from 'react-hot-toast';
 export default function PosLoginPage() {
   const [formData, setFormData] = useState({
     email: 'pos@rms.com',
-    password: 'password123'
+    password: '123'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
-    document.body.style.backgroundColor = '#0A0A0B';
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.backgroundColor = '';
-      document.body.style.overflow = '';
-    };
+    // Background is handled by the container below
   }, []);
 
   const handleInputChange = (e) => {
@@ -41,7 +36,7 @@ export default function PosLoginPage() {
         localStorage.setItem('pos_access', data.token);
         localStorage.setItem('staff_info', JSON.stringify(data));
         toast.success(`Welcome, ${data.name}`);
-        navigate('/pos/tables/list');
+        navigate('/pos/dashboard');
       } else {
         toast.error(`${data.message || 'Login Failed'}`);
       }

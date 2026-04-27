@@ -34,7 +34,7 @@ export default function PosRoutes() {
   const isPosAuthenticated = !!localStorage.getItem('pos_access');
 
   if (isPosAuthenticated && window.location.pathname === '/pos/login') {
-    return <Navigate to="/pos/tables" replace />;
+    return <Navigate to="/pos/dashboard" replace />;
   }
 
   if (!isPosAuthenticated && window.location.pathname !== '/pos/login') {
@@ -51,7 +51,7 @@ export default function PosRoutes() {
       <Routes>
         <Route path="/login" element={<PosLoginPage />} />
         <Route element={<PosLayout />}>
-          <Route index element={<Navigate to="/pos/tables" replace />} />
+          <Route index element={<Navigate to="/pos/dashboard" replace />} />
 
           {/* Dashboard */}
           <Route path="dashboard" element={<PosDashboard />} />
@@ -84,7 +84,7 @@ export default function PosRoutes() {
           <Route path="operations" element={<OperationsDashboard />} />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/pos/tables" replace />} />
+          <Route path="*" element={<Navigate to="/pos/dashboard" replace />} />
         </Route>
       </Routes>
     </PosProvider>

@@ -91,17 +91,17 @@ export default function ActiveOrders() {
       <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl font-extrabold uppercase tracking-tight text-[#ff7a00]">Active Order Management</h1>
+            <h1 className="text-xl font-extrabold uppercase tracking-tight text-[var(--primary-color)]">Active Order Management</h1>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Live KOT Monitoring & Status Tracking</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="h-10 px-4 bg-amber-50 text-[#ff7a00] rounded flex items-center gap-2 border border-amber-100 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[#ff7a00] animate-pulse" />
-              <span className="text-[10px] font-extrabold uppercase tracking-widest font-black text-[#ff7a00]">{orders.length} Orders Active</span>
+            <div className="h-10 px-4 bg-amber-50 text-[var(--primary-color)] rounded flex items-center gap-2 border border-amber-100 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-[var(--primary-color)] animate-pulse" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest font-black text-[var(--primary-color)]">{orders.length} Orders Active</span>
             </div>
              <button 
               onClick={() => navigate('/pos/tables')}
-              className="h-10 px-6 bg-[#F57C00] text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2"
+              className="h-10 px-6 bg-[var(--primary-color)] text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2"
             >
               <Plus size={14} /> New Order Entry
             </button>
@@ -142,7 +142,7 @@ export default function ActiveOrders() {
                    {/* Card Header */}
                    <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
                       <div className="flex items-center gap-3">
-                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-lg ${order.status === 'Ready' ? 'bg-emerald-500 shadow-emerald-500/10' : 'bg-[#ff7a00] shadow-[#ff7a00]/10'}`}>
+                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-lg ${order.status === 'Ready' ? 'bg-emerald-500 shadow-emerald-500/10' : 'bg-[var(--primary-color)] shadow-[var(--primary-color)]/10'}`}>
                             <Utensils size={14} />
                          </div>
                          <div>
@@ -151,7 +151,7 @@ export default function ActiveOrders() {
                          </div>
                       </div>
                       <div className="flex items-center gap-2">
-                         <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full border ${order.status === 'Ready' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-[#ff7a00] border-amber-100'}`}>
+                         <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full border ${order.status === 'Ready' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-[var(--primary-color)] border-amber-100'}`}>
                             {order.status}
                          </span>
                          <button className="text-slate-300 hover:text-slate-900"><MoreVertical size={16} /></button>
@@ -179,7 +179,7 @@ export default function ActiveOrders() {
 
                       <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
                          <div className="flex items-center gap-1.5">
-                            <Timer size={12} className={order.status === 'Ready' ? 'text-emerald-500' : 'text-[#ff7a00]'} />
+                            <Timer size={12} className={order.status === 'Ready' ? 'text-emerald-500' : 'text-[var(--primary-color)]'} />
                             <span className="text-[10px] font-black text-slate-950 uppercase">{getElapsedTime(order.createdAt)} ELAPSED</span>
                          </div>
                          <span className="text-xs font-black text-slate-950">₹{order.grandTotal.toFixed(2)}</span>
@@ -196,7 +196,7 @@ export default function ActiveOrders() {
                       </button>
                       <button 
                         onClick={() => updateStatus(order._id, order.status === 'Ready' ? 'Completed' : 'Ready')}
-                        className={`flex-1 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white transition-all shadow-md active:scale-95 ${order.status === 'Ready' ? 'bg-[#ff7a00] hover:opacity-90 shadow-[#ff7a00]/10' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/10'}`}
+                        className={`flex-1 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white transition-all shadow-md active:scale-95 ${order.status === 'Ready' ? 'bg-[var(--primary-color)] hover:opacity-90 shadow-[var(--primary-color)]/10' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/10'}`}
                       >
                          {order.status === 'Ready' ? 'Finalize Order' : 'Mark Ready'}
                       </button>
@@ -214,11 +214,11 @@ function TabBtn({ active, onClick, label, count }) {
   return (
     <button 
       onClick={onClick}
-      className={`pb-3 text-[10px] font-black uppercase tracking-[0.2em] relative transition-all flex items-center gap-2 ${active ? 'text-[#ff7a00]' : 'text-slate-400 hover:text-slate-600'}`}
+      className={`pb-3 text-[10px] font-black uppercase tracking-[0.2em] relative transition-all flex items-center gap-2 ${active ? 'text-[var(--primary-color)]' : 'text-slate-400 hover:text-slate-600'}`}
     >
       {label}
-      {count > 0 && <span className={`px-1.5 py-0.5 rounded text-[8px] ${active ? 'bg-[#ff7a00] text-white' : 'bg-slate-100 text-slate-400'}`}>{count}</span>}
-      {active && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#ff7a00]" />}
+      {count > 0 && <span className={`px-1.5 py-0.5 rounded text-[8px] ${active ? 'bg-[var(--primary-color)] text-white' : 'bg-slate-100 text-slate-400'}`}>{count}</span>}
+      {active && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary-color)]" />}
     </button>
   );
 }

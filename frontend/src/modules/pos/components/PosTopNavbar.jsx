@@ -19,7 +19,7 @@ export default function PosTopNavbar() {
 
   return (
     <nav className="sticky top-0 z-50 h-14 flex items-center px-3 gap-2 shadow-lg"
-         style={{ background: '#ff7a00' }}>
+         style={{ background: 'var(--primary-color)' }}>
 
       {/* Left: Hamburger + Logo + New Order + Search */}
       <div className="flex items-center gap-2">
@@ -33,10 +33,10 @@ export default function PosTopNavbar() {
         {/* Brand */}
         <div className="flex items-center gap-1">
           <div className="w-8 h-8 rounded flex items-center justify-center font-black text-white text-sm"
-               style={{ backgroundColor: '#c2540a' }}>
+               style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
             R
           </div>
-          <div className="bg-[#ea6c00] text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center">
+          <div className="bg-black/10 text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center">
             RMS
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function PosTopNavbar() {
             <motion.div
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 w-72 bg-[#ea6c00] z-[101] flex flex-col border-r border-white/5"
+              className="fixed left-0 top-0 bottom-0 w-72 bg-[var(--primary-color)] z-[101] flex flex-col border-r border-white/5"
             >
               <div className="px-4 py-4 flex items-center justify-between border-b border-white/5">
                 <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Settings</h2>
@@ -185,7 +185,7 @@ function DrawerItem({ icon, label, hasArrow, active, color, onClick }) {
   return (
     <div
       onClick={() => { playClickSound(); onClick(); }}
-      className={`px-4 py-3.5 flex items-center justify-between cursor-pointer transition-all hover:bg-white/5 ${active ? 'bg-[#ff7a00]' : ''}`}
+      className={`px-4 py-3.5 flex items-center justify-between cursor-pointer transition-all hover:bg-white/5 ${active ? 'bg-black/20' : ''}`}
     >
       <div className={`flex items-center gap-3 ${color || (active ? 'text-white' : 'text-gray-400')}`}>
         {icon}

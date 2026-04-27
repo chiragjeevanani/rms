@@ -12,7 +12,7 @@ export default function StaffLogin() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: 'waiter@rms.com',
-    password: 'password123',
+    password: '123',
     otp: '',
     newPassword: '',
     confirmPassword: ''
@@ -20,12 +20,8 @@ export default function StaffLogin() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    document.body.style.backgroundColor = '#0A0A0B';
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.backgroundColor = '';
-      document.body.style.overflow = '';
-    };
+    // We removed direct body background manipulation to prevent "black screen" leaks
+    // The container below handles the background color
   }, []);
 
   const handleInputChange = (e) => {
@@ -135,7 +131,7 @@ export default function StaffLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans overflow-hidden">
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center">
         
         {/* Animated Branding */}

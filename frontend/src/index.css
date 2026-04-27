@@ -11,11 +11,11 @@
   --color-brand-200: #fed7aa;
   --color-brand-300: #fdba74;
   --color-brand-400: #fb923c;
-  --color-brand-500: #ff7a00;
-  --color-brand-600: #ea6c00;
-  --color-brand-700: #c2540a;
-  --color-brand-800: #9a3412;
-  --color-brand-900: #7c2d12;
+  --color-brand-500: var(--primary-color, #ff7a00);
+  --color-brand-600: color-mix(in srgb, var(--primary-color, #ff7a00), black 10%);
+  --color-brand-700: color-mix(in srgb, var(--primary-color, #ff7a00), black 25%);
+  --color-brand-800: color-mix(in srgb, var(--primary-color, #ff7a00), black 40%);
+  --color-brand-900: color-mix(in srgb, var(--primary-color, #ff7a00), black 55%);
 
   /* Surfaces */
   --color-cream-50: #fffaf5;
@@ -88,11 +88,16 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-family-sans); }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ─── Admin Dynamic Design Studio ─── */
+/* ─── System-Wide Theme Variables (Set by Admin) ─── */
 :root {
-  --admin-primary: #2C2C2C;
-  --admin-radius: 2rem;
-  --admin-font: 'Outfit';
+  --primary-color: #ff7a00;
+  --border-radius: 0.5rem;
+  --font-family: 'Outfit';
+  
+  /* Admin Legacy Compatibility */
+  --admin-primary: var(--primary-color);
+  --admin-radius: var(--border-radius);
+  --admin-font: var(--font-family);
 }
 
 /* Global Typography Override */

@@ -54,14 +54,8 @@ export const AdminThemeProvider = ({ children }) => {
     if (isLoading) return;
 
     // Apply styles to document
-    if (themeMode === 'dark') {
-      document.documentElement.classList.add('admin-dark');
-    } else {
-      document.documentElement.classList.remove('admin-dark');
-    }
     document.documentElement.style.setProperty('--admin-primary', primaryColor);
-    document.documentElement.style.setProperty('--admin-radius', borderRadius);
-    document.documentElement.style.setProperty('--admin-font', fontFamily);
+    document.documentElement.style.setProperty('--primary-color', primaryColor);
 
     // Save to DB
     if (initialLoadDone.current) {
