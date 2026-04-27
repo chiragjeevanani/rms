@@ -12,16 +12,16 @@ import { MOCK_WAITERS } from '../../data/staff';
 import { POS_CATEGORIES, POS_MENU_ITEMS } from '../../data/posMenu';
 import toast from 'react-hot-toast';
 
-// ── Color tokens ──────────────────────────────────────────────────────────────
+// ── Color tokens (Now Dynamic) ────────────────────────────────────────────────
 const C = {
-  sidebarBg:  '#ff7a00',
-  sidebarHover: '#ff7a00',
-  sidebarActive: '#ff7a00',
-  tabActive:  '#ea6c00',
+  sidebarBg:  'var(--primary-color, #ff7a00)',
+  sidebarHover: 'color-mix(in srgb, var(--primary-color, #ff7a00), black 10%)',
+  sidebarActive: 'color-mix(in srgb, var(--primary-color, #ff7a00), black 20%)',
+  tabActive:  'var(--primary-color, #ff7a00)',
   tabInactive:'#EEEEEE',
-  billingBg:  '#c2540a',
+  billingBg:  'color-mix(in srgb, var(--primary-color, #ff7a00), black 15%)',
   accentTeal: '#00ACC1',
-  orange:     '#F57C00',
+  orange:     'var(--primary-color, #ff7a00)',
   amber:      '#FFC107',
 };
 
@@ -451,14 +451,14 @@ function InfoBox({ label, icon, active }) {
       cursor: 'pointer',
       background: active ? '#FAFAFA' : 'transparent'
     }}>
-      <div style={{ color: active ? '#ff7a00' : '#9E9E9E' }}>
+      <div style={{ color: active ? 'var(--primary-color)' : '#9E9E9E' }}>
         {icon}
       </div>
       {label && (
         <span style={{
           fontSize: 9,
           fontWeight: 900,
-          color: active ? '#ea6c00' : '#9E9E9E',
+          color: active ? 'var(--primary-color)' : '#9E9E9E',
           textTransform: 'uppercase',
           letterSpacing: '0.02em'
         }}>
@@ -484,7 +484,7 @@ function ActionBtn({ label, onClick, dark }) {
         textTransform: 'uppercase',
         letterSpacing: '0.02em',
         whiteSpace: 'nowrap',
-        background: dark ? '#ff7a00' : '#FFFFFF',
+        background: dark ? 'var(--primary-color)' : '#FFFFFF',
         color: dark ? '#FFF' : '#1A1A1A',
         transition: 'opacity 0.1s',
       }}

@@ -17,9 +17,11 @@ const orderRoutes = require('./Routers/orderRoutes');
 const wastageRoutes = require('./Routers/wastageRoutes');
 const tableRoutes = require('./Routers/tableRoutes');
 const reservationRoutes = require('./Routes/reservationRoutes');
+const superAdminRoutes = require('./Routers/superAdminRoutes');
 
 // Attach sub-routes to the main router
 router.use('/admin', adminRoutes);
+router.use('/superadmin', superAdminRoutes);
 router.use('/category', categoryRoutes);
 router.use('/item', itemRoutes);
 router.use('/modifier', modifierRoutes);

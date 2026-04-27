@@ -13,6 +13,9 @@ import { Toaster } from 'react-hot-toast';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/error/ErrorBoundary';
 import { SystemThemeProvider } from './context/SystemThemeContext';
+import SuperAdminLogin from './modules/superadmin/pages/SuperAdminLogin';
+import SuperAdminDashboard from './modules/superadmin/pages/SuperAdminDashboard';
+import { SuperAdminThemeProvider } from './modules/superadmin/context/SuperAdminThemeContext';
 
 function RootRedirect() {
   const isAdmin = localStorage.getItem('admin_access');
@@ -58,6 +61,14 @@ function App() {
                     <Route path="/kds/*" element={<KdsRoutes />} />
                     <Route path="/pos/*" element={<PosRoutes />} />
                     <Route path="/admin/*" element={<AdminRoutes />} />
+                    <Route path="/superadmin/*" element={
+                      <SuperAdminThemeProvider>
+                        <Routes>
+                          <Route path="login" element={<SuperAdminLogin />} />
+                          <Route path="dashboard" element={<SuperAdminDashboard />} />
+                        </Routes>
+                      </SuperAdminThemeProvider>
+                    } />
                     <Route path="/*" element={<UserRoutes />} />
                   </Routes>
                 </OrderProvider>

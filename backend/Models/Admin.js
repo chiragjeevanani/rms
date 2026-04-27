@@ -37,6 +37,10 @@ const adminSchema = new mongoose.Schema({
     borderRadius: { type: String, default: '2rem' },
     sidebarStyle: { type: String, default: 'solid' },
     fontFamily: { type: String, default: 'Outfit' }
+  },
+  thirdPartyApi: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 
