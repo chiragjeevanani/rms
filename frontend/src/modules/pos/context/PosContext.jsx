@@ -7,8 +7,8 @@ const socket = io((import.meta.env.VITE_API_URL || '').replace('/api', ''));
 
 export function PosProvider({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isCustomerSectionOpen, setIsCustomerSectionOpen] = useState(false);
   const [user, setUser] = useState({ name: 'Biller' });
+  const [reservations, setReservations] = useState([]);
 
   // ── Backend-synced orders (active table orders from API) ──
   const [orders, setOrders] = useState({});
@@ -169,6 +169,76 @@ export function PosProvider({ children }) {
     }
   };
 
+  const addTable = async (tableData) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/table`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tableData)
+      });
+      if (response.ok) {
+        toast.success('Table added to floor plan');
+        fetchTables();
+        return true;
+      }
+      const err = await response.json();
+      toast.error(err.message || 'Failed to add table');
+      return false;
+    } catch (err) {
+      toast.error('Network error while adding table');
+      return false;
+    }
+  };
+
+  const fetchReservations = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/reservations`);
+      const result = await response.json();
+      if (result.success) setReservations(result.data);
+    } catch (err) {
+      console.error('Failed to fetch reservations', err);
+    }
+  };
+
+  const createReservation = async (reservationData) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/reservations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reservationData)
+      });
+      if (response.ok) {
+        toast.success('Reservation Created');
+        fetchReservations();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      toast.error('Failed to create reservation');
+      return false;
+    }
+  };
+
+  const updateReservationStatus = async (id, status) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/reservations/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (response.ok) {
+        toast.success(`Reservation ${status}`);
+        fetchReservations();
+        fetchTables(); // Status might affect tables
+        return true;
+      }
+      return false;
+    } catch (err) {
+      toast.error('Failed to update reservation');
+      return false;
+    }
+  };
+
   const updateTableStatus = async (tableId, status) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/table/${tableId}/status`, {
@@ -231,19 +301,18 @@ export function PosProvider({ children }) {
   // ── UI Toggles ──
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
   const closeSidebar = () => setIsSidebarOpen(false);
-  const toggleCustomerSection = () => setIsCustomerSectionOpen(prev => !prev);
 
   return (
     <PosContext.Provider value={{
       // UI state
       isSidebarOpen, toggleSidebar, closeSidebar,
-      isCustomerSectionOpen, toggleCustomerSection,
       user, setUser,
 
       // Backend-synced data
-      orders, tables, loading,
+      orders, tables, reservations, loading,
       fetchActiveTableOrders: syncAll,
-      placeKOT, settleOrder, voidItem, updateTableStatus,
+      fetchReservations, createReservation, updateReservationStatus,
+      placeKOT, settleOrder, voidItem, updateTableStatus, addTable,
 
       // Local state
       sections, setSections,

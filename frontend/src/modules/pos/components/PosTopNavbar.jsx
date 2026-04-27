@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import {
   Menu, Search, BookOpen, Store, CreditCard, LayoutGrid, Monitor,
-  Clock, X, RefreshCw, ArrowLeft, TrendingUp, SlidersHorizontal,
-  ChevronRight, Settings, Power, Phone, ShoppingCart, Users, Table2,
-  Wallet, ChevronDown,
+  Clock, X, Phone, ShoppingCart, Wallet, ChevronDown,
   FileText, History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,8 +11,7 @@ import { playClickSound } from '../utils/sounds';
 
 export default function PosTopNavbar() {
   const navigate = useNavigate();
-  const { user, toggleCustomerSection } = usePos();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { user, toggleSidebar } = usePos();
   const [isRecentOpen, setIsRecentOpen] = useState(false);
 
   return (
@@ -24,7 +21,7 @@ export default function PosTopNavbar() {
       {/* Left: Hamburger + Logo + New Order + Search */}
       <div className="flex items-center gap-2">
         <button
-          onClick={() => { playClickSound(); setIsDrawerOpen(true); }}
+          onClick={() => { playClickSound(); toggleSidebar(); }}
           className="p-2 hover:bg-black/10 rounded-md transition-colors"
         >
           <Menu size={22} className="text-white" />
@@ -82,86 +79,7 @@ export default function PosTopNavbar() {
         </div>
       </div>
 
-      {/* Settings Drawer */}
       <AnimatePresence>
-        {isDrawerOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setIsDrawerOpen(false)}
-              className="fixed inset-0 bg-black/50 z-[100]"
-            />
-            <motion.div
-              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 w-72 bg-[var(--primary-color)] z-[101] flex flex-col border-r border-white/5"
-            >
-              <div className="px-4 py-4 flex items-center justify-between border-b border-white/5">
-                <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Settings</h2>
-                <button onClick={() => setIsDrawerOpen(false)} className="p-1 text-gray-400 hover:text-white">
-                  <ArrowLeft size={18} />
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto no-scrollbar py-2">
-                {/* ─ Navigate Section ─ */}
-                <p className="px-4 pt-3 pb-1 text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Navigate</p>
-
-                <DrawerItem
-                  onClick={() => { setIsDrawerOpen(false); navigate('/pos/tables'); }}
-                  icon={<LayoutGrid size={18} />} label="Tables"
-                  active={window.location.pathname.includes('/pos/tables')}
-                />
-                <DrawerSubItem label="Table View"  onClick={() => { setIsDrawerOpen(false); navigate('/pos/tables'); }} />
-                <DrawerSubItem label="Table List"  onClick={() => { setIsDrawerOpen(false); navigate('/pos/tables/list'); }} />
-                <DrawerSubItem label="Reservations" onClick={() => { setIsDrawerOpen(false); navigate('/pos/tables/reservations'); }} />
-
-                <DrawerItem
-                  onClick={() => { setIsDrawerOpen(false); navigate('/pos/orders/active'); }}
-                  icon={<ShoppingCart size={18} />} label="Orders"
-                />
-                <DrawerSubItem label="Active Orders"    onClick={() => { setIsDrawerOpen(false); navigate('/pos/orders/active'); }} />
-                <DrawerSubItem label="Completed Orders" onClick={() => { setIsDrawerOpen(false); navigate('/pos/orders/completed'); }} />
-                <DrawerSubItem label="Cancelled Orders" onClick={() => { setIsDrawerOpen(false); navigate('/pos/orders/cancelled'); }} />
-
-                <DrawerItem
-                  onClick={() => { setIsDrawerOpen(false); navigate('/pos/customers/list'); }}
-                  icon={<Users size={18} />} label="Customers"
-                />
-
-                <DrawerItem
-                  onClick={() => { setIsDrawerOpen(false); navigate('/pos/billing'); }}
-                  icon={<Wallet size={18} />} label="Billing & Payments"
-                />
-                <DrawerSubItem label="Generate Invoice"  onClick={() => { setIsDrawerOpen(false); navigate('/pos/billing/generate'); }} />
-                <DrawerSubItem label="Payment History"   onClick={() => { setIsDrawerOpen(false); navigate('/pos/billing/history'); }} />
-                <DrawerSubItem label="Cash Register"     onClick={() => { setIsDrawerOpen(false); navigate('/pos/billing/register'); }} />
-
-                {/* ─ System Section ─ */}
-                <p className="px-4 pt-4 pb-1 text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] border-t border-white/5 mt-2">System</p>
-
-                <DrawerItem onClick={() => { setIsDrawerOpen(false); navigate('/pos/operations'); }} icon={<SlidersHorizontal size={18} />} label="Operations" />
-                <DrawerItem onClick={() => setIsDrawerOpen(false)}                                  icon={<TrendingUp size={18} />}      label="Reports" hasArrow />
-                <DrawerItem onClick={() => { setIsDrawerOpen(false); navigate('/pos/dashboard'); }} icon={<Monitor size={18} />}         label="Live View" />
-                <DrawerItem onClick={() => setIsDrawerOpen(false)}                                  icon={<Clock size={18} />}           label="Day End" />
-                <DrawerItem onClick={() => { setIsDrawerOpen(false); navigate('/pos/menu'); }}      icon={<Settings size={18} />}        label="Settings" />
-                <DrawerItem onClick={() => setIsDrawerOpen(false)}                                  icon={<RefreshCw size={18} />}       label="Check Updates" />
-                <DrawerItem
-                  onClick={() => { setIsDrawerOpen(false); localStorage.removeItem('pos_access'); navigate('/pos/login'); }}
-                  icon={<Power size={18} />} label="Logout" color="text-red-400"
-                />
-              </div>
-              <div className="p-4 border-t border-white/5 bg-[#141518] space-y-1">
-                <div className="flex justify-between text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-                  <span>Ref ID: A112011R</span><span>Version: 107.0.1</span>
-                </div>
-                <p className="text-[10px] text-gray-400 font-black text-center border-t border-white/5 pt-2 uppercase">
-                  Biller: {user?.name || 'Staff'}
-                </p>
-              </div>
-            </motion.div>
-          </>
-        )}
-
         {isRecentOpen && (
           <RecentOrdersPanel onClose={() => setIsRecentOpen(false)} />
         )}
@@ -178,32 +96,6 @@ function NavIcon({ icon, onClick }) {
     >
       {icon}
     </button>
-  );
-}
-
-function DrawerItem({ icon, label, hasArrow, active, color, onClick }) {
-  return (
-    <div
-      onClick={() => { playClickSound(); onClick(); }}
-      className={`px-4 py-3.5 flex items-center justify-between cursor-pointer transition-all hover:bg-white/5 ${active ? 'bg-black/20' : ''}`}
-    >
-      <div className={`flex items-center gap-3 ${color || (active ? 'text-white' : 'text-gray-400')}`}>
-        {icon}
-        <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
-      </div>
-      {hasArrow && <ChevronRight size={14} className="text-gray-600" />}
-    </div>
-  );
-}
-
-function DrawerSubItem({ label, onClick }) {
-  return (
-    <div
-      onClick={() => { playClickSound(); onClick(); }}
-      className="pl-12 pr-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-gray-300 hover:bg-white/5 cursor-pointer transition-all"
-    >
-      — {label}
-    </div>
   );
 }
 
@@ -234,6 +126,3 @@ function RecentOrdersPanel({ onClose }) {
     </>
   );
 }
-
-
-

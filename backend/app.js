@@ -16,6 +16,7 @@ const purchaseOrderRoutes = require('./Routers/purchaseOrderRoutes');
 const orderRoutes = require('./Routers/orderRoutes');
 const wastageRoutes = require('./Routers/wastageRoutes');
 const tableRoutes = require('./Routers/tableRoutes');
+const reservationRoutes = require('./Routes/reservationRoutes');
 
 // Attach sub-routes to the main router
 router.use('/admin', adminRoutes);
@@ -32,5 +33,6 @@ router.use('/order', purchaseOrderRoutes);
 router.use('/orders', orderRoutes);
 router.use('/wastage', wastageRoutes);
 router.use('/table', tableRoutes);
+router.use('/reservations', reservationRoutes);
 
 module.exports = router;

@@ -24,7 +24,6 @@ export default function PosDashboard() {
     { label: 'Cancelled Orders', icon: <History size={28} />, path: '/pos/orders/cancelled' },
     { label: 'Table Layout', icon: <LayoutGrid size={28} />, path: '/pos/tables/list' },
     { label: 'Reservations', icon: <Clock size={28} />, path: '/pos/tables/reservations' },
-    { label: 'Customer List', icon: <Users size={28} />, path: '/pos/customers/list' },
     { label: 'Cash Register', icon: <Banknote size={28} />, path: '/pos/billing/register' },
     { label: 'Billing History', icon: <FileText size={28} />, path: '/pos/billing/history' },
     { label: 'Inventory', icon: <Package size={28} />, path: '#' },
