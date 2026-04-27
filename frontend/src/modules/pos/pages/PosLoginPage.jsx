@@ -14,7 +14,12 @@ export default function PosLoginPage() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Background is handled by the container below
+    document.body.style.backgroundColor = '#0A0A0B';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.backgroundColor = '';
+      document.body.style.overflow = '';
+    };
   }, []);
 
   const handleInputChange = (e) => {

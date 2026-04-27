@@ -12,7 +12,7 @@ import AlertsPage from '../pages/AlertsPage';
 import StaffItemDetail from '../pages/StaffItemDetail';
 
 export default function StaffRoutes() {
-  const isStaffAuthenticated = !!localStorage.getItem('staff_access') && !!localStorage.getItem('staff_info');
+  const isStaffAuthenticated = !!localStorage.getItem('staff_access');
 
   // If already authenticated and trying to access login, redirect to dashboard
   if (isStaffAuthenticated && window.location.pathname === '/staff/login') {
@@ -49,7 +49,7 @@ export default function StaffRoutes() {
 }
 
 function StaffProtectedWrapper() {
-  const isStaffAuthenticated = !!localStorage.getItem('staff_access') && !!localStorage.getItem('staff_info');
+  const isStaffAuthenticated = !!localStorage.getItem('staff_access');
   
   if (!isStaffAuthenticated) {
     return <Navigate to="/staff/login" replace />;

@@ -35,12 +35,7 @@ export default function MyProfile() {
   const [isUploading, setIsUploading] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   
-  let staffInfo = {};
-  try {
-    staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-  } catch (e) {
-    console.error("Failed to parse staff_info", e);
-  }
+  const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
   const staffId = staffInfo?._id;
   const token = localStorage.getItem('staff_access');
 
