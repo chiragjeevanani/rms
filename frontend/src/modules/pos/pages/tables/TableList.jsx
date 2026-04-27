@@ -13,12 +13,11 @@ import PosTopNavbar from '../../components/PosTopNavbar';
 
 export default function TableList() {
   const navigate = useNavigate();
-  const { tables, orders, loading, fetchActiveTableOrders } = usePos();
+  const { tables, orders, loading, fetchActiveTableOrders, updateTableStatus } = usePos();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeArea, setActiveArea] = useState('All');
 
-  // Car Service Local State (as per plan - no backend yet)
-  const [carOrders, setCarOrders] = useState([]);
+  // Car Service derived from global orders
   const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
   const [newCarNumber, setNewCarNumber] = useState('');
 
@@ -35,8 +34,12 @@ export default function TableList() {
 
   const getTableStatus = (table) => {
     const order = orders[table.tableName];
-    if (!order) return 'blank';
-    return order.status || 'running-kot'; // default to running-kot if order exists
+    if (order) {
+       // If there's an order, we check its status
+       if (order.status === 'Paid') return 'paid';
+       return 'running-kot';
+    }
+    return table.status; // Available, Dirty, Damaged, Reserved
   };
 
   const calculateElapsedTime = (startTime) => {
@@ -47,17 +50,22 @@ export default function TableList() {
     return `${diff}m`;
   };
 
-  const handleAddCar = () => {
+  const activeCarOrders = useMemo(() => {
+    return Object.values(orders).filter(o => o.orderType === 'Takeaway' || o.orderType === 'Delivery' || o.tableName.startsWith('CAR-') || (o.tableName && !tables.find(t => t.tableName === o.tableName)));
+    // Actually, let's just look for orders where tableName is not in the tables list
+  }, [orders, tables]);
+
+  const handleAddCar = async () => {
     if (!newCarNumber.trim()) return;
-    setCarOrders(prev => [...prev, {
-      id: `CAR-${Date.now()}`,
-      carNumber: newCarNumber.toUpperCase(),
-      status: 'running-kot',
-      startTime: new Date().toISOString(),
-      total: 0
-    }]);
-    setNewCarNumber('');
-    setIsAddCarModalOpen(false);
+    const carName = newCarNumber.toUpperCase().startsWith('CAR-') ? newCarNumber.toUpperCase() : `CAR-${newCarNumber.toUpperCase()}`;
+    
+    // Create an empty order for this car
+    const success = await placeKOT(carName, [], { subTotal: 0, tax: 0, grandTotal: 0 }, { name: 'POS' });
+    if (success) {
+      setNewCarNumber('');
+      setIsAddCarModalOpen(false);
+      navigate(`/pos/order/${carName}`);
+    }
   };
 
   return (
@@ -152,7 +160,17 @@ export default function TableList() {
                     layoutId={table._id}
                     whileHover={{ scale: 1.05, zIndex: 10 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate(`/pos/order/${table.tableName}`)}
+                    onClick={() => {
+                      if (status === 'Dirty') {
+                        updateTableStatus(table._id, 'Available');
+                        return;
+                      }
+                      if (status === 'Damaged') {
+                         toast.error('Table is under repair');
+                         return;
+                      }
+                      navigate(`/pos/order/${table.tableName}`);
+                    }}
                     className="aspect-square rounded-xl border-2 flex flex-col items-center justify-center relative cursor-pointer group shadow-sm transition-all"
                     style={{ 
                       backgroundColor: cfg.color, 
@@ -165,14 +183,24 @@ export default function TableList() {
                       {table.tableName}
                     </span>
 
+                    {/* Dirty Overlay */}
+                    {status === 'Dirty' && (
+                      <div className="absolute inset-0 bg-rose-500/10 flex flex-col items-center justify-center rounded-xl">
+                        <span className="text-[8px] font-black text-rose-600 uppercase tracking-widest bg-white/80 px-2 py-0.5 rounded-full mb-1">Needs Cleaning</span>
+                        <div className="p-1.5 bg-white text-rose-500 rounded-lg shadow-sm group-hover:bg-rose-500 group-hover:text-white transition-all">
+                           <RefreshCw size={12} strokeWidth={3} />
+                        </div>
+                      </div>
+                    )}
+
                     {/* Meta info for occupied tables */}
                     {order && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-inherit rounded-xl">
                         <div className="absolute top-1 right-1 bg-white/60 px-1 rounded text-[8px] font-black text-slate-700">
-                           {calculateElapsedTime(order.startTime)}
+                           {calculateElapsedTime(order.startTime || order.createdAt)}
                         </div>
                         <span className="text-[14px] font-bold text-slate-800" style={{ color: cfg.textColor }}>{table.tableName}</span>
-                        <span className="text-[10px] font-black mt-0.5" style={{ color: cfg.textColor }}>₹{order.total || 0}</span>
+                        <span className="text-[10px] font-black mt-0.5" style={{ color: cfg.textColor }}>₹{order.grandTotal || order.total || 0}</span>
                         
                         {/* Hover Actions */}
                         <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 flex flex-col p-1 gap-1 transition-opacity">
@@ -182,7 +210,7 @@ export default function TableList() {
                                const billingDetails = {
                                  subTotal: order.subTotal || order.total || 0,
                                  tax: order.tax || 0,
-                                 discount: order.discount || 0,
+                                 discount: order.discount?.amount || 0,
                                  total: order.grandTotal || order.total || 0,
                                  orderType: order.orderType || 'Dine In',
                                  billerName: 'Staff'
@@ -226,35 +254,27 @@ export default function TableList() {
             </div>
 
             <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 2xl:grid-cols-16 gap-3">
-               {carOrders.map(car => (
+               {activeCarOrders.map(order => (
                  <motion.div
-                   key={car.id}
+                   key={order._id}
                    whileHover={{ scale: 1.05 }}
-                   className="aspect-square rounded-xl border-2 border-[var(--primary-color)]/20 bg-[var(--primary-color)]/5 flex flex-col items-center justify-center relative shadow-sm cursor-pointer group"
+                   onClick={() => navigate(`/pos/order/${order.tableName}`)}
+                   className="aspect-square rounded-xl border-2 border-[var(--primary-color)]/20 bg-white flex flex-col items-center justify-center relative shadow-sm cursor-pointer group"
                  >
                     <div className="absolute top-1 right-1 bg-white/60 px-1 rounded text-[8px] font-black">
-                       {calculateElapsedTime(car.startTime)}
+                       {calculateElapsedTime(order.createdAt)}
                     </div>
-                    <span className="text-[10px] font-black text-[var(--primary-color)] uppercase tracking-tighter text-center px-1">
-                       {car.carNumber}
+                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-tighter text-center px-1">
+                       {order.tableName}
                     </span>
-                    <span className="text-[10px] font-bold text-[var(--primary-color)] mt-1">₹{car.total}</span>
+                    <span className="text-[10px] font-bold text-[var(--primary-color)] mt-1">₹{order.grandTotal}</span>
 
                     <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 flex flex-col p-1 gap-1 transition-opacity">
-                        <button className="flex-1 bg-white/90 rounded text-[8px] font-black text-slate-700 hover:bg-white">EDIT</button>
-                        <button 
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setCarOrders(prev => prev.filter(c => c.id !== car.id)); 
-                          }}
-                          className="flex-1 bg-rose-500/10 rounded text-[8px] font-black text-rose-600 hover:bg-rose-500 hover:text-white"
-                        >
-                          CLEAR
-                        </button>
+                        <button className="flex-1 bg-white/90 rounded text-[8px] font-black text-slate-700 hover:bg-white">VIEW</button>
                     </div>
                  </motion.div>
                ))}
-               {carOrders.length === 0 && (
+               {activeCarOrders.length === 0 && (
                  <div className="col-span-full py-8 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center opacity-30">
                     <Car size={24} className="text-gray-400 mb-2" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">No active car orders</span>

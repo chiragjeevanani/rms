@@ -146,7 +146,7 @@ const settleOrder = async (req, res) => {
     if (order.tableName) {
        await Table.findOneAndUpdate(
          { tableName: order.tableName }, 
-         { status: 'Available', isAvailable: true }
+         { status: 'Dirty', isAvailable: false }
        );
     }
 
@@ -180,7 +180,7 @@ const updateOrderStatus = async (req, res) => {
         if (order.tableName) {
             await Table.findOneAndUpdate(
                 { tableName: order.tableName }, 
-                { status: 'Available', isAvailable: true }
+                { status: 'Dirty', isAvailable: false }
             );
             console.log(`Table ${order.tableName} released due to order status: ${status}`);
         }

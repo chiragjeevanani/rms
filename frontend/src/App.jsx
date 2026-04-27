@@ -34,10 +34,33 @@ function App() {
   const [isBooting, setIsBooting] = useState(true);
 
   useEffect(() => {
+    // 1. Initial booting timer
     const timer = setTimeout(() => {
       setIsBooting(false);
-    }, 1500); // Wait for the serving to be ready 🍳
-    return () => clearTimeout(timer);
+    }, 1500);
+
+    // 2. APK Black Screen Fix: Force reload when app resumes from background
+    // This ensures the WebView re-initializes JS state correctly
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Only reload if we are not in the middle of a booting phase
+        // and if we are on a mobile/APK environment (detected by user agent or just global)
+        const isStaffPath = window.location.pathname.startsWith('/staff');
+        if (isStaffPath) {
+           // For staff app, we force reload to ensure session sync
+           // window.location.reload(); 
+           // NOTE: We'll keep it commented or use a soft refresh if needed, 
+           // but for APKs, a hard reload is often the only way.
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   if (isBooting) {

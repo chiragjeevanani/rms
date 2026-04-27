@@ -169,6 +169,24 @@ export function PosProvider({ children }) {
     }
   };
 
+  const updateTableStatus = async (tableId, status) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/table/${tableId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (response.ok) {
+        fetchTables();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      toast.error('Failed to update table status');
+      return false;
+    }
+  };
+
   // ── Car Service Helpers (local) ──
   const addCarOrder = (carNumber, initialCart = [], total = 0, staff = null) => {
     const key = carNumber.trim().toUpperCase();
@@ -225,7 +243,7 @@ export function PosProvider({ children }) {
       // Backend-synced data
       orders, tables, loading,
       fetchActiveTableOrders: syncAll,
-      placeKOT, settleOrder, voidItem,
+      placeKOT, settleOrder, voidItem, updateTableStatus,
 
       // Local state
       sections, setSections,

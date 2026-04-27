@@ -37,7 +37,7 @@ const tableSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['Available', 'Damaged', 'Occupied', 'Reserved'],
+    enum: ['Available', 'Damaged', 'Occupied', 'Reserved', 'Dirty'],
     default: 'Available'
   },
   notes: {

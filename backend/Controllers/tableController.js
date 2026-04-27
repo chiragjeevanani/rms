@@ -61,7 +61,6 @@ const deleteTable = async (req, res) => {
   }
 };
 
-// @desc    Update Table Status
 // @route   PATCH /api/table/:id/status
 const updateTableStatus = async (req, res) => {
     const { status } = req.body;
@@ -70,7 +69,13 @@ const updateTableStatus = async (req, res) => {
       if (!table) return res.status(404).json({ message: 'Table not found' });
       
       table.status = status;
+      table.isAvailable = (status === 'Available');
       await table.save();
+
+      // Emit real-time update
+      const io = req.app.get('socketio');
+      if (io) io.emit('tableStatusChanged', { tableId: table._id, status });
+
       res.json(table);
     } catch (error) {
       res.status(500).json({ message: 'Error updating status' });

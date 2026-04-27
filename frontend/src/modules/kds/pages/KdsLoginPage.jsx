@@ -12,12 +12,7 @@ export default function KdsLoginPage() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    document.body.style.backgroundColor = '#0A0A0B';
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.backgroundColor = '';
-      document.body.style.overflow = '';
-    };
+    // Background is managed by the container below
   }, []);
 
   const handleLogin = async (e) => {
