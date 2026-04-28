@@ -29,10 +29,12 @@ export default function TableOrderScreen() {
     // Fetch real categories, items and combos
     const fetchData = async () => {
       try {
+        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+        const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
         const [catRes, itemRes, comboRes] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_URL}/category`),
-          fetch(`${import.meta.env.VITE_API_URL}/item`),
-          fetch(`${import.meta.env.VITE_API_URL}/combo`)
+          fetch(`${import.meta.env.VITE_API_URL}/category${branchQuery}`),
+          fetch(`${import.meta.env.VITE_API_URL}/item${branchQuery}`),
+          fetch(`${import.meta.env.VITE_API_URL}/combo${branchQuery}`)
         ]);
         const catData = await catRes.json();
         const itemData = await itemRes.json();
