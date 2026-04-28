@@ -2,7 +2,8 @@ const Item = require('../Models/Item');
 
 const getItems = async (req, res) => {
   try {
-    const items = await Item.find()
+    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const items = await Item.find(filter)
       .populate('category')
       .populate('modifiers')
       .sort({ createdAt: -1 });

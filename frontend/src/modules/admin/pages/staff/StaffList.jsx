@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Search, Shield, Edit2, Trash2, Mail, Key, Loader2, X, Filter, LayoutGrid, List, MoreVertical, ToggleLeft as Toggle } from 'lucide-react';
+import { Users, Plus, Search, Shield, Edit2, Trash2, Mail, LayoutGrid, List, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function StaffList() {
   const [staff, setStaff] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
   const [editingStaff, setEditingStaff] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
   const [filterStatus, setFilterStatus] = useState('All');
 
   const [formData, setFormData] = useState({
@@ -21,6 +24,7 @@ export default function StaffList() {
     email: '',
     role: '',
     status: 'Active',
+    branchId: '',
     pin: '1234'
   });
 
@@ -31,17 +35,15 @@ export default function StaffList() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/staff`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
-        }
-      });
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setStaff(data);
-      } else {
-        setStaff([]);
-      }
+      const [staffRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/staff`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const staffData = await staffRes.json();
+      const branchData = await branchRes.json();
+      
+      setStaff(Array.isArray(staffData) ? staffData : []);
+      setBranches(branchData.success ? branchData.data : []);
     } catch (err) {
       toast.error('Personnel fetch failed');
     } finally {
@@ -53,7 +55,7 @@ export default function StaffList() {
      try {
        const res = await fetch(`${import.meta.env.VITE_API_URL}/role`);
        const data = await res.json();
-       setRoles(data.filter(r => r.status === 'Published'));
+       setRoles(Array.isArray(data) ? data.filter(r => r.status === 'Published') : []);
      } catch (err) {
        console.error(err);
      }
@@ -67,6 +69,7 @@ export default function StaffList() {
         email: member.email,
         role: member.role?._id || '',
         status: member.status || 'Active',
+        branchId: member.branchId || '',
         pin: member.pin || '1234'
       });
     } else {
@@ -74,8 +77,9 @@ export default function StaffList() {
       setFormData({
         name: '',
         email: '',
-        role: roles[0]?._id || '',
+        role: '',
         status: 'Active',
+        branchId: selectedBranchFilter !== 'all' ? selectedBranchFilter : '',
         pin: '1234'
       });
     }
@@ -84,6 +88,7 @@ export default function StaffList() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.branchId) return toast.error('Branch selection required');
     if (!formData.name || !formData.email || !formData.role) {
       return toast.error('Required data missing');
     }
@@ -126,9 +131,7 @@ export default function StaffList() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/${staffToDelete._id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
-        }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
       });
       if (res.ok) {
         toast.success('Personnel record terminated');
@@ -164,12 +167,13 @@ export default function StaffList() {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           member.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'All' || member.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesBranch = selectedBranchFilter === 'all' || 
+                         (member.branchId?._id ? member.branchId._id === selectedBranchFilter : member.branchId === selectedBranchFilter);
+    return matchesSearch && matchesStatus && matchesBranch;
   });
 
   return (
     <div className="p-6 space-y-6 animate-in fade-in duration-500 max-w-[1500px] mx-auto min-h-screen pb-40">
-      {/* Compact Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
            <div className="p-2 bg-slate-900 text-white rounded-xl shadow-lg">
@@ -182,21 +186,17 @@ export default function StaffList() {
         </div>
         
         <div className="flex items-center gap-3">
+           <BranchSelector branches={branches} selectedBranch={selectedBranchFilter} onSelect={setSelectedBranchFilter} />
            <div className="flex items-center gap-1 p-1 bg-white rounded-xl shadow-sm border border-slate-100">
               <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><LayoutGrid size={16} /></button>
               <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><List size={16} /></button>
            </div>
-           <button 
-              onClick={() => handleOpenModal()}
-              className="h-10 px-6 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 hover:scale-105 transition-all"
-            >
-              <Plus size={14} strokeWidth={3} />
-              Enroll Staff
+           <button onClick={() => handleOpenModal()} className="h-10 px-6 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 hover:scale-105 transition-all">
+              <Plus size={14} strokeWidth={3} /> Enroll Staff
             </button>
         </div>
       </div>
 
-      {/* Control Bar */}
       <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="relative flex-1 w-full group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={14} />
@@ -215,19 +215,12 @@ export default function StaffList() {
           </div>
       </div>
 
-      {/* Presentation Layer */}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
            {Array(8).fill(0).map((_, i) => (
              <div key={i} className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm animate-pulse space-y-4">
-                <div className="flex items-start justify-between">
-                   <div className="w-14 h-14 bg-slate-100 rounded-2xl" />
-                   <div className="w-16 h-4 bg-slate-50 rounded" />
-                </div>
-                <div className="space-y-2">
-                   <div className="h-4 bg-slate-100 rounded w-2/3" />
-                   <div className="h-3 bg-slate-50 rounded w-1/2" />
-                </div>
+                <div className="w-14 h-14 bg-slate-100 rounded-2xl" />
+                <div className="h-4 bg-slate-100 rounded w-2/3" />
              </div>
            ))}
         </div>
@@ -240,57 +233,30 @@ export default function StaffList() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <AnimatePresence>
             {filteredStaff.map((member) => (
-              <motion.div 
-                layout
-                key={member._id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white border border-slate-100 p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all group relative flex flex-col"
-              >
+              <motion.div layout key={member._id} className="bg-white border border-slate-100 p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all group relative flex flex-col">
                 <div className="flex items-start justify-between mb-6">
-                  <div className="relative">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white shadow-lg group-hover:scale-105 transition-transform ${member.status === 'Active' ? 'bg-slate-900' : 'bg-slate-400 opacity-60'}`}>
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white shadow-sm transition-colors ${member.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white shadow-lg ${member.status === 'Active' ? 'bg-slate-900' : 'bg-slate-400'}`}>
+                    {member.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div className={`px-2 py-1 rounded-lg text-[7px] font-black uppercase tracking-widest ${member.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
                     {member.status}
                   </div>
                 </div>
-
-                <div className="mb-6">
-                  <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-2 leading-none truncate">{member.name}</h2>
-                  <div className="flex flex-col gap-1.5 opacity-60">
-                    <div className="flex items-center gap-2">
-                       <Shield size={10} className="text-blue-500" />
-                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{member.role?.name || 'Unit'}</span>
+                  <div className="flex flex-col gap-1.5 mb-6">
+                    <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight truncate">{member.name}</h2>
+                    <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                      <Shield size={10} className="text-blue-500" /> {member.role?.name || 'Unit'}
                     </div>
-                    <div className="flex items-center gap-2">
-                       <Mail size={10} className="text-slate-300" />
-                       <span className="text-[8px] font-bold text-slate-400 truncate">{member.email}</span>
+                    <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                      <MapPin size={10} className="text-amber-500" /> {member.branchId?.branchName || 'Global'}
                     </div>
                   </div>
-                </div>
-
                 <div className="pt-4 border-t border-slate-50 flex items-center gap-1.5 mt-auto">
-                  <button 
-                    onClick={() => handleOpenModal(member)}
-                    className="flex-1 h-9 bg-slate-50 text-slate-600 text-[8px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2"
-                  >
+                  <button onClick={() => handleOpenModal(member)} className="flex-1 h-9 bg-slate-50 text-slate-600 text-[8px] font-black uppercase rounded-xl hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2">
                      <Edit2 size={10} /> Edit
                   </button>
-                  <button 
-                    onClick={() => handleDeleteClick(member)}
-                    className="w-9 h-9 flex items-center justify-center bg-slate-50 text-slate-300 rounded-xl hover:bg-rose-500 hover:text-white transition-all"
-                  >
+                  <button onClick={() => handleDeleteClick(member)} className="w-9 h-9 flex items-center justify-center bg-slate-50 text-rose-500 rounded-xl hover:bg-rose-50 transition-all">
                     <Trash2 size={12} />
-                  </button>
-                  <button 
-                    onClick={() => toggleStatus(member)}
-                    className={`h-9 px-3 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 ${member.status === 'Active' ? 'text-emerald-500' : 'text-slate-200'}`}
-                  >
-                     <div className={`w-2 h-2 rounded-full ${member.status === 'Active' ? 'bg-emerald-500 shadow-lg' : 'bg-slate-300'}`} />
                   </button>
                 </div>
               </motion.div>
@@ -298,50 +264,27 @@ export default function StaffList() {
           </AnimatePresence>
         </div>
       ) : (
-        /* COMPACT LIST VIEW */
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
            <table className="w-full text-left">
               <thead>
                  <tr className="bg-slate-50/30 border-b border-slate-100 text-[8px] font-black text-slate-400 uppercase tracking-widest">
                     <th className="px-6 py-4">Personnel Registry</th>
-                    <th className="px-6 py-4">Connectivity</th>
-                    <th className="px-6 py-4">Status Mapping</th>
-                    <th className="px-6 py-4 text-right">Rapid Action</th>
+                    <th className="px-6 py-4">Role</th>
+                    <th className="px-6 py-4">Branch</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Action</th>
                  </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                  {filteredStaff.map((member) => (
-                   <tr key={member._id} className="group hover:bg-slate-50/20 transition-all">
-                      <td className="px-6 py-3">
-                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[9px] font-black shadow shadow-slate-900/10">
-                               {member.name.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            <div>
-                               <p className="text-xs font-black text-slate-900 uppercase tracking-tight truncate max-w-[120px]">{member.name}</p>
-                               <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest opacity-50">UID: {member._id.slice(-4)}</p>
-                            </div>
-                         </div>
-                      </td>
-                      <td className="px-6 py-3">
-                         <div className="space-y-1">
-                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[7px] font-black uppercase tracking-widest">
-                               <Shield size={8} /> {member.role?.name || 'Unit'}
-                            </div>
-                            <p className="text-[9px] font-medium text-slate-400 truncate max-w-[150px] lowercase">{member.email}</p>
-                         </div>
-                      </td>
-                      <td className="px-6 py-3">
-                         <button onClick={() => toggleStatus(member)} className={`flex items-center gap-2 px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${member.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-300'}`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${member.status === 'Active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
-                            {member.status}
-                         </button>
-                      </td>
+                   <tr key={member._id} className="group hover:bg-slate-50/20">
+                      <td className="px-6 py-3 font-black text-slate-900">{member.name}</td>
+                      <td className="px-6 py-3 text-[10px]">{member.role?.name || 'N/A'}</td>
+                      <td className="px-6 py-3 text-[10px]">{member.branchId?.branchName || 'Global'}</td>
+                      <td className="px-6 py-3 text-[10px]">{member.status}</td>
                       <td className="px-6 py-3 text-right">
-                         <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onClick={() => handleOpenModal(member)} className="p-2 bg-white text-slate-400 rounded-lg shadow-sm border border-slate-100 hover:text-slate-900"><Edit2 size={12} /></button>
-                            <button onClick={() => handleDeleteClick(member)} className="p-2 bg-white text-rose-300 rounded-lg shadow-sm border border-slate-100 hover:text-rose-500"><Trash2 size={12} /></button>
-                         </div>
+                        <button onClick={() => handleOpenModal(member)} className="text-slate-400 hover:text-slate-900 mr-2"><Edit2 size={14} /></button>
+                        <button onClick={() => handleDeleteClick(member)} className="text-rose-400 hover:text-rose-600"><Trash2 size={14} /></button>
                       </td>
                    </tr>
                  ))}
@@ -350,7 +293,6 @@ export default function StaffList() {
         </div>
       )}
 
-      {/* Maintenance Modals */}
       <AdminModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -369,17 +311,55 @@ export default function StaffList() {
                 <input type="email" required className="w-full bg-slate-50 border border-slate-100 p-3.5 text-[10px] font-bold outline-none focus:border-slate-900 rounded-xl transition-all lowercase" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="access@portal.com" />
               </div>
            </div>
+
            <div className="space-y-1.5">
-             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Designation Registry</label>
-             <select className="w-full bg-slate-50 border border-slate-100 p-3.5 text-[10px] font-bold outline-none focus:border-slate-900 rounded-xl transition-all" value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})}>
-               <option value="" disabled>SELECT DESIGNATION</option>
-               {roles.map(role => (<option key={role._id} value={role._id}>{role.name}</option>))}
+             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+             <select 
+               className="w-full bg-slate-50 border border-slate-100 p-3.5 text-[10px] font-bold outline-none focus:border-slate-900 rounded-xl transition-all appearance-none"
+               value={formData.branchId}
+               required
+               onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+             >
+               <option value="">Select Target Branch</option>
+               {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
              </select>
            </div>
+
            <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Unit Pulse State</label>
-              <div className="flex gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100">
-                {['Active', 'Inactive'].map(s => (<button key={s} type="button" onClick={() => setFormData({ ...formData, status: s })} className={`flex-1 py-2.5 rounded-lg text-[8px] font-black uppercase transition-all ${formData.status === s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>{s}</button>))}
+             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Designation Registry</label>
+             <select 
+               className="w-full bg-slate-50 border border-slate-100 p-3.5 text-[10px] font-bold outline-none focus:border-slate-900 rounded-xl transition-all appearance-none"
+               value={formData.role}
+               onChange={(e) => setFormData({...formData, role: e.target.value})}
+               required
+               disabled={!formData.branchId}
+             >
+               <option value="">{formData.branchId ? 'SELECT DESIGNATION' : 'SELECT BRANCH FIRST'}</option>
+               {roles
+                 .filter(r => !r.branchId || r.branchId === formData.branchId)
+                 .map(role => (
+                 <option key={role._id} value={role._id}>{role.name}</option>
+               ))}
+             </select>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Access PIN</label>
+                <input type="text" maxLength={4} className="w-full bg-slate-50 border border-slate-100 p-3.5 text-[10px] font-bold outline-none focus:border-slate-900 rounded-xl transition-all" value={formData.pin} onChange={(e) => setFormData({...formData, pin: e.target.value})} placeholder="1234" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Unit Pulse State</label>
+                <div className="flex gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100 h-[46px]">
+                  {['Active', 'Inactive'].map(s => (
+                    <button 
+                      key={s} 
+                      type="button" 
+                      onClick={() => setFormData({ ...formData, status: s })} 
+                      className={`flex-1 rounded-lg text-[8px] font-black uppercase transition-all ${formData.status === s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
+                    >{s}</button>
+                  ))}
+                </div>
               </div>
            </div>
         </div>

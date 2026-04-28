@@ -32,7 +32,9 @@ export default function ActiveOrders() {
 
   const fetchActiveOrders = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/active`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/active${branchQuery}`);
       const result = await response.json();
       if (result.success) {
         setOrders(result.data);

@@ -8,7 +8,11 @@ const stockSchema = new mongoose.Schema({
   category: { type: String, required: true },
   price: { type: Number, default: 0 },
   lastRestocked: { type: Date, default: Date.now },
-  status: { type: String, enum: ['Published', 'Draft'], default: 'Published' }
+  status: { type: String, enum: ['Published', 'Draft'], default: 'Published' },
+  branchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch'
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Stock', stockSchema);

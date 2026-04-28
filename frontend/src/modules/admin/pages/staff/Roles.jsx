@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function Roles() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
@@ -31,11 +32,14 @@ export default function Roles() {
   const [editingRole, setEditingRole] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    status: 'Published'
+    status: 'Published',
+    branchId: ''
   });
 
   useEffect(() => {
@@ -44,9 +48,15 @@ export default function Roles() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/role`);
-      const data = await res.json();
-      setRoles(data);
+      const [roleRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/role`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const roleData = await roleRes.json();
+      const branchData = await branchRes.json();
+      
+      setRoles(Array.isArray(roleData) ? roleData : []);
+      if (branchData.success) setBranches(branchData.data);
     } catch (err) {
       toast.error('Failed to load roles');
     } finally {
@@ -60,14 +70,16 @@ export default function Roles() {
       setFormData({
         name: role.name,
         description: role.description || '',
-        status: role.status || 'Published'
+        status: role.status || 'Published',
+        branchId: role.branchId || ''
       });
     } else {
       setEditingRole(null);
       setFormData({
         name: '',
         description: '',
-        status: 'Published'
+        status: 'Published',
+        branchId: ''
       });
     }
     setIsModalOpen(true);
@@ -152,7 +164,8 @@ export default function Roles() {
   const filteredRoles = roles.filter(role => {
     const matchesSearch = role.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'All' || role.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const branchMatch = selectedBranchFilter === 'all' || role.branchId === selectedBranchFilter;
+    return matchesSearch && matchesStatus && branchMatch;
   });
 
   return (
@@ -179,12 +192,20 @@ export default function Roles() {
                 <LayoutGrid size={18} />
               </button>
               <button 
-                onClick={() => setViewMode('list')}
-                className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
-              >
-                <List size={18} />
-              </button>
-           </div>
+                 onClick={() => setViewMode('list')}
+                 className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
+               >
+                 <List size={18} />
+               </button>
+            </div>
+
+            <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
+            <BranchSelector 
+              branches={branches}
+              selectedBranch={selectedBranchFilter}
+              onSelect={setSelectedBranchFilter}
+            />
 
            <button 
              onClick={() => handleOpenModal()}
@@ -336,12 +357,23 @@ export default function Roles() {
         <div className="space-y-6">
            <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Role Designation Name</label>
-              <input 
-                type="text" required
-                className="w-full bg-slate-50 border border-slate-100 p-5 text-[11px] font-bold outline-none rounded-3xl"
-                value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
-              />
-           </div>
+               <input 
+                 type="text" required
+                 className="w-full bg-slate-50 border border-slate-100 p-5 text-[11px] font-bold outline-none rounded-3xl"
+                 value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
+               />
+            </div>
+            <div className="space-y-2">
+               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+               <select 
+                 className="w-full bg-slate-50 border border-slate-100 p-5 text-[11px] font-bold uppercase outline-none rounded-3xl appearance-none"
+                 value={formData.branchId}
+                 onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+               >
+                 <option value="">Global / Select Branch</option>
+                 {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+               </select>
+            </div>
            <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Strategic Brief</label>
               <textarea 

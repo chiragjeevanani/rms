@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Plus, Search, Filter, ArrowUpRight, ArrowDownLeft, AlertCircle, Edit2, Trash2, Save, Package, Truck, Database, ChevronRight, X, ChevronLeft } from 'lucide-react';
+import { Box, Plus, Search, Filter, ArrowUpRight, ArrowDownLeft, AlertCircle, Edit2, Trash2, Save, Package, Truck, Database, ChevronRight, X, ChevronLeft, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function StockManagement() {
   const [stock, setStock] = useState([]);
@@ -12,6 +13,8 @@ export default function StockManagement() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,7 +26,8 @@ export default function StockManagement() {
     unit: 'Kgs',
     minLevel: '',
     category: 'Dry Grocery',
-    price: ''
+    price: '',
+    branchId: ''
   });
 
   useEffect(() => {
@@ -32,9 +36,15 @@ export default function StockManagement() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/stock`);
-      const data = await res.json();
-      setStock(data);
+      const [stockRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/stock`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const stockData = await stockRes.json();
+      const branchData = await branchRes.json();
+      
+      setStock(stockData);
+      if (branchData.success) setBranches(branchData.data);
     } catch (err) {
       toast.error('Inventory fetch failed');
     } finally {
@@ -51,7 +61,8 @@ export default function StockManagement() {
         unit: item.unit || 'Kgs',
         minLevel: item.minLevel,
         category: item.category || 'Dry Grocery',
-        price: item.price || ''
+        price: item.price || '',
+        branchId: item.branchId || ''
       });
     } else {
       setEditingItem(null);
@@ -61,7 +72,8 @@ export default function StockManagement() {
         unit: 'Kgs',
         minLevel: '',
         category: 'Dry Grocery',
-        price: ''
+        price: '',
+        branchId: ''
       });
     }
     setIsModalOpen(true);
@@ -70,6 +82,7 @@ export default function StockManagement() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.name || formData.quantity === '') return toast.error('Required fields missing');
+    if (!formData.branchId) return toast.error('Branch selection required');
 
     const url = editingItem 
       ? `${import.meta.env.VITE_API_URL}/stock/${editingItem._id}`
@@ -126,7 +139,10 @@ export default function StockManagement() {
   const filteredStock = stock.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           item.category.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+    
+    const branchMatch = selectedBranchFilter === 'all' || item.branchId === selectedBranchFilter;
+    
+    return matchesSearch && branchMatch;
   });
 
   // Pagination Logic
@@ -185,6 +201,14 @@ export default function StockManagement() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
+          <div className="h-8 w-px bg-slate-200 hidden md:block mx-2" />
+
+          <BranchSelector 
+            branches={branches}
+            selectedBranch={selectedBranchFilter}
+            onSelect={setSelectedBranchFilter}
+          />
           
         </div>
       </div>
@@ -362,6 +386,19 @@ export default function StockManagement() {
                 onChange={(e) => setFormData({...formData, name: e.target.value.toUpperCase()})}
                 placeholder="e.g. TRUFFLE OIL (5L)"
               />
+           </div>
+
+           <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+              <select 
+                className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold uppercase outline-none focus:border-slate-900 rounded-2xl appearance-none"
+                value={formData.branchId}
+                required
+                onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+              >
+                <option value="">Select Target Branch</option>
+                {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+              </select>
            </div>
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

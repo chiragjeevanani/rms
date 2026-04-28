@@ -39,7 +39,10 @@ const comboSchema = new mongoose.Schema({
   trackStock: { type: Boolean, default: false },
   stockCount: { type: Number, default: 0 },
   minStockLevel: { type: Number, default: 5 },
-  
+  branchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch'
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Combo', comboSchema);

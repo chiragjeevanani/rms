@@ -16,8 +16,11 @@ const categorySchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Published', 'Draft'],
     default: 'Published',
+  },
+  branchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch'
   }
 }, { timestamps: true });
 

@@ -16,6 +16,8 @@ import CustomerManagement from '../pages/CustomerManagement';
 import AdminLoginPage from '../pages/AdminLoginPage';
 import TableManagement from '../pages/TableManagement';
 import OccupiedTables from '../pages/OccupiedTables';
+import BranchManagement from '../pages/BranchManagement';
+import BranchDetails from '../pages/BranchDetails';
 
 import Categories from '../pages/menu/Categories';
 import MenuItems from '../pages/menu/MenuItems';
@@ -69,6 +71,8 @@ export default function AdminRoutes() {
         <Route element={<AdminLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="branches" element={<BranchManagement />} />
+          <Route path="branches/:id" element={<BranchDetails />} />
           <Route path="outlets" element={<OutletManagement />} />
           <Route path="tables" element={<TableManagement />} />
           <Route path="tables/all" element={<TableManagement />} />

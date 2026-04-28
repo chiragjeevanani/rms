@@ -3,7 +3,7 @@ import {
   Search, Plus, Filter, LayoutGrid, List, Leaf, 
   Flame, Edit2, Trash2, Tag, Save, Image as ImageIcon, 
   Loader2, X, Camera, Clock, DollarSign, Package,
-  ChefHat, Star, Check, ChevronDown, ChevronUp, Sliders, Eye
+  ChefHat, Star, Check, ChevronDown, ChevronUp, Sliders, Eye, Building2
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +11,7 @@ import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function MenuItems() {
   const [viewMode, setViewMode] = useState('grid');
@@ -24,6 +25,8 @@ export default function MenuItems() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [filterStatus, setFilterStatus] = useState('All');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   const [categories, setCategories] = useState([]);
   const [modifierGroups, setModifierGroups] = useState([]);
@@ -53,9 +56,8 @@ export default function MenuItems() {
     tags: [],
     isFeatured: false,
     status: 'Published',
-    trackStock: false,
-    stockCount: 0,
-    minStockLevel: 5
+    minStockLevel: 5,
+    branchId: ''
   });
 
   const location = useLocation();
@@ -78,19 +80,21 @@ export default function MenuItems() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [catRes, modRes, itemRes] = await Promise.all([
+      const [catRes, modRes, itemRes, brsRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_URL}/category`),
         fetch(`${import.meta.env.VITE_API_URL}/modifier`),
-        fetch(`${import.meta.env.VITE_API_URL}/item`)
+        fetch(`${import.meta.env.VITE_API_URL}/item`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
       ]);
       
-      const [cats, mods, its] = await Promise.all([
-        catRes.json(), modRes.json(), itemRes.json()
+      const [cats, mods, its, brs] = await Promise.all([
+        catRes.json(), modRes.json(), itemRes.json(), brsRes.json()
       ]);
 
       setCategories(cats);
       setModifierGroups(mods);
       setItems(its);
+      if (brs.success) setBranches(brs.data);
       
       // Select first category by default for new items
       if (cats.length > 0 && !formData.category) {
@@ -114,7 +118,8 @@ export default function MenuItems() {
         stockCount: item.stockCount || 0,
         minStockLevel: item.minStockLevel || 5,
         alphaShortCode: item.alphaShortCode || '',
-        numericShortCode: item.numericShortCode || ''
+        numericShortCode: item.numericShortCode || '',
+        branchId: item.branchId || ''
       });
     } else {
       setEditingItem(null);
@@ -141,7 +146,8 @@ export default function MenuItems() {
         status: 'Published',
         trackStock: false,
         stockCount: 0,
-        minStockLevel: 5
+        minStockLevel: 5,
+        branchId: ''
       });
     }
     setIsModalOpen(true);
@@ -232,6 +238,7 @@ export default function MenuItems() {
     e.preventDefault();
     if (!formData.name.trim()) return toast.error('Item name required');
     if (!formData.image) return toast.error('Item image required');
+    if (!formData.branchId) return toast.error('Please select a branch');
     if (!formData.hasVariants && !formData.basePrice) return toast.error('Price required');
     if (formData.hasVariants && formData.variants.length === 0) return toast.error('Add at least one variant');
 
@@ -289,7 +296,12 @@ export default function MenuItems() {
       i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       i.sku?.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .filter(i => filterStatus === 'All' || i.status === filterStatus);
+    .filter(i => filterStatus === 'All' || i.status === filterStatus)
+    .filter(i => {
+      if (selectedBranchFilter === 'all') return true;
+      const branchId = typeof i.branchId === 'object' ? i.branchId?._id : i.branchId;
+      return branchId === selectedBranchFilter;
+    });
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
@@ -330,6 +342,15 @@ export default function MenuItems() {
             </button>
           ))}
         </div>
+
+        <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
+        {/* Branch Filter */}
+        <BranchSelector 
+          branches={branches}
+          selectedBranch={selectedBranchFilter}
+          onSelect={setSelectedBranchFilter}
+        />
         <div className="flex items-center border border-slate-100 rounded-2xl p-1 bg-slate-50">
           <button 
             onClick={() => setViewMode('grid')}
@@ -399,7 +420,17 @@ export default function MenuItems() {
                 className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all group relative flex flex-col"
               >
                 <div className="aspect-square relative overflow-hidden bg-slate-50 border-b border-slate-100">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  {item.image ? (
+                    <img 
+                      src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}/${item.image}`} 
+                      alt={item.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-200">
+                      <ImageIcon size={48} strokeWidth={1} />
+                    </div>
+                  )}
                   <div className="absolute top-4 left-4 flex gap-2">
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-md ${item.foodType === 'Veg' ? 'bg-emerald-500/90' : item.foodType === 'Non-Veg' ? 'bg-rose-500/90' : 'bg-amber-500/90'}`}>
                       <div className="w-3 h-3 rounded-full border-2 border-white" />
@@ -439,27 +470,31 @@ export default function MenuItems() {
                     {item.description}
                   </p>
                   
-                  <div className="flex items-center gap-2 pt-4 border-t border-slate-50 mt-2">
+                  <div className="flex items-center justify-center gap-3 pt-4 border-t border-slate-50 mt-2">
                     <Link 
                       to={`/admin/menu/items/${item._id}`}
                       className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm flex-shrink-0"
                       title="View Details"
                     >
-                      <Eye size={14} />
+                      <Eye size={16} />
                     </Link>
                     <button 
                       onClick={() => handleOpenModal(item)}
-                      className="flex-1 h-10 bg-slate-50 text-slate-600 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                      className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm flex-shrink-0"
+                      title="Edit"
                     >
-                      <Edit2 size={12} />
+                      <Edit2 size={16} />
                     </button>
                     <button 
                       onClick={() => handleDeleteClick(item)}
-                      className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all flex-shrink-0"
-                    ><Trash2 size={14} /></button>
+                      className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm flex-shrink-0"
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                     <button 
                       onClick={() => toggleStatus(item)}
-                      className={`h-10 px-3 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 flex-shrink-0 ${item.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
+                      className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 shadow-sm flex-shrink-0 ${item.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
                       title={`Status: ${item.status}`}
                     >
                       <div className={`w-2.5 h-2.5 rounded-full ${item.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-200'}`} />
@@ -473,8 +508,18 @@ export default function MenuItems() {
                 className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-6 group"
               >
                 <div className="flex items-center gap-5 flex-1 min-w-0">
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0">
+                    {item.image ? (
+                      <img 
+                        src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}/${item.image}`} 
+                        alt={item.name} 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-200">
+                        <ImageIcon size={20} />
+                      </div>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -506,28 +551,27 @@ export default function MenuItems() {
                       <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${item.stockCount <= (item.minStockLevel || 5) ? 'text-rose-500' : 'text-emerald-500'}`}>{item.stockCount} In Stock</p>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <button 
                       onClick={() => toggleStatus(item)}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl hover:bg-white transition-all border border-slate-100 hover:border-slate-300 active:scale-95"
+                      className="w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-slate-100 hover:border-slate-300 active:scale-95 shadow-sm"
                       title={`Toggle Live Status`}
                     >
-                      <div className={`w-2 h-2 rounded-full ${item.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
-                      <span className={`text-[8px] font-black uppercase tracking-widest ${item.status === 'Published' ? 'text-emerald-600' : 'text-slate-400'}`}>{item.status}</span>
+                      <div className={`w-2.5 h-2.5 rounded-full ${item.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
                     </button>
                     <Link 
                       to={`/admin/menu/items/${item._id}`}
-                      className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm flex items-center justify-center"
+                      className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm"
                     >
                       <Eye size={16} />
                     </Link>
                     <button 
                       onClick={() => handleOpenModal(item)}
-                      className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all"
+                      className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm"
                     ><Edit2 size={16} /></button>
                     <button 
                       onClick={() => handleDeleteClick(item)}
-                      className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"
+                      className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                     ><Trash2 size={16} /></button>
                   </div>
                 </div>
@@ -554,7 +598,11 @@ export default function MenuItems() {
                   <div className="w-full h-full rounded-[3rem] border-4 border-dashed border-slate-100 bg-slate-50 flex items-center justify-center overflow-hidden relative shadow-inner">
                     {formData.image ? (
                       <>
-                        <img src={formData.image} alt="Item" className="w-full h-full object-cover" />
+                        <img 
+                          src={formData.image.startsWith('http') ? formData.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}/${formData.image}`} 
+                          alt="Item" 
+                          className="w-full h-full object-cover" 
+                        />
                         <button 
                           type="button"
                           onClick={() => setFormData({ ...formData, image: '' })}
@@ -600,9 +648,24 @@ export default function MenuItems() {
                       value={formData.category}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                     >
+                      <option value="">Select Category</option>
                       {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                     </select>
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch</label>
+                    <select 
+                      className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black uppercase outline-none focus:border-amber-500/50 rounded-2xl"
+                      value={formData.branchId}
+                      required
+                      onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                    >
+                      <option value="">Select Branch</option>
+                      {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+                    </select>
+                  </div>
+               </div>
+               <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Food Type</label>
                     <div className="flex gap-2 p-1 bg-slate-50 rounded-2xl border border-slate-100">

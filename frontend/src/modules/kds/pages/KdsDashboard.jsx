@@ -24,7 +24,9 @@ export default function KdsDashboard() {
   // Fetch real analytics from backend
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/analytics`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/analytics${branchQuery}`);
       if (response.ok) {
         const result = await response.json();
         setAnalytics(result.data);

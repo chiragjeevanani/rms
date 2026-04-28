@@ -18,7 +18,11 @@ const modifierGroupSchema = new mongoose.Schema({
   minSelection: { type: Number, default: 0 },
   maxSelection: { type: Number },
   options: [modifierOptionSchema],
-  status: { type: String, enum: ['Published', 'Draft'], default: 'Published' }
+  status: { type: String, enum: ['Published', 'Draft'], default: 'Published' },
+  branchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch'
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('ModifierGroup', modifierGroupSchema);

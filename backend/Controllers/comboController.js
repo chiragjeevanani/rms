@@ -3,7 +3,8 @@ const Combo = require('../Models/Combo');
 // @desc    Get all combos
 const getCombos = async (req, res) => {
   try {
-    const combos = await Combo.find().populate('items.item').sort({ createdAt: -1 });
+    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const combos = await Combo.find(filter).populate('items.item').sort({ createdAt: -1 });
     res.json({ success: true, data: combos });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error' });

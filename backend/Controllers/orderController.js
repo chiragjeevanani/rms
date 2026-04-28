@@ -110,7 +110,8 @@ const createOrder = async (req, res) => {
 
 const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
+    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const orders = await Order.find(filter)
       .populate('items.itemId')
       .populate('items.comboId')
       .sort({ createdAt: -1 });
@@ -122,7 +123,9 @@ const getAllOrders = async (req, res) => {
 
 const getActiveOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ status: { $nin: ['Paid', 'Cancelled', 'Void'] } })
+    const filter = { status: { $nin: ['Paid', 'Cancelled', 'Void'] } };
+    if (req.query.branchId) filter.branchId = req.query.branchId;
+    const orders = await Order.find(filter)
       .populate('items.itemId')
       .populate('items.comboId')
       .sort({ createdAt: -1 });
@@ -134,7 +137,9 @@ const getActiveOrders = async (req, res) => {
 
 const getCompletedOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ status: 'Paid' })
+    const filter = { status: 'Paid' };
+    if (req.query.branchId) filter.branchId = req.query.branchId;
+    const orders = await Order.find(filter)
       .populate('items.itemId')
       .populate('items.comboId')
       .sort({ updatedAt: -1 });
@@ -146,7 +151,9 @@ const getCompletedOrders = async (req, res) => {
 
 const getCancelledOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ status: { $in: ['cancelled', 'Void'] } })
+    const filter = { status: { $in: ['cancelled', 'Void'] } };
+    if (req.query.branchId) filter.branchId = req.query.branchId;
+    const orders = await Order.find(filter)
       .populate('items.itemId')
       .populate('items.comboId')
       .sort({ updatedAt: -1 });
@@ -264,12 +271,13 @@ const getKitchenAnalytics = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
     
     const counts = {
-      total: await Order.countDocuments(),
-      new: await Order.countDocuments({ status: 'Pending' }),
-      preparing: await Order.countDocuments({ status: 'Preparing' }),
-      completed: await Order.countDocuments({ status: { $in: ['Ready', 'Served', 'Paid'] } })
+      total: await Order.countDocuments(filter),
+      new: await Order.countDocuments({ ...filter, status: 'Pending' }),
+      preparing: await Order.countDocuments({ ...filter, status: 'Preparing' }),
+      completed: await Order.countDocuments({ ...filter, status: { $in: ['Ready', 'Served', 'Paid'] } })
     };
 
     // 1. Weekly Trends (Last 7 Days)
@@ -278,7 +286,7 @@ const getKitchenAnalytics = async (req, res) => {
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
     const dailyTrends = await Order.aggregate([
-      { $match: { createdAt: { $gte: sevenDaysAgo } } },
+      { $match: { ...filter, createdAt: { $gte: sevenDaysAgo } } },
       { $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
           orders: { $sum: 1 }
@@ -301,7 +309,12 @@ const getKitchenAnalytics = async (req, res) => {
     }
 
     // 2. Category Distribution (Top Items)
+    const matchStage = Object.keys(filter).length > 0 
+      ? { $match: { branchId: new require('mongoose').Types.ObjectId(req.query.branchId) } } 
+      : { $match: {} };
+      
     const categories = await Order.aggregate([
+      matchStage,
       { $unwind: "$items" },
       { $group: { 
           _id: "$items.name", 
@@ -321,7 +334,7 @@ const getKitchenAnalytics = async (req, res) => {
 
 const getSalesAnalytics = async (req, res) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, branchId } = req.query;
     
     let filter = { status: 'Paid' };
     if (startDate && endDate) {
@@ -329,6 +342,9 @@ const getSalesAnalytics = async (req, res) => {
         $gte: new Date(startDate), 
         $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)) 
       };
+    }
+    if (branchId && branchId !== 'all') {
+      filter.branchId = new mongoose.Types.ObjectId(branchId);
     }
 
     const todayStart = new Date(); 
@@ -338,10 +354,11 @@ const getSalesAnalytics = async (req, res) => {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
-    // 1. Core Metrics (Always show today's vs total, but maybe filter by range too?)
-    // For now, let's keep metrics as global stats and current stats
+    const metricsMatch = branchId && branchId !== 'all' ? { branchId: new mongoose.Types.ObjectId(branchId) } : {};
+
+    // 1. Core Metrics
     const metricsResult = await Order.aggregate([
-      { $match: { status: 'Paid' } },
+      { $match: { status: 'Paid', ...metricsMatch } },
       { $facet: {
         allTime: [
           { $group: { _id: null, totalRevenue: { $sum: '$grandTotal' }, totalOrders: { $sum: 1 } } }
@@ -367,13 +384,16 @@ const getSalesAnalytics = async (req, res) => {
     };
 
     // 2. Trends
-    // If range is provided, we should show daily breakdown for that range. 
-    // If not, default to last 7 days.
     const trendStart = startDate ? new Date(startDate) : sevenDaysAgo;
     const trendEnd = endDate ? new Date(endDate) : new Date();
     
     const dailyTrends = await Order.aggregate([
-      { $match: { status: 'Paid', closedAt: { $gte: trendStart, $lte: new Date(new Date(trendEnd).setHours(23, 59, 59, 999)) } } },
+      { $match: { 
+          status: 'Paid', 
+          ...metricsMatch,
+          closedAt: { $gte: trendStart, $lte: new Date(new Date(trendEnd).setHours(23, 59, 59, 999)) } 
+        } 
+      },
       { $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$closedAt" } },
           revenue: { $sum: "$grandTotal" },
@@ -398,7 +418,7 @@ const getSalesAnalytics = async (req, res) => {
       curr.setDate(curr.getDate() + 1);
     }
 
-    // 3. Top Products in the filtered range
+    // 3. Top Products
     const topProducts = await Order.aggregate([
       { $match: filter },
       { $unwind: "$items" },
@@ -418,7 +438,7 @@ const getSalesAnalytics = async (req, res) => {
 
     // 4. Performance Metrics
     const performanceStats = await Order.aggregate([
-      { $match: { readyAt: { $exists: true }, createdAt: { $exists: true } } },
+      { $match: { ...metricsMatch, readyAt: { $exists: true }, createdAt: { $exists: true } } },
       { $group: {
           _id: null,
           avgPrepTime: { $avg: { $subtract: ["$readyAt", "$createdAt"] } }
@@ -427,6 +447,7 @@ const getSalesAnalytics = async (req, res) => {
     ]);
 
     const Item = require('../Models/Item');
+    // For simplicity, keep quality score global as it's product-based
     const itemsWithReviews = await Item.aggregate([
       { $unwind: "$reviews" },
       { $group: { _id: null, avgRating: { $avg: "$reviews.rating" } } }
@@ -457,10 +478,13 @@ const getStaffDailyStats = async (req, res) => {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    const orders = await Order.find({
+    const filter = {
       waiterName: staffName,
       createdAt: { $gte: startOfDay }
-    });
+    };
+    if (req.query.branchId) filter.branchId = req.query.branchId;
+
+    const orders = await Order.find(filter);
 
     const metrics = {
       handled: orders.length,
@@ -475,14 +499,15 @@ const getStaffDailyStats = async (req, res) => {
 
 const getStaffDashboardSnapshot = async (req, res) => {
   try {
+    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
     const [availableCount, occupiedCount, reservedCount, pendingCount, readyCount, activeCount, completedCount] = await Promise.all([
-      Table.countDocuments({ status: 'Available' }),
-      Table.countDocuments({ status: 'Occupied' }),
-      Table.countDocuments({ status: 'Reserved' }),
-      Order.countDocuments({ status: 'Pending' }),
-      Order.countDocuments({ status: 'Ready' }),
-      Order.countDocuments({ status: { $nin: ['Paid', 'Cancelled', 'Void'] } }),
-      Order.countDocuments({ status: 'Paid', createdAt: { $gte: new Date().setHours(0,0,0,0) } })
+      Table.countDocuments({ ...filter, status: 'Available' }),
+      Table.countDocuments({ ...filter, status: 'Occupied' }),
+      Table.countDocuments({ ...filter, status: 'Reserved' }),
+      Order.countDocuments({ ...filter, status: 'Pending' }),
+      Order.countDocuments({ ...filter, status: 'Ready' }),
+      Order.countDocuments({ ...filter, status: { $nin: ['Paid', 'Cancelled', 'Void'] } }),
+      Order.countDocuments({ ...filter, status: 'Paid', createdAt: { $gte: new Date().setHours(0,0,0,0) } })
     ]);
 
     res.json({

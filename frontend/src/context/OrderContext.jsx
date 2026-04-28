@@ -10,7 +10,9 @@ export const OrderProvider = ({ children }) => {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders${branchQuery}`);
       if (response.ok) {
         const result = await response.json();
         setOrders(result.data.map(o => ({
@@ -64,7 +66,9 @@ export const OrderProvider = ({ children }) => {
 
   const getOrderById = async (orderId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders${branchQuery}`);
       if (response.ok) {
         const result = await response.json();
         const order = result.data.find(o => o._id === orderId);

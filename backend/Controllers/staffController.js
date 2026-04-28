@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const getAllStaff = async (req, res) => {
   try {
-    const staff = await Staff.find().populate('role');
+    const staff = await Staff.find().populate('role').populate('branchId');
     res.json(staff);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -13,7 +13,7 @@ const getAllStaff = async (req, res) => {
 
 const createStaff = async (req, res) => {
   try {
-    const { name, email, role, status, pin } = req.body;
+    const { name, email, role, status, pin, branchId } = req.body;
 
     const generateRandomPassword = (length = 10) => {
       const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
@@ -41,11 +41,12 @@ const createStaff = async (req, res) => {
       role, 
       status, 
       pin: staffPIN,
-      password
+      password,
+      branchId
     });
 
     await staff.save();
-    const populated = await staff.populate('role');
+    const populated = await staff.populate(['role', 'branchId']);
 
     // Send Welcome Email
     try {
@@ -105,7 +106,7 @@ const staffLogin = async (req, res) => {
     const staff = await Staff.findOne({ email }).populate('role');
     if (staff && (await staff.matchPassword(password))) {
       const token = jwt.sign(
-        { id: staff._id, role: staff.role.name },
+        { id: staff._id, role: staff.role.name, branchId: staff.branchId },
         process.env.JWT_SECRET,
         { expiresIn: '30d' }
       );
@@ -114,6 +115,7 @@ const staffLogin = async (req, res) => {
         name: staff.name,
         email: staff.email,
         role: staff.role.name,
+        branchId: staff.branchId,
         token
       });
     } else {
@@ -130,7 +132,7 @@ const pinLogin = async (req, res) => {
     const staff = await Staff.findOne({ pin }).populate('role');
     if (staff) {
       const token = jwt.sign(
-        { id: staff._id, role: staff.role.name },
+        { id: staff._id, role: staff.role.name, branchId: staff.branchId },
         process.env.JWT_SECRET,
         { expiresIn: '30d' }
       );
@@ -139,6 +141,7 @@ const pinLogin = async (req, res) => {
         name: staff.name,
         email: staff.email,
         role: staff.role.name,
+        branchId: staff.branchId,
         token
       });
     } else {

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Utensils, Search, Plus, Filter, MoreVertical, Edit2, Trash2, ChevronRight, Save, Camera, Loader2, Image as ImageIcon, LayoutGrid, List, X } from 'lucide-react';
+import { Utensils, Search, Plus, Filter, MoreVertical, Edit2, Trash2, ChevronRight, Save, Camera, Loader2, Image as ImageIcon, LayoutGrid, List, X, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function Categories() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,18 +19,34 @@ export default function Categories() {
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [filterStatus, setFilterStatus] = useState('All');
   const [viewMode, setViewMode] = useState('grid');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: '',
     image: '',
     description: '',
-    status: 'Published'
+    status: 'Published',
+    branchId: ''
   });
 
   useEffect(() => {
+    fetchBranches();
     fetchCategories();
   }, []);
+
+  const fetchBranches = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+      const result = await response.json();
+      if (result.success) {
+        setBranches(result.data);
+      }
+    } catch (error) {
+      console.error('Fetch Branches Error:', error);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -52,11 +69,12 @@ export default function Categories() {
         name: category.name, 
         image: category.image || '', 
         description: category.description || '',
-        status: category.status || 'Published'
+        status: category.status || 'Published',
+        branchId: category.branchId || ''
       });
     } else {
       setEditingCategory(null);
-      setFormData({ name: '', image: '', description: '', status: 'Published' });
+      setFormData({ name: '', image: '', description: '', status: 'Published', branchId: '' });
     }
     setIsModalOpen(true);
   };
@@ -98,6 +116,7 @@ export default function Categories() {
     
     if (!formData.name.trim()) return toast.error('Category Name is required');
     if (!formData.image) return toast.error('Category Image is required');
+    if (!formData.branchId) return toast.error('Please select a branch');
 
     setIsSaving(true);
     const method = editingCategory ? 'PUT' : 'POST';
@@ -218,6 +237,17 @@ export default function Categories() {
 
           <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
 
+          <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
+
+          {/* Branch Filter */}
+          <BranchSelector 
+            branches={branches}
+            selectedBranch={selectedBranchFilter}
+            onSelect={setSelectedBranchFilter}
+          />
+
+          <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
+
           <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-2xl">
             <button
               onClick={() => setViewMode('grid')}
@@ -267,7 +297,12 @@ export default function Categories() {
         <>
           {categories
             .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
-            .filter(c => filterStatus === 'All' || c.status === filterStatus).length === 0 ? (
+            .filter(c => filterStatus === 'All' || c.status === filterStatus)
+            .filter(c => {
+              if (selectedBranchFilter === 'all') return true;
+              const branchId = typeof c.branchId === 'object' ? c.branchId?._id : c.branchId;
+              return branchId === selectedBranchFilter;
+            }).length === 0 ? (
             <EmptyState 
               title="No Categories Cataloged" 
               subtitle="Initialize your menu with new item classifications"
@@ -279,6 +314,11 @@ export default function Categories() {
               {categories
                 .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
                 .filter(c => filterStatus === 'All' || c.status === filterStatus)
+                .filter(c => {
+                  if (selectedBranchFilter === 'all') return true;
+                  const branchId = typeof c.branchId === 'object' ? c.branchId?._id : c.branchId;
+                  return branchId === selectedBranchFilter;
+                })
                 .map((cat) => (
                 <motion.div 
                   key={cat._id}
@@ -288,7 +328,11 @@ export default function Categories() {
                   <div className="relative z-10">
                     <div className="w-full h-40 bg-slate-100 rounded-2xl mb-4 overflow-hidden relative border border-slate-50 shadow-inner">
                       {cat.image ? (
-                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                        <img 
+                          src={cat.image.startsWith('http') ? cat.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}/${cat.image}`} 
+                          alt={cat.name} 
+                          className="w-full h-full object-cover" 
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                           <ImageIcon size={48} />
@@ -315,29 +359,29 @@ export default function Categories() {
                       {cat.description || 'No description provided'}
                     </p>
                     
-                    <div className="mt-4 pt-4 border-t border-stone-50 flex items-center gap-2">
-                       <button 
-                          onClick={() => handleOpenModal(cat)}
-                          className="flex-1 h-10 bg-slate-50 text-slate-600 text-[8px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2"
-                          title="Edit"
-                       >
-                         <Edit2 size={12} />
-                       </button>
-                       <button 
-                          onClick={() => handleDelete(cat)}
-                          className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                          title="Delete"
-                       >
-                         <Trash2 size={14} />
-                       </button>
-                       <button 
-                          onClick={() => toggleStatus(cat)}
-                          className={`h-10 px-3 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 flex-shrink-0 ${cat.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
-                          title={`Status: ${cat.status}`}
-                       >
-                         <div className={`w-2 h-2 rounded-full ${cat.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
-                       </button>
-                    </div>
+                     <div className="mt-4 pt-4 border-t border-stone-50 flex items-center justify-center gap-3">
+                        <button 
+                           onClick={() => handleOpenModal(cat)}
+                           className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                           title="Edit"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button 
+                           onClick={() => handleDelete(cat)}
+                           className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                           title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                        <button 
+                           onClick={() => toggleStatus(cat)}
+                           className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 shadow-sm ${cat.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
+                           title={`Status: ${cat.status}`}
+                        >
+                          <div className={`w-2.5 h-2.5 rounded-full ${cat.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
+                        </button>
+                     </div>
                   </div>
                 </motion.div>
               ))}
@@ -347,6 +391,11 @@ export default function Categories() {
                {categories
                 .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
                 .filter(c => filterStatus === 'All' || c.status === filterStatus)
+                .filter(c => {
+                  if (selectedBranchFilter === 'all') return true;
+                  const branchId = typeof c.branchId === 'object' ? c.branchId?._id : c.branchId;
+                  return branchId === selectedBranchFilter;
+                })
                 .map((cat) => (
                   <motion.div 
                     key={cat._id}
@@ -357,7 +406,11 @@ export default function Categories() {
                      <div className="flex items-center gap-6 flex-1">
                         <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0">
                            {cat.image ? (
-                             <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                             <img 
+                               src={cat.image.startsWith('http') ? cat.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}/${cat.image}`} 
+                               alt={cat.name} 
+                               className="w-full h-full object-cover" 
+                             />
                            ) : (
                              <div className="w-full h-full flex items-center justify-center text-slate-200">
                                <ImageIcon size={20} />
@@ -383,20 +436,29 @@ export default function Categories() {
                           {cat.status}
                         </button>
 
-                        <div className="flex gap-2">
-                           <button 
-                              onClick={() => handleOpenModal(cat)}
-                              className="p-2.5 bg-slate-50 hover:bg-amber-500 hover:text-white text-slate-400 rounded-xl transition-all"
-                           >
-                             <Edit2 size={16} />
-                           </button>
-                           <button 
-                              onClick={() => handleDelete(cat)}
-                              className="p-2.5 bg-slate-50 hover:bg-rose-500 hover:text-white text-slate-400 rounded-xl transition-all"
-                           >
-                             <Trash2 size={16} />
-                           </button>
-                        </div>
+                         <div className="flex gap-3">
+                            <button 
+                               onClick={() => handleOpenModal(cat)}
+                               className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-amber-500 hover:text-white text-slate-400 rounded-xl transition-all shadow-sm"
+                               title="Edit"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button 
+                               onClick={() => handleDelete(cat)}
+                               className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-rose-500 hover:text-white text-slate-400 rounded-xl transition-all shadow-sm"
+                               title="Delete"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <button 
+                               onClick={() => toggleStatus(cat)}
+                               className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 shadow-sm ${cat.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
+                               title={`Status: ${cat.status}`}
+                            >
+                              <div className={`w-2.5 h-2.5 rounded-full ${cat.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
+                            </button>
+                         </div>
                      </div>
                   </motion.div>
                 ))}
@@ -477,6 +539,24 @@ export default function Categories() {
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Brief description of this category..."
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assign Branch</label>
+              <div className="relative group">
+                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#2C2C2C] transition-colors" size={16} />
+                <select 
+                  required
+                  className="w-full bg-slate-50 border border-slate-100 p-4 pl-12 text-[11px] font-bold outline-none focus:ring-4 focus:ring-amber-500/5 focus:border-amber-500/50 rounded-2xl appearance-none cursor-pointer"
+                  value={formData.branchId}
+                  onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                >
+                  <option value="">Select Branch</option>
+                  {branches.map(b => (
+                    <option key={b._id} value={b._id}>{b.branchName}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="space-y-2">

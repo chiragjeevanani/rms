@@ -45,19 +45,25 @@ const deleteStock = async (req, res) => {
 
 const getStockAnalytics = async (req, res) => {
   try {
+    const { branchId } = req.query;
     const Stock = require('../Models/Stock');
     const Item = require('../Models/Item');
     const Combo = require('../Models/Combo');
     const Wastage = require('../Models/Wastage');
     
+    const filter = {};
+    if (branchId && branchId !== 'all') {
+      filter.branchId = branchId;
+    }
+
     const [allRawStock, allItems, allCombos, allWastage] = await Promise.all([
-      Stock.find().sort({ name: 1 }),
-      Item.find({ trackStock: true }).populate('category').sort({ name: 1 }),
-      Combo.find({ trackStock: true }).sort({ name: 1 }),
-      Wastage.find().sort({ createdAt: -1 }).limit(50)
+      Stock.find(filter).sort({ name: 1 }),
+      Item.find({ ...filter, trackStock: true }).populate('category').sort({ name: 1 }),
+      Combo.find({ ...filter, trackStock: true }).sort({ name: 1 }),
+      Wastage.find(filter).sort({ createdAt: -1 }).limit(50)
     ]);
     
-    // Normalize Item and Combo data to match Stock format
+    // Normalize Item and Combo data
     const formattedItems = allItems.map(i => ({
       _id: i._id,
       name: i.name,
@@ -84,7 +90,6 @@ const getStockAnalytics = async (req, res) => {
       type: 'Combo'
     }));
 
-    // Merge everything into a unified stock ledger
     const allStock = [
       ...allRawStock.map(s => ({ ...s.toObject(), type: 'Raw' })),
       ...formattedItems,
@@ -110,8 +115,14 @@ const getStockAnalytics = async (req, res) => {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
+    const wastageMatch = { createdAt: { $gte: sevenDaysAgo } };
+    if (branchId && branchId !== 'all') {
+      const mongoose = require('mongoose');
+      wastageMatch.branchId = new mongoose.Types.ObjectId(branchId);
+    }
+
     const wastageTrends = await Wastage.aggregate([
-      { $match: { createdAt: { $gte: sevenDaysAgo } } },
+      { $match: wastageMatch },
       { $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
           value: { $sum: "$value" }
@@ -120,7 +131,6 @@ const getStockAnalytics = async (req, res) => {
       { $sort: { "_id": 1 } }
     ]);
 
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const trends = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date();
@@ -128,7 +138,7 @@ const getStockAnalytics = async (req, res) => {
       const dateStr = d.toISOString().split('T')[0];
       const match = wastageTrends.find(t => t._id === dateStr);
       trends.push({
-        name: days[d.getDay()],
+        name: d.toLocaleDateString('en-US', { weekday: 'short' }),
         date: dateStr,
         value: match ? match.value : 0
       });
@@ -148,7 +158,7 @@ const getStockAnalytics = async (req, res) => {
     });
   } catch (error) {
     console.error('Inventory analytics error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 

@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Package, Plus, Search, Filter, Edit2, Trash2, 
   Layers, Save, Loader2, X, Camera, DollarSign,
-  Check, ChevronDown, LayoutGrid, List, Image as ImageIcon, Eye, Clock
+  Check, ChevronDown, LayoutGrid, List, Image as ImageIcon, Eye, Clock, Building2
 } from 'lucide-react';
+import BranchSelector from '../../components/BranchSelector';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
@@ -12,6 +13,13 @@ import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 
 export default function ComboMeals() {
+  const getImgUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '');
+    return `${baseUrl}${path}`;
+  };
+
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,6 +30,8 @@ export default function ComboMeals() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [filterStatus, setFilterStatus] = useState('All');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   const [combos, setCombos] = useState([]);
   const [availableItems, setAvailableItems] = useState([]);
@@ -42,7 +52,8 @@ export default function ComboMeals() {
     preparationTime: 20,
     trackStock: false,
     stockCount: 0,
-    minStockLevel: 5
+    minStockLevel: 5,
+    branchId: ''
   });
 
   const location = useLocation();
@@ -65,13 +76,15 @@ export default function ComboMeals() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [comboRes, itemRes] = await Promise.all([
+      const [comboRes, itemRes, brsRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_URL}/combo`),
-        fetch(`${import.meta.env.VITE_API_URL}/item`)
+        fetch(`${import.meta.env.VITE_API_URL}/item`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
       ]);
       
       const combosData = await comboRes.json();
       const itemsData = await itemRes.json();
+      const brsData = await brsRes.json();
 
       if (combosData.success) {
         setCombos(combosData.data);
@@ -80,6 +93,7 @@ export default function ComboMeals() {
       }
       
       setAvailableItems(itemsData);
+      if (brsData.success) setBranches(brsData.data);
     } catch (err) {
       toast.error('Failed to sync combo data');
     } finally {
@@ -129,7 +143,8 @@ export default function ComboMeals() {
         preparationTime: combo.preparationTime || 20,
         trackStock: combo.trackStock || false,
         stockCount: combo.stockCount || 0,
-        minStockLevel: combo.minStockLevel || 5
+        minStockLevel: combo.minStockLevel || 5,
+        branchId: combo.branchId || ''
       });
     } else {
       setEditingCombo(null);
@@ -148,7 +163,8 @@ export default function ComboMeals() {
         preparationTime: 20,
         trackStock: false,
         stockCount: 0,
-        minStockLevel: 5
+        minStockLevel: 5,
+        branchId: ''
       });
     }
     setIsModalOpen(true);
@@ -206,6 +222,7 @@ export default function ComboMeals() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return toast.error('Designation required');
+    if (!formData.branchId) return toast.error('Branch selection required');
     if (!formData.price) return toast.error('Fiscal value required');
     if (formData.items.length === 0) return toast.error('Add at least one element');
 
@@ -265,7 +282,12 @@ export default function ComboMeals() {
 
   const filteredCombos = combos
     .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.sku?.toLowerCase().includes(searchQuery.toLowerCase()))
-    .filter(c => filterStatus === 'All' || c.status === filterStatus);
+    .filter(c => filterStatus === 'All' || c.status === filterStatus)
+    .filter(c => {
+      if (selectedBranchFilter === 'all') return true;
+      const branchId = typeof c.branchId === 'object' ? c.branchId?._id : c.branchId;
+      return branchId === selectedBranchFilter;
+    });
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
@@ -306,6 +328,15 @@ export default function ComboMeals() {
             </button>
           ))}
         </div>
+
+        <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
+        <BranchSelector 
+          branches={branches}
+          selectedBranch={selectedBranchFilter}
+          onSelect={setSelectedBranchFilter}
+        />
+
         <div className="flex items-center border border-slate-100 rounded-2xl p-1 bg-slate-50">
           <button 
             onClick={() => setViewMode('grid')}
@@ -345,7 +376,13 @@ export default function ComboMeals() {
                 className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all group relative flex flex-col"
               >
                 <div className="aspect-square relative overflow-hidden bg-slate-50 border-b border-slate-100">
-                  <img src={combo.image || 'https://via.placeholder.com/400x400?text=Combo'} alt={combo.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  {combo.image ? (
+                    <img src={getImgUrl(combo.image)} alt={combo.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-200">
+                       <Package size={64} strokeWidth={1} />
+                    </div>
+                  )}
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
                     <div className={`px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg backdrop-blur-md ${combo.isAvailable ? 'bg-emerald-500/90 text-white' : 'bg-rose-500/90 text-white'}`}>
                       {combo.isAvailable ? 'Available' : 'Unavailable'}
@@ -378,8 +415,8 @@ export default function ComboMeals() {
                     <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">{combo.items?.length || 0} Elements</span>
                   </div>
 
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest line-clamp-2 leading-relaxed">
-                    {combo.description}
+                  <p className="text-[11px] font-medium text-slate-500 line-clamp-2 leading-relaxed min-h-[32px]">
+                    {combo.description || "A curated assembly of premium elements for a complete dining experience."}
                   </p>
                   
                   <div className="flex items-center gap-2 pt-4 border-t border-slate-50 mt-2">
@@ -402,7 +439,7 @@ export default function ComboMeals() {
                     ><Trash2 size={14} /></button>
                     <button 
                       onClick={() => toggleStatus(combo)}
-                      className={`h-10 px-3 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 flex-shrink-0 ${combo.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
+                      className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 flex-shrink-0 ${combo.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
                       title={`Status: ${combo.status}`}
                     >
                       <div className={`w-2.5 h-2.5 rounded-full ${combo.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-200'}`} />
@@ -416,8 +453,12 @@ export default function ComboMeals() {
                 className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-6 group"
               >
                 <div className="flex items-center gap-5 flex-1 min-w-0">
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100">
-                    <img src={combo.image || 'https://via.placeholder.com/100x100?text=Combo'} alt={combo.name} className="w-full h-full object-cover" />
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center">
+                    {combo.image ? (
+                      <img src={getImgUrl(combo.image)} alt={combo.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Package size={24} className="text-slate-200" />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-xs font-black text-slate-900 uppercase tracking-tight whitespace-normal mb-1">{combo.name}</h4>
@@ -441,11 +482,10 @@ export default function ComboMeals() {
                   <div className="flex gap-2">
                     <button 
                       onClick={() => toggleStatus(combo)}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl hover:bg-white transition-all border border-slate-100 hover:border-slate-300 active:scale-95"
+                      className="w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-slate-100 hover:border-slate-300"
                       title={`Toggle Live Status`}
                     >
-                      <div className={`w-2 h-2 rounded-full ${combo.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
-                      <span className={`text-[8px] font-black uppercase tracking-widest ${combo.status === 'Published' ? 'text-emerald-600' : 'text-slate-400'}`}>{combo.status}</span>
+                      <div className={`w-2.5 h-2.5 rounded-full ${combo.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
                     </button>
                     <Link 
                       to={`/admin/menu/combos/${combo._id}`}
@@ -486,7 +526,7 @@ export default function ComboMeals() {
                   <div className="w-full h-full rounded-[3rem] border-4 border-dashed border-slate-100 bg-slate-50 flex items-center justify-center overflow-hidden relative shadow-inner">
                     {formData.image ? (
                       <>
-                        <img src={formData.image} alt="Combo" className="w-full h-full object-cover" />
+                        <img src={getImgUrl(formData.image)} alt="Combo" className="w-full h-full object-cover" />
                         <button 
                           type="button"
                           onClick={() => setFormData({ ...formData, image: '' })}
@@ -524,12 +564,24 @@ export default function ComboMeals() {
                     placeholder="e.g. MEGA FAMILY BUNDLE"
                   />
                </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+                  <select 
+                    className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black uppercase outline-none focus:border-blue-500/50 rounded-2xl"
+                    value={formData.branchId}
+                    required
+                    onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                  >
+                    <option value="">Select Target Branch</option>
+                    {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+                  </select>
+               </div>
                <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Actual Bundle Price (₹)</label>
                    <input 
                      type="number" 
-                     className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-black text-slate-400 line-through outline-none rounded-2xl"
+                     className="w-full bg-white border border-slate-200 p-4 text-[11px] font-black text-slate-400 line-through outline-none rounded-2xl shadow-sm"
                      value={formData.originalPrice}
                      onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
                      placeholder="0.00"
@@ -540,7 +592,7 @@ export default function ComboMeals() {
                    <input 
                      type="number" 
                      required
-                     className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-black text-blue-600 outline-none rounded-2xl ring-2 ring-blue-500/20"
+                     className="w-full bg-white border border-slate-200 p-4 text-[11px] font-black text-blue-600 outline-none rounded-2xl shadow-sm ring-2 ring-blue-500/5 focus:ring-blue-500/20"
                      value={formData.price}
                      onChange={(e) => setFormData({...formData, price: e.target.value})}
                      placeholder="0.00"
@@ -624,7 +676,7 @@ export default function ComboMeals() {
                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                    <input 
                     type="number"
-                    className="w-full bg-slate-50 border border-slate-100 p-4 pl-12 text-sm font-black text-slate-900 outline-none rounded-2xl"
+                    className="w-full bg-white border border-slate-200 p-4 pl-12 text-sm font-black text-slate-900 outline-none rounded-2xl shadow-sm"
                     value={formData.preparationTime}
                     onChange={(e) => setFormData({...formData, preparationTime: e.target.value})}
                    />
@@ -634,7 +686,7 @@ export default function ComboMeals() {
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bundle SKU</label>
               <input 
                 type="text"
-                className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl uppercase"
+                className="w-full bg-white border border-slate-200 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl uppercase shadow-sm"
                 value={formData.sku}
                 onChange={(e) => setFormData({...formData, sku: e.target.value})}
               />
@@ -643,7 +695,7 @@ export default function ComboMeals() {
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alpha Short Code</label>
               <input 
                 type="text"
-                className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl uppercase"
+                className="w-full bg-white border border-slate-200 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl uppercase shadow-sm"
                 value={formData.alphaShortCode}
                 onChange={(e) => setFormData({...formData, alphaShortCode: e.target.value})}
                 placeholder="e.g. CBM"
@@ -653,7 +705,7 @@ export default function ComboMeals() {
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numeric Short Code</label>
               <input 
                 type="number"
-                className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl"
+                className="w-full bg-white border border-slate-200 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl shadow-sm"
                 value={formData.numericShortCode}
                 onChange={(e) => setFormData({...formData, numericShortCode: e.target.value})}
                 placeholder="e.g. 501"
@@ -786,8 +838,12 @@ export default function ComboMeals() {
           </div>
           
           <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex items-center gap-4">
-             <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white shadow-sm">
-                <img src={comboToDelete?.image || 'https://via.placeholder.com/100x100'} alt="" className="w-full h-full object-cover" />
+             <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white shadow-sm flex items-center justify-center bg-slate-100">
+                {comboToDelete?.image ? (
+                  <img src={getImgUrl(comboToDelete.image)} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <Package size={20} className="text-slate-300" />
+                )}
              </div>
              <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Target Assembly</p>

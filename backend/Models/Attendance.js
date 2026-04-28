@@ -7,7 +7,12 @@ const attendanceSchema = new mongoose.Schema({
   checkOut: { type: Date },
   terminal: { type: String, default: 'MOBILE-UI' },
   status: { type: String, enum: ['In', 'Out', 'Absent', 'Present', 'Leave'], default: 'In' },
-  notes: { type: String }
+  notes: { type: String },
+  branchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch',
+    required: true
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Attendance', attendanceSchema);

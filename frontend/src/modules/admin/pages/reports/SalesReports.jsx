@@ -5,6 +5,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import BranchSelector from '../../components/BranchSelector';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, AreaChart, Area 
@@ -21,6 +22,8 @@ export default function SalesReports() {
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   const fetchSalesData = async () => {
     setLoading(true);
@@ -39,7 +42,7 @@ export default function SalesReports() {
         end = new Date().toISOString().split('T')[0];
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/reports/sales?startDate=${start}&endDate=${end}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/reports/sales?startDate=${start}&endDate=${end}&branchId=${selectedBranchFilter}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
       });
       if (response.ok) {
@@ -55,9 +58,23 @@ export default function SalesReports() {
     }
   };
 
+  const fetchBranches = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+      const data = await res.json();
+      if (data.success) setBranches(data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchSalesData();
-  }, [dateRange, customRange]);
+  }, [dateRange, customRange, selectedBranchFilter]);
+
+  useEffect(() => {
+    fetchBranches();
+  }, []);
 
   const { metrics, trends, topProducts, efficiency } = data || {};
 
@@ -119,10 +136,16 @@ export default function SalesReports() {
         </div>
         
         <div className="flex items-center gap-3">
+          <BranchSelector 
+            branches={branches}
+            selectedBranch={selectedBranchFilter}
+            onSelect={setSelectedBranchFilter}
+          />
+
           <div className="relative">
             <button 
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="bg-white px-6 py-3 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm hover:border-slate-400 transition-all group"
+              className="bg-white px-6 py-3 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm hover:border-slate-400 transition-all group h-[58px]"
             >
                <Calendar size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
                <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 group-hover:text-slate-900">{rangeLabels[dateRange]}</span>
@@ -189,7 +212,7 @@ export default function SalesReports() {
 
           <button 
             onClick={handleExport}
-            className="h-12 px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
+            className="h-[58px] px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
           >
             <Download size={14} />
             Export Dataset

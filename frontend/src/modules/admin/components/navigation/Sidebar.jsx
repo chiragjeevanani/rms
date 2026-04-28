@@ -22,6 +22,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       label: 'Main',
       items: [
         { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+        { label: 'Branches', path: '/admin/branches', icon: Store },
       ]
     },
     {

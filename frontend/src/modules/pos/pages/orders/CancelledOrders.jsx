@@ -15,7 +15,9 @@ export default function CancelledOrders() {
 
   const fetchCancelledOrders = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/cancelled`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/cancelled${branchQuery}`);
       const result = await response.json();
       if (result.success) {
         setOrders(result.data);

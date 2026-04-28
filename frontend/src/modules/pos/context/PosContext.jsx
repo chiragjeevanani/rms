@@ -53,7 +53,9 @@ export function PosProvider({ children }) {
   // ── Backend Fetch Functions ──
   const fetchActiveTableOrders = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/active`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/active${branchQuery}`);
       const result = await response.json();
       if (result.success) {
         const orderMap = {};
@@ -69,7 +71,9 @@ export function PosProvider({ children }) {
 
   const fetchTables = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/table`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/table${branchQuery}`);
       if (response.ok) {
         const data = await response.json();
         setTables(data);
@@ -189,7 +193,9 @@ export function PosProvider({ children }) {
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/reservations`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/reservations${branchQuery}`);
       const result = await response.json();
       if (result.success) setReservations(result.data);
     } catch (err) {

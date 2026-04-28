@@ -12,6 +12,7 @@ import {
   Edit2, 
   Trash2, 
   Save, 
+  Shield,
   Users, 
   Zap, 
   X,
@@ -31,6 +32,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function Attendance() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
@@ -41,6 +43,8 @@ export default function Attendance() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState('All');
   const [roles, setRoles] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   const todayStr = new Date().toISOString().split('T')[0];
   const isSelectedDateToday = selectedDate === todayStr;
@@ -56,17 +60,17 @@ export default function Attendance() {
 
   const fetchStaff = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/staff`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
-        }
-      });
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setStaff(data.filter(s => s.status === 'Active'));
-      } else {
-        setStaff([]);
+      const [staffRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/staff`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const staffData = await staffRes.json();
+      const branchData = await branchRes.json();
+      
+      if (Array.isArray(staffData)) {
+        setStaff(staffData.filter(s => s.status === 'Active'));
       }
+      if (branchData.success) setBranches(branchData.data);
     } catch (err) {
       toast.error('Staff retrieval failure');
     }
@@ -76,7 +80,7 @@ export default function Attendance() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/role`);
       const data = await res.json();
-      setRoles(data);
+      setRoles(Array.isArray(data) ? data : []);
     } catch (err) {
        console.log(err);
     }
@@ -110,7 +114,8 @@ export default function Attendance() {
         body: JSON.stringify({
           staffId,
           status,
-          date: selectedDate
+          date: selectedDate,
+          branchId: staff.find(s => s._id === staffId)?.branchId
         })
       });
       if (res.ok) {
@@ -134,7 +139,8 @@ export default function Attendance() {
   const filteredStaff = staff.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === 'All' || (s.role && s.role.name === filterRole);
-    return matchesSearch && matchesRole;
+    const branchMatch = selectedBranchFilter === 'all' || (s.branchId?._id || s.branchId) === selectedBranchFilter;
+    return matchesSearch && matchesRole && branchMatch;
   });
 
   const getStatus = (staffId) => {
@@ -168,6 +174,14 @@ export default function Attendance() {
               <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><LayoutGrid size={16} /></button>
               <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><List size={16} /></button>
            </div>
+
+           <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
+           <BranchSelector 
+              branches={branches}
+              selectedBranch={selectedBranchFilter}
+              onSelect={setSelectedBranchFilter}
+            />
 
            <div className="flex items-center gap-3 bg-white p-1 rounded-xl shadow-sm border border-slate-100 min-w-[240px] justify-between">
               <button onClick={() => changeDate(-1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronLeft size={16} strokeWidth={3} /></button>
@@ -270,7 +284,14 @@ export default function Attendance() {
                           </div>
                           <div>
                              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight leading-none mb-1.5 truncate max-w-[120px]">{person.name}</h3>
-                             <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{person.role?.name || 'Operative'}</p>
+                             <div className="flex items-center gap-1.5 opacity-60">
+                                <Shield size={8} className="text-blue-500" />
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{person.role?.name || 'Operative'}</p>
+                             </div>
+                             <div className="flex items-center gap-1.5 opacity-60 mt-0.5">
+                                <MapPin size={8} className="text-amber-500" />
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{person.branchId?.branchName || 'Global'}</p>
+                             </div>
                           </div>
                        </div>
                        <div className={`px-2.5 py-1 rounded-lg text-[7px] font-black uppercase tracking-widest border ${isPresent ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : isAbsent ? 'bg-rose-50 text-rose-600 border-rose-100' : onLeave ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-slate-50 text-slate-300 border-slate-50'}`}>

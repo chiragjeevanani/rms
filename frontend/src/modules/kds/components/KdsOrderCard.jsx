@@ -130,20 +130,36 @@ export function KdsOrderCard({ order, onClick, onStatusChange }) {
 
         {/* Quick Action Button */}
         {!isFinalized && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const nextStatus = ['pending', 'confirmed', 'new'].includes(order.status) ? 'Preparing' : 'Ready';
-              onStatusChange(order.id, nextStatus);
-            }}
-            className={`w-full py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              ['pending', 'confirmed', 'new'].includes(order.status)
-                ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20'
-            }`}
-          >
-            {['pending', 'confirmed', 'new'].includes(order.status) ? 'Start Preparing' : 'Mark Ready'}
-          </button>
+          <div className="flex gap-2 w-full">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const nextStatus = ['pending', 'confirmed', 'new'].includes(order.status) ? 'Preparing' : 'Ready';
+                onStatusChange(order.id, nextStatus);
+              }}
+              className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                ['pending', 'confirmed', 'new'].includes(order.status)
+                  ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20'
+              }`}
+            >
+              {['pending', 'confirmed', 'new'].includes(order.status) ? 'Start Preparing' : 'Mark Ready'}
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if(window.confirm('Are you sure you want to cancel this order from kitchen?')) {
+                  onStatusChange(order.id, 'Cancelled');
+                }
+              }}
+              className={`px-3 rounded-xl flex items-center justify-center transition-all ${
+                isDarkMode ? 'bg-red-500/10 hover:bg-red-500/20 text-red-500' : 'bg-red-50 hover:bg-red-100 text-red-600'
+              }`}
+              title="Cancel Order"
+            >
+              Cancel
+            </button>
+          </div>
         )}
       </div>
     </motion.div>

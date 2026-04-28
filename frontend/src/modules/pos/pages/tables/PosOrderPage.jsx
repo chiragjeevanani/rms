@@ -54,10 +54,12 @@ export default function PosOrderPage() {
   useEffect(() => {
     const load = async () => {
       try {
+        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+        const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
         const [cRes, iRes, comboRes] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_URL}/category`),
-          fetch(`${import.meta.env.VITE_API_URL}/item`),
-          fetch(`${import.meta.env.VITE_API_URL}/combo`).catch(() => ({ json: () => ({ success: false }) })) // graceful fail for combo
+          fetch(`${import.meta.env.VITE_API_URL}/category${branchQuery}`),
+          fetch(`${import.meta.env.VITE_API_URL}/item${branchQuery}`),
+          fetch(`${import.meta.env.VITE_API_URL}/combo${branchQuery}`).catch(() => ({ json: () => ({ success: false }) })) // graceful fail for combo
         ]);
         const [cData, iData, comboData] = await Promise.all([cRes.json(), iRes.json(), comboRes.json()]);
         
@@ -508,7 +510,7 @@ export default function PosOrderPage() {
           {/* Row 1: Payment methods & TOTAL */}
           <div style={{ display: 'flex', alignItems: 'center', padding: '7px 10px', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              {['Cash', 'Card', 'Due', 'Other', 'Part'].map(m => (
+              {['Cash', 'Card', 'UPI'].map(m => (
                 <label key={m} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }} onClick={() => setPaymentMethod(m)}>
                   <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${paymentMethod === m ? C.amber : 'rgba(255,255,255,0.35)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {paymentMethod === m && <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.amber }} />}
@@ -531,9 +533,13 @@ export default function PosOrderPage() {
           <div style={{ display: 'flex', gap: 3, padding: '7px 8px', flexWrap: 'nowrap', borderBottom: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto' }}>
             <ActionBtn label="SAVE"         onClick={() => handleSave(false)} dark />
             <ActionBtn label="SAVE & PRINT" onClick={() => handleSave(true)}  dark />
-            <ActionBtn label="KOT"          onClick={() => handleKOT(false)} light />
-            <ActionBtn label="KOT & PRINT"  onClick={() => handleKOT(true)}  light />
-            <ActionBtn label="RESERVE"      onClick={handleReserve} light />
+            {orderType === 'Dine-In' && (
+              <>
+                <ActionBtn label="KOT"          onClick={() => handleKOT(false)} light />
+                <ActionBtn label="KOT & PRINT"  onClick={() => handleKOT(true)}  light />
+                <ActionBtn label="RESERVE"      onClick={handleReserve} light />
+              </>
+            )}
           </div>
 
           {/* Row: SETTLE BUTTONS */}

@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Search, Users, Clock, AlertCircle, RefreshCw, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import BranchSelector from '../components/BranchSelector';
 
 export default function OccupiedTables() {
   const [tables, setTables] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   useEffect(() => {
     fetchOccupiedTables();
@@ -17,10 +20,16 @@ export default function OccupiedTables() {
 
   const fetchOccupiedTables = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/table`);
-      const data = await res.json();
+      const [tableRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/table`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const tableData = await tableRes.json();
+      const branchData = await branchRes.json();
+      
       // Filter only occupied or reserved
-      setTables(data.filter(t => t.status === 'Occupied' || t.status === 'Reserved'));
+      setTables(tableData.filter(t => t.status === 'Occupied' || t.status === 'Reserved'));
+      if (branchData.success) setBranches(branchData.data);
     } catch (err) {
       toast.error('Failed to sync floor data');
     } finally {
@@ -50,10 +59,12 @@ export default function OccupiedTables() {
     }
   };
 
-  const filteredTables = tables.filter(t => 
-    t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    t.tableCode.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTables = tables.filter(t => {
+    const matchesSearch = t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          t.tableCode.toLowerCase().includes(searchQuery.toLowerCase());
+    const branchMatch = selectedBranchFilter === 'all' || t.branchId === selectedBranchFilter;
+    return matchesSearch && branchMatch;
+  });
 
   return (
     <div className="h-screen flex flex-col bg-[#F8F9FA] overflow-hidden admin-layout">
@@ -80,6 +91,14 @@ export default function OccupiedTables() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
+          <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
+          <BranchSelector 
+            branches={branches}
+            selectedBranch={selectedBranchFilter}
+            onSelect={setSelectedBranchFilter}
+          />
           
           <div className="h-10 px-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Active</p>

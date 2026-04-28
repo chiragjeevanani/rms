@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, Plus, Search, Phone, Mail, Edit2, Trash2, Shield, Package, AlertCircle, CheckCircle2, LayoutGrid, List, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Truck, Plus, Search, Phone, Mail, Edit2, Trash2, Shield, Package, AlertCircle, CheckCircle2, LayoutGrid, List, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function Vendors() {
   const [vendors, setVendors] = useState([]);
@@ -13,6 +14,8 @@ export default function Vendors() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [vendorToDelete, setVendorToDelete] = useState(null);
   const [viewType, setViewType] = useState('list'); // 'list' or 'grid'
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,7 +27,8 @@ export default function Vendors() {
     phone: '',
     email: '',
     category: 'Dry Grocery',
-    status: 'Active'
+    status: 'Active',
+    branchId: ''
   });
 
   useEffect(() => {
@@ -33,9 +37,15 @@ export default function Vendors() {
 
   const fetchVendors = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/vendor`);
-      const data = await res.json();
-      setVendors(data);
+      const [vendorRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/vendor`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const vendorData = await vendorRes.json();
+      const branchData = await branchRes.json();
+      
+      setVendors(vendorData);
+      if (branchData.success) setBranches(branchData.data);
     } catch (err) {
       toast.error('Failed to fetch vendors');
     } finally {
@@ -52,17 +62,19 @@ export default function Vendors() {
         phone: vendor.phone,
         email: vendor.email,
         category: vendor.category,
-        status: vendor.status
+        status: vendor.status,
+        branchId: vendor.branchId || ''
       });
     } else {
       setEditingVendor(null);
-      setFormData({ name: '', contact: '', phone: '', email: '', category: 'Dry Grocery', status: 'Active' });
+      setFormData({ name: '', contact: '', phone: '', email: '', category: 'Dry Grocery', status: 'Active', branchId: '' });
     }
     setIsModalOpen(true);
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.branchId) return toast.error('Branch selection required');
     const url = editingVendor 
       ? `${import.meta.env.VITE_API_URL}/vendor/${editingVendor._id}` 
       : `${import.meta.env.VITE_API_URL}/vendor`;
@@ -114,10 +126,12 @@ export default function Vendors() {
     }
   };
 
-  const filteredVendors = vendors.filter(v => 
-    v.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    v.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredVendors = vendors.filter(v => {
+    const matchesSearch = v.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          v.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const branchMatch = selectedBranchFilter === 'all' || v.branchId === selectedBranchFilter;
+    return matchesSearch && branchMatch;
+  });
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredVendors.length / itemsPerPage);
@@ -150,6 +164,7 @@ export default function Vendors() {
         
         <div className="flex items-center gap-4">
            {/* View Toggle */}
+           {/* View Toggle */}
            <div className="bg-white border border-slate-100 rounded-[1.5rem] p-1.5 shadow-sm flex items-center gap-1">
               <button 
                 onClick={() => setViewType('list')}
@@ -164,6 +179,14 @@ export default function Vendors() {
                 <LayoutGrid size={18} />
               </button>
            </div>
+
+            <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
+            <BranchSelector 
+              branches={branches}
+              selectedBranch={selectedBranchFilter}
+              onSelect={setSelectedBranchFilter}
+            />
 
            <button 
              onClick={() => handleOpenModal()}
@@ -415,6 +438,19 @@ export default function Vendors() {
               onChange={(e) => setFormData({...formData, name: e.target.value.toUpperCase()})}
               placeholder="e.g. PREMIUM GRAINS CO."
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+            <select 
+              className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold uppercase outline-none focus:border-slate-900 rounded-2xl appearance-none"
+              value={formData.branchId}
+              required
+              onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+            >
+              <option value="">Select Target Branch</option>
+              {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+            </select>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

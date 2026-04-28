@@ -18,6 +18,7 @@ const wastageRoutes = require('./Routers/wastageRoutes');
 const tableRoutes = require('./Routers/tableRoutes');
 const reservationRoutes = require('./Routes/reservationRoutes');
 const superAdminRoutes = require('./Routers/superAdminRoutes');
+const branchRoutes = require('./Routers/branchRoutes');
 
 // Attach sub-routes to the main router
 router.use('/admin', adminRoutes);
@@ -36,5 +37,6 @@ router.use('/orders', orderRoutes);
 router.use('/wastage', wastageRoutes);
 router.use('/table', tableRoutes);
 router.use('/reservations', reservationRoutes);
+router.use('/branches', branchRoutes);
 
 module.exports = router;

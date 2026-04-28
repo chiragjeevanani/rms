@@ -56,7 +56,9 @@ export default function StaffDashboard() {
 
   const fetchSnapshot = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/stats/staff-snapshot`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/stats/staff-snapshot${branchQuery}`);
       const result = await res.json();
       if (result.success) setSnapshot(result.data);
     } catch (err) {
@@ -66,7 +68,9 @@ export default function StaffDashboard() {
 
   const fetchShiftStats = async (name) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/stats/staff/${name}`);
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/stats/staff/${name}${branchQuery}`);
       const result = await res.json();
       if (result.success) setShiftStats(result.data);
     } catch (err) {

@@ -4,14 +4,17 @@ const tableSchema = new mongoose.Schema({
   tableName: {
     type: String,
     required: true,
-    unique: true,
     trim: true
   },
   tableCode: {
     type: String,
     required: true,
-    unique: true,
     trim: true // e.g. TB-001
+  },
+  branchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch',
+    required: true
   },
   capacity: {
     type: Number,
@@ -52,5 +55,9 @@ const tableSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Unique within a branch
+tableSchema.index({ branchId: 1, tableName: 1 }, { unique: true });
+tableSchema.index({ branchId: 1, tableCode: 1 }, { unique: true });
 
 module.exports = mongoose.model('Table', tableSchema);

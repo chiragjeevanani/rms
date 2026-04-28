@@ -6,7 +6,7 @@ import {
   ShoppingBag, Clock, CheckCircle2, Utensils, 
   Package, LayoutGrid, Layers, Activity, 
   RefreshCcw, ChevronRight, TrendingUp, ArrowRight, Calendar,
-  TrendingDown, Box, PieChart, Users
+  TrendingDown, Box, PieChart, Users, Building2
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -16,11 +16,26 @@ export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [revenueFilter, setRevenueFilter] = useState('daily'); 
+  const [branches, setBranches] = useState([]);
+  const [selectedBranch, setSelectedBranch] = useState('all');
   const navigate = useNavigate();
+
+  const fetchBranches = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+      const result = await response.json();
+      if (result.success) {
+        setBranches(result.data);
+      }
+    } catch (error) {
+      console.error('Fetch Branches Error:', error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/dashboard-stats`, {
+      const branchParam = selectedBranch !== 'all' ? `?branchId=${selectedBranch}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/dashboard-stats${branchParam}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
       });
       if (response.ok) {
@@ -35,10 +50,14 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    fetchBranches();
+  }, []);
+
+  useEffect(() => {
     fetchDashboardData();
     const interval = setInterval(fetchDashboardData, 60000); 
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedBranch]);
 
   const chartData = useMemo(() => {
     if (!data?.trends) return [];
@@ -87,16 +106,32 @@ export default function AdminDashboard() {
              <Calendar size={12} /> {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })} · Status: Nominal
            </p>
         </div>
-        <div className="flex items-center gap-4">
-           <div className="hidden sm:flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+        <div className="flex flex-wrap items-center gap-4">
+           {/* Branch Dropdown */}
+           <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm min-w-[200px]">
+              <Building2 size={16} className="text-slate-400" />
+              <select 
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                className="bg-transparent text-[11px] font-black uppercase tracking-widest text-slate-900 outline-none w-full cursor-pointer"
+              >
+                <option value="all">Global (All Branches)</option>
+                {branches.map(b => (
+                  <option key={b._id} value={b._id}>{b.branchName}</option>
+                ))}
+              </select>
+           </div>
+
+           <div className="hidden sm:flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm h-[42px]">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
               <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">System Live</span>
            </div>
+           
            <button 
              onClick={fetchDashboardData}
-             className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all text-xs font-bold uppercase tracking-widest shadow-lg shadow-slate-900/10 active:scale-95"
+             className="h-[42px] flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all text-xs font-bold uppercase tracking-widest shadow-lg shadow-slate-900/10 active:scale-95"
            >
-             <RefreshCcw size={14} strokeWidth={3} /> Sync Analytics
+             <RefreshCcw size={14} strokeWidth={3} /> Sync
            </button>
         </div>
       </div>

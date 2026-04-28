@@ -6,6 +6,7 @@ import AdminModal from '../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import QRCode from 'react-qr-code';
 import CryptoJS from 'crypto-js';
+import BranchSelector from '../components/BranchSelector';
 
 const TABLE_SECRET = 'RMS_SECURE_DYNAMIC_PROTOCOL_2026';
 
@@ -19,6 +20,8 @@ export default function TableManagement() {
   const [tableToDelete, setTableToDelete] = useState(null);
   const [selectedQrTable, setSelectedQrTable] = useState(null);
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'occupied'
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -41,7 +44,8 @@ export default function TableManagement() {
     floor: 'Ground Floor',
     shape: 'Square',
     status: 'Available',
-    notes: ''
+    notes: '',
+    branchId: ''
   });
 
   useEffect(() => {
@@ -50,9 +54,15 @@ export default function TableManagement() {
 
   const fetchTables = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/table`);
-      const data = await res.json();
-      setTables(data);
+      const [tableRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/table`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const tableData = await tableRes.json();
+      const branchData = await branchRes.json();
+      
+      setTables(tableData);
+      if (branchData.success) setBranches(branchData.data);
     } catch (err) {
       toast.error('Failed to fetch table layout');
     } finally {
@@ -117,7 +127,8 @@ export default function TableManagement() {
         floor: table.floor || 'Ground Floor',
         shape: table.shape || 'Square',
         status: table.status === 'Damaged' ? 'Not Available' : 'Available',
-        notes: table.notes || ''
+        notes: table.notes || '',
+        branchId: table.branchId || ''
       });
     } else {
       setEditingTable(null);
@@ -129,7 +140,8 @@ export default function TableManagement() {
         floor: 'Ground Floor', 
         shape: 'Square', 
         status: 'Available', 
-        notes: '' 
+        notes: '',
+        branchId: ''
       });
     }
     setIsModalOpen(true);
@@ -137,6 +149,7 @@ export default function TableManagement() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.branchId) return toast.error('Branch selection required');
     const url = editingTable 
       ? `${import.meta.env.VITE_API_URL}/table/${editingTable._id}`
       : `${import.meta.env.VITE_API_URL}/table`;
@@ -199,8 +212,11 @@ export default function TableManagement() {
 
   const filteredTables = tables.filter(t => {
     const matchesSearch = t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         t.tableCode.toLowerCase().includes(searchQuery.toLowerCase());
+                          t.tableCode.toLowerCase().includes(searchQuery.toLowerCase());
     
+    const branchMatch = selectedBranchFilter === 'all' || t.branchId === selectedBranchFilter;
+    if (!branchMatch) return false;
+
     if (activeTab === 'occupied') {
       return matchesSearch && (t.status === 'Occupied' || t.status === 'Reserved');
     }
@@ -253,6 +269,14 @@ export default function TableManagement() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
+          <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
+          <BranchSelector 
+            branches={branches}
+            selectedBranch={selectedBranchFilter}
+            onSelect={setSelectedBranchFilter}
+          />
 
           <button 
             onClick={async () => {
@@ -408,6 +432,19 @@ export default function TableManagement() {
         onSubmit={handleSave}
       >
         <div className="space-y-6">
+           <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+            <select 
+              className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold uppercase outline-none focus:border-slate-900 rounded-2xl appearance-none"
+              value={formData.branchId}
+              required
+              onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+            >
+              <option value="">Select Target Branch</option>
+              {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+            </select>
+          </div>
+
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-amber-500 flex items-center gap-2">

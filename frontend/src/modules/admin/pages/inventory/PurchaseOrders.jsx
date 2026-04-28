@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Search, Download, Clock, CheckCircle, Trash2, Edit2, Package, IndianRupee, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Plus, Search, Download, Clock, CheckCircle, Trash2, Edit2, Package, IndianRupee, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function PurchaseOrders() {
   const [orders, setOrders] = useState([]);
@@ -14,6 +15,8 @@ export default function PurchaseOrders() {
   const [editingOrder, setEditingOrder] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,7 +25,8 @@ export default function PurchaseOrders() {
   const [formData, setFormData] = useState({
     vendor: '',
     amount: '',
-    status: 'Confirmed'
+    status: 'Confirmed',
+    branchId: ''
   });
 
   useEffect(() => {
@@ -32,9 +36,15 @@ export default function PurchaseOrders() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/order`);
-      const data = await res.json();
-      setOrders(data);
+      const [orderRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/order`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const orderData = await orderRes.json();
+      const branchData = await branchRes.json();
+      
+      setOrders(orderData);
+      if (branchData.success) setBranches(branchData.data);
     } catch (err) {
       toast.error('Failed to fetch orders');
     } finally {
@@ -56,13 +66,19 @@ export default function PurchaseOrders() {
   const handleOpenModal = (order = null) => {
     if (order) {
       setEditingOrder(order);
-      setFormData({ vendor: order.vendor, amount: order.amount, status: order.status });
+      setFormData({ 
+        vendor: order.vendor, 
+        amount: order.amount, 
+        status: order.status,
+        branchId: order.branchId || ''
+      });
     } else {
       setEditingOrder(null);
       setFormData({ 
-        vendor: vendors.length > 0 ? vendors[0].name : '', 
+        vendor: '', 
         amount: '', 
-        status: 'Confirmed' 
+        status: 'Confirmed',
+        branchId: ''
       });
     }
     setIsModalOpen(true);
@@ -70,6 +86,7 @@ export default function PurchaseOrders() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.branchId) return toast.error('Branch selection required');
     if (!formData.vendor) return toast.error('Please select a vendor');
 
     const url = editingOrder 
@@ -209,10 +226,12 @@ export default function PurchaseOrders() {
     }
   };
 
-  const filteredOrders = orders.filter(o => 
-    o.vendor.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    o.poNumber.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredOrders = orders.filter(o => {
+    const matchesSearch = o.vendor.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          o.poNumber.toLowerCase().includes(searchQuery.toLowerCase());
+    const branchMatch = selectedBranchFilter === 'all' || o.branchId === selectedBranchFilter;
+    return matchesSearch && branchMatch;
+  });
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -256,14 +275,24 @@ export default function PurchaseOrders() {
 
       {/* Search */}
       <div className="bg-white/40 backdrop-blur-md sticky top-0 z-10 py-4 -mx-4 px-4 border-b border-transparent">
-        <div className="relative group w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search orders by ID or vendor name..."
-            className="w-full bg-white border-none rounded-2xl py-4 pl-12 pr-4 text-[11px] font-bold uppercase tracking-widest focus:ring-4 focus:ring-slate-900/5 transition-all outline-none shadow-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="relative group w-full flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search orders by ID or vendor name..."
+              className="w-full bg-white border-none rounded-2xl py-4 pl-12 pr-4 text-[11px] font-bold uppercase tracking-widest focus:ring-4 focus:ring-slate-900/5 transition-all outline-none shadow-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="h-8 w-px bg-slate-100 hidden md:block mx-2" />
+
+          <BranchSelector 
+            branches={branches}
+            selectedBranch={selectedBranchFilter}
+            onSelect={setSelectedBranchFilter}
           />
         </div>
       </div>
@@ -397,9 +426,22 @@ export default function PurchaseOrders() {
         onClose={() => setIsModalOpen(false)}
         title={editingOrder ? 'Edit Purchase Order' : 'Create Purchase Order'}
         subtitle="Fill in the order details for the supplier"
-        onSubmit={handleSave}
+         onSubmit={handleSave}
       >
         <div className="space-y-6">
+           <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+            <select 
+              className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold uppercase outline-none focus:border-slate-900 rounded-2xl appearance-none"
+              value={formData.branchId}
+              required
+              onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+            >
+              <option value="">Select Target Branch</option>
+              {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+            </select>
+          </div>
+
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Supplier Name</label>
             <select 
@@ -407,15 +449,18 @@ export default function PurchaseOrders() {
               value={formData.vendor}
               onChange={(e) => setFormData({...formData, vendor: e.target.value})}
               required
+              disabled={!formData.branchId}
             >
-              <option value="" disabled>Select a supplier</option>
-              {vendors.map(v => (
+              <option value="">{formData.branchId ? 'Select a supplier' : 'Select Branch First'}</option>
+              {vendors
+                .filter(v => v.branchId === formData.branchId)
+                .map(v => (
                 <option key={v._id} value={v.name}>{v.name}</option>
               ))}
             </select>
-            {vendors.length === 0 && (
+            {formData.branchId && vendors.filter(v => v.branchId === formData.branchId).length === 0 && (
               <p className="text-[9px] font-bold text-amber-600 uppercase mt-1 ml-1 tracking-widest">
-                * Note: Add vendors first in Vendor Management
+                * Note: Add vendors for this branch first
               </p>
             )}
           </div>

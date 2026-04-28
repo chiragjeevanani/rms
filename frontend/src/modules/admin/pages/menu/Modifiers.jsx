@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sliders, Plus, Search, Filter, Edit2, Trash2, 
   Save, Check, X, ChevronRight, Hash, DollarSign,
-  ToggleLeft, ToggleRight, List, Loader2
+  ToggleLeft, ToggleRight, List, Loader2, Building2
 } from 'lucide-react';
+import BranchSelector from '../../components/BranchSelector';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
@@ -21,6 +22,8 @@ export default function Modifiers() {
   const [editingModifier, setEditingModifier] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [filterStatus, setFilterStatus] = useState('All');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -29,7 +32,8 @@ export default function Modifiers() {
     minSelection: 1,
     maxSelection: 1,
     options: [{ name: '', price: 0, isDefault: false }],
-    status: 'Published'
+    status: 'Published',
+    branchId: ''
   });
 
   useEffect(() => {
@@ -37,12 +41,16 @@ export default function Modifiers() {
   }, []);
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/modifier`);
-      const data = await response.json();
-      if (response.ok) {
-        setModifiers(data);
-      }
+      const [modRes, brsRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/modifier`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const mods = await modRes.json();
+      const brs = await brsRes.json();
+      if (modRes.ok) setModifiers(mods);
+      if (brs.success) setBranches(brs.data);
     } catch (err) {
       toast.error('Failed to fetch modifiers');
     } finally {
@@ -60,7 +68,8 @@ export default function Modifiers() {
         minSelection: mod.minSelection,
         maxSelection: mod.maxSelection || 1,
         options: mod.options.length > 0 ? mod.options : [{ name: '', price: 0, isDefault: false }],
-        status: mod.status || 'Published'
+        status: mod.status || 'Published',
+        branchId: mod.branchId || ''
       });
     } else {
       setEditingModifier(null);
@@ -71,7 +80,8 @@ export default function Modifiers() {
         minSelection: 1,
         maxSelection: 1,
         options: [{ name: '', price: 0, isDefault: false }],
-        status: 'Published'
+        status: 'Published',
+        branchId: ''
       });
     }
     setIsModalOpen(true);
@@ -104,6 +114,7 @@ export default function Modifiers() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return toast.error('Group name is required');
+    if (!formData.branchId) return toast.error('Please select a branch');
     if (formData.options.some(opt => !opt.name.trim())) return toast.error('All options must have a name');
 
     setIsSaving(true);
@@ -218,6 +229,15 @@ export default function Modifiers() {
             </button>
           ))}
         </div>
+
+        <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
+        {/* Branch Filter */}
+        <BranchSelector 
+          branches={branches}
+          selectedBranch={selectedBranchFilter}
+          onSelect={setSelectedBranchFilter}
+        />
       </div>
 
       {isLoading ? (
@@ -242,7 +262,12 @@ export default function Modifiers() {
         </div>
       ) : modifiers
           .filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
-          .filter(m => filterStatus === 'All' || m.status === filterStatus).length === 0 ? (
+          .filter(m => filterStatus === 'All' || m.status === filterStatus)
+          .filter(m => {
+            if (selectedBranchFilter === 'all') return true;
+            const branchId = typeof m.branchId === 'object' ? m.branchId?._id : m.branchId;
+            return branchId === selectedBranchFilter;
+          }).length === 0 ? (
         <EmptyState 
            title="No Customizations Defined" 
            subtitle="Customize your menu items with modifier groups"
@@ -255,6 +280,11 @@ export default function Modifiers() {
           {modifiers
             .filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
             .filter(m => filterStatus === 'All' || m.status === filterStatus)
+            .filter(m => {
+              if (selectedBranchFilter === 'all') return true;
+              const branchId = typeof m.branchId === 'object' ? m.branchId?._id : m.branchId;
+              return branchId === selectedBranchFilter;
+            })
             .map((mod) => (
             <motion.div 
               key={mod._id}
@@ -301,10 +331,10 @@ export default function Modifiers() {
 
                 <button 
                   onClick={() => toggleStatus(mod)}
-                  className={`h-10 px-3 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 flex-shrink-0 ${mod.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
+                  className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 shadow-sm flex-shrink-0 ${mod.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
                   title={`Status: ${mod.status}`}
                 >
-                   <div className={`w-2 h-2 rounded-full ${mod.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
+                   <div className={`w-2.5 h-2.5 rounded-full ${mod.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
                 </button>
               </div>
             </motion.div>
@@ -352,6 +382,21 @@ export default function Modifiers() {
                 </div>
               </div>
               <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch</label>
+                <select 
+                  className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black uppercase outline-none focus:border-amber-500/50 rounded-2xl"
+                  value={formData.branchId}
+                  required
+                  onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                >
+                  <option value="">Select Branch</option>
+                  {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Compulsory?</label>
                 <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl h-[52px]">
                    <button 
@@ -364,21 +409,20 @@ export default function Modifiers() {
                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-tight">{formData.isRequired ? 'Yes' : 'No'}</span>
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
-              <div className="flex gap-2">
-                <button 
-                  type="button"
-                  onClick={() => setFormData({...formData, status: 'Published'})}
-                  className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${formData.status === 'Published' ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}
-                >Published</button>
-                <button 
-                   type="button"
-                   onClick={() => setFormData({...formData, status: 'Draft'})}
-                   className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${formData.status === 'Draft' ? 'bg-amber-50 border-amber-500 text-amber-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}
-                >Draft</button>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
+                <div className="flex gap-2">
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({...formData, status: 'Published'})}
+                    className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${formData.status === 'Published' ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}
+                  >Published</button>
+                  <button 
+                     type="button"
+                     onClick={() => setFormData({...formData, status: 'Draft'})}
+                     className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${formData.status === 'Draft' ? 'bg-amber-50 border-amber-500 text-amber-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}
+                  >Draft</button>
+                </div>
               </div>
             </div>
 

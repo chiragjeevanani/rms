@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Search, AlertTriangle, TrendingDown, Edit2, Package, IndianRupee, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Search, AlertTriangle, TrendingDown, Edit2, Package, IndianRupee, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function Wastage() {
   const [records, setRecords] = useState([]);
@@ -12,6 +13,8 @@ export default function Wastage() {
   const [editingRecord, setEditingRecord] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,7 +24,8 @@ export default function Wastage() {
     item: '',
     quantity: '',
     reason: 'Expired',
-    value: ''
+    value: '',
+    branchId: ''
   });
 
   useEffect(() => {
@@ -30,9 +34,15 @@ export default function Wastage() {
 
   const fetchWastage = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/wastage`);
-      const data = await res.json();
-      setRecords(data);
+      const [wastageRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/wastage`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      const wastageData = await wastageRes.json();
+      const branchData = await branchRes.json();
+      
+      setRecords(wastageData);
+      if (branchData.success) setBranches(branchData.data);
     } catch (err) {
       toast.error('Failed to fetch wastage logs');
     } finally {
@@ -44,20 +54,22 @@ export default function Wastage() {
     if (record) {
       setEditingRecord(record);
       setFormData({ 
-        item: record.item, 
-        quantity: record.quantity, 
-        reason: record.reason, 
-        value: record.value 
+         item: record.item, 
+         quantity: record.quantity, 
+         reason: record.reason, 
+         value: record.value,
+         branchId: record.branchId || ''
       });
     } else {
-      setEditingRecord(null);
-      setFormData({ item: '', quantity: '', reason: 'Expired', value: '' });
+       setEditingRecord(null);
+      setFormData({ item: '', quantity: '', reason: 'Expired', value: '', branchId: '' });
     }
     setIsModalOpen(true);
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.branchId) return toast.error('Branch selection required');
     if (!formData.item || !formData.value) return toast.error('Required fields missing');
 
     const url = editingRecord 
@@ -116,10 +128,12 @@ export default function Wastage() {
     }
   };
 
-  const filteredRecords = records.filter(r => 
-    r.item.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    r.reason.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRecords = records.filter(r => {
+    const matchesSearch = r.item.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          r.reason.toLowerCase().includes(searchQuery.toLowerCase());
+    const branchMatch = selectedBranchFilter === 'all' || r.branchId === selectedBranchFilter;
+    return matchesSearch && branchMatch;
+  });
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredRecords.length / itemsPerPage);
@@ -134,7 +148,7 @@ export default function Wastage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, selectedBranchFilter]);
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500 max-w-[1400px] mx-auto min-h-screen pb-40">
@@ -170,7 +184,7 @@ export default function Wastage() {
             <div>
                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Total Loss (Reported)</p>
                <p className="text-3xl font-black text-rose-900 tracking-tighter tabular-nums">
-                 ₹{records.reduce((acc, r) => acc + Number(r.value), 0).toLocaleString()}
+                 ₹{filteredRecords.reduce((acc, r) => acc + Number(r.value), 0).toLocaleString()}
                </p>
             </div>
          </div>
@@ -182,24 +196,31 @@ export default function Wastage() {
             <div>
                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Most Recent Issue</p>
                <p className="text-3xl font-black text-amber-900 tracking-tighter">
-                 {records.length > 0 ? records[0].item : 'NONE'}
+                 {filteredRecords.length > 0 ? filteredRecords[0].item : 'NONE'}
                </p>
             </div>
          </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white/40 backdrop-blur-md sticky top-0 z-10 py-4 -mx-4 px-4 border-b border-transparent">
-        <div className="relative group w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={18} />
+      {/* Search & Filter */}
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
+        <div className="flex-1 w-full flex items-center px-4 bg-slate-50 rounded-2xl">
+          <Search size={18} className="text-slate-400" />
           <input 
-            type="text" 
-            placeholder="Search waste logs by item or reason..."
-            className="w-full bg-white border-none rounded-2xl py-4 pl-12 pr-4 text-[11px] font-bold uppercase tracking-widest focus:ring-4 focus:ring-slate-900/5 transition-all outline-none shadow-sm"
+            className="w-full p-4 bg-transparent text-[11px] font-bold outline-none uppercase placeholder:text-slate-300"
+            placeholder="Search items or reasons..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
+        <div className="h-8 w-px bg-slate-100 hidden md:block mx-2" />
+
+        <BranchSelector 
+          branches={branches}
+          selectedBranch={selectedBranchFilter}
+          onSelect={setSelectedBranchFilter}
+        />
       </div>
 
       {/* Wastage Table */}
@@ -255,15 +276,15 @@ export default function Wastage() {
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={() => handleOpenModal(record)}
-                            className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                            className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all"
                           >
-                             <Edit2 size={14} strokeWidth={2.5} />
+                             <Edit2 size={14} />
                           </button>
                           <button 
                             onClick={() => handleDeleteClick(record)}
-                             className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                             className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"
                           >
-                            <Trash2 size={14} strokeWidth={2.5} />
+                            <Trash2 size={14} />
                           </button>
                         </div>
                      </div>
@@ -323,6 +344,19 @@ export default function Wastage() {
         onSubmit={handleSave}
       >
         <div className="space-y-6">
+           <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+            <select 
+              className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold uppercase outline-none focus:border-slate-900 rounded-2xl appearance-none"
+              value={formData.branchId}
+              required
+              onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+            >
+              <option value="">Select Target Branch</option>
+              {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+            </select>
+          </div>
+
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Item Name</label>
             <input 

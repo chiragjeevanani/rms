@@ -5,7 +5,8 @@ const Table = require('../Models/Table');
 // @route   GET /api/reservations
 const getReservations = async (req, res) => {
   try {
-    const reservations = await Reservation.find()
+    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const reservations = await Reservation.find(filter)
       .populate('tableId')
       .sort({ dateTime: 1 });
     res.json({ success: true, data: reservations });

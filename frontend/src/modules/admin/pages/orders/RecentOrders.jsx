@@ -4,6 +4,7 @@ import { ShoppingBag, Search, Filter, Clock, Eye, MapPin, User, Hash, Calendar }
 import { motion } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
+import BranchSelector from '../../components/BranchSelector';
 
 export default function RecentOrders() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,6 +13,8 @@ export default function RecentOrders() {
   const [viewingOrder, setViewingOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   const [formData, setFormData] = useState({
     status: 'Pending'
@@ -20,21 +23,22 @@ export default function RecentOrders() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders`);
-      if (res.ok) {
-        const result = await res.json();
-        const allOrders = result.data || [];
-        
+      const [orderRes, branchRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/orders`),
+        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+      ]);
+      
+      const orderResult = await orderRes.json();
+      const branchResult = await branchRes.json();
+
+      if (orderRes.ok) {
+        const allOrders = orderResult.data || [];
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        const recentOnes = allOrders.filter(order => {
-          const orderDate = new Date(order.createdAt);
-          return orderDate >= today;
-        });
-        
+        const recentOnes = allOrders.filter(order => new Date(order.createdAt) >= today);
         setOrders(recentOnes);
       }
+      if (branchResult.success) setBranches(branchResult.data);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Failed to sync recent orders');
@@ -92,8 +96,9 @@ export default function RecentOrders() {
                          o.waiterName?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'All' || o.status === statusFilter;
+    const branchMatch = selectedBranchFilter === 'all' || o.branchId === selectedBranchFilter;
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && branchMatch;
   });
 
   return (
@@ -118,8 +123,8 @@ export default function RecentOrders() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1 group">
+      <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 group w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={14} />
           <input 
             type="text" 
@@ -129,7 +134,16 @@ export default function RecentOrders() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2 bg-white border border-slate-100 rounded-2xl px-4 py-2 shadow-sm min-w-[200px]">
+
+        <div className="h-10 w-px bg-slate-100 hidden md:block" />
+
+        <BranchSelector 
+          branches={branches}
+          selectedBranch={selectedBranchFilter}
+          onSelect={setSelectedBranchFilter}
+        />
+
+        <div className="flex items-center gap-2 bg-white border border-slate-100 rounded-2xl px-4 py-2 shadow-sm min-w-[200px] h-[58px]">
            <Filter size={14} className="text-slate-400" />
            <select 
              value={statusFilter}

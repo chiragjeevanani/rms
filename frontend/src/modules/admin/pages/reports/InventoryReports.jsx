@@ -5,6 +5,7 @@ import {
   Trash2, ArrowUpRight, ChevronRight, Layers, Box
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import BranchSelector from '../../components/BranchSelector';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area
@@ -18,10 +19,12 @@ export default function InventoryReports() {
   const [error, setError] = useState(null);
   const [view, setView] = useState('distribution'); // distribution, wastage
   const [searchTerm, setSearchTerm] = useState('');
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
 
   const fetchInventoryData = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/stock/reports/inventory`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/stock/reports/inventory?branchId=${selectedBranchFilter}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
       });
       if (response.ok) {
@@ -37,8 +40,22 @@ export default function InventoryReports() {
     }
   };
 
+  const fetchBranches = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+      const data = await res.json();
+      if (data.success) setBranches(data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchInventoryData();
+  }, [selectedBranchFilter]);
+
+  useEffect(() => {
+    fetchBranches();
   }, []);
 
   const { stats, categories, items, wastage } = data || {};
@@ -106,6 +123,13 @@ export default function InventoryReports() {
                 Wastage Log
              </button>
           </div>
+          
+          <BranchSelector 
+            branches={branches}
+            selectedBranch={selectedBranchFilter}
+            onSelect={setSelectedBranchFilter}
+          />
+
           <button 
             onClick={handleExport}
             className="h-12 px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"

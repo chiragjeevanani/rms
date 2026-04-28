@@ -1,6 +1,7 @@
 const Admin = require('../Models/Admin');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 
 const loginAdmin = async (req, res) => {
   const { email, password } = req.body;
@@ -140,46 +141,54 @@ const Combo = require('../Models/Combo');
 
 const getDashboardStats = async (req, res) => {
   try {
+    const { branchId } = req.query;
+    const filter = branchId ? { branchId: new mongoose.Types.ObjectId(branchId) } : {};
+
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
 
     // 1. Order Metrics Row
     const orderStats = {
-      total: await Order.countDocuments(),
-      pending: await Order.countDocuments({ status: 'Pending' }),
-      preparing: await Order.countDocuments({ status: 'Preparing' }),
-      completed: await Order.countDocuments({ status: { $in: ['Ready', 'Served', 'Paid', 'Completed'] } })
+      total: await Order.countDocuments(filter),
+      pending: await Order.countDocuments({ ...filter, status: 'Pending' }),
+      preparing: await Order.countDocuments({ ...filter, status: 'Preparing' }),
+      completed: await Order.countDocuments({ ...filter, status: { $in: ['Ready', 'Served', 'Paid', 'Completed'] } })
     };
 
     // 2. Content Inventory Row
     const contentStats = {
       categories: {
-        total: await Category.countDocuments(),
-        active: await Category.countDocuments({ status: 'Published' }),
-        inactive: await Category.countDocuments({ status: 'Draft' })
+        total: await Category.countDocuments(filter),
+        active: await Category.countDocuments({ ...filter, status: 'Published' }),
+        inactive: await Category.countDocuments({ ...filter, status: 'Draft' })
       },
       items: {
-        total: await Item.countDocuments(),
-        active: await Item.countDocuments({ status: 'Published' }),
-        inactive: await Item.countDocuments({ status: 'Draft' })
+        total: await Item.countDocuments(filter),
+        active: await Item.countDocuments({ ...filter, status: 'Published' }),
+        inactive: await Item.countDocuments({ ...filter, status: 'Draft' })
       },
       combos: {
-        total: await Combo.countDocuments(),
-        active: await Combo.countDocuments({ status: 'Published' }),
-        inactive: await Combo.countDocuments({ status: 'Draft' })
+        total: await Combo.countDocuments(filter),
+        active: await Combo.countDocuments({ ...filter, status: 'Published' }),
+        inactive: await Combo.countDocuments({ ...filter, status: 'Draft' })
       }
     };
 
     // 3. Revenue Trend Logic
-    // Daily (Last 30 Days)
     const dailyHistory = [];
     for (let i = 29; i >= 0; i--) {
        const d = new Date(); d.setDate(d.getDate() - i);
        const start = new Date(d); start.setHours(0,0,0,0);
        const end = new Date(d); end.setHours(23,59,59,999);
 
+       const matchStage = { 
+         createdAt: { $gte: start, $lte: end }, 
+         status: { $ne: 'Cancelled' } 
+       };
+       if (branchId) matchStage.branchId = new mongoose.Types.ObjectId(branchId);
+
        const rev = await Order.aggregate([
-         { $match: { createdAt: { $gte: start, $lte: end }, status: { $ne: 'Cancelled' } } },
+         { $match: matchStage },
          { $group: { _id: null, total: { $sum: '$grandTotal' } } }
        ]);
        dailyHistory.push({
@@ -190,15 +199,21 @@ const getDashboardStats = async (req, res) => {
        });
     }
 
-    // Monthly (Last 6 Months)
+    // Monthly
     const monthlyHistory = [];
     for (let i = 5; i >= 0; i--) {
        const d = new Date(); d.setMonth(d.getMonth() - i);
        const startMonth = new Date(d.getFullYear(), d.getMonth(), 1);
        const endMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
 
+       const matchStage = { 
+         createdAt: { $gte: startMonth, $lte: endMonth }, 
+         status: { $ne: 'Cancelled' } 
+       };
+       if (branchId) matchStage.branchId = new mongoose.Types.ObjectId(branchId);
+
        const rev = await Order.aggregate([
-         { $match: { createdAt: { $gte: startMonth, $lte: endMonth }, status: { $ne: 'Cancelled' } } },
+         { $match: matchStage },
          { $group: { _id: null, total: { $sum: '$grandTotal' } } }
        ]);
        monthlyHistory.push({
@@ -208,7 +223,7 @@ const getDashboardStats = async (req, res) => {
     }
 
     // 4. Recent Activity
-    const recentOrders = await Order.find()
+    const recentOrders = await Order.find(filter)
       .sort({ createdAt: -1 })
       .limit(8)
       .select('orderNumber tableName grandTotal status createdAt');
@@ -225,7 +240,7 @@ const getDashboardStats = async (req, res) => {
         recentOrders,
         metrics: {
            todayRevenue: dailyHistory[dailyHistory.length - 1].revenue,
-           todayOrders: await Order.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd } })
+           todayOrders: await Order.countDocuments({ ...filter, createdAt: { $gte: todayStart, $lte: todayEnd } })
         }
       }
     });

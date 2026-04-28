@@ -90,7 +90,11 @@ const orderSchema = new mongoose.Schema({
   
   prepStartedAt: Date,
   readyAt: Date,
-  closedAt: Date
+  closedAt: Date,
+  branchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch'
+  }
 }, {
   timestamps: true
 });

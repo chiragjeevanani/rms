@@ -11,6 +11,11 @@ const staffSchema = new mongoose.Schema({
   profileImage: { type: String },
   resetOTP: String,
   resetOTPExpire: Date,
+  branchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch',
+    required: true
+  },
 }, { timestamps: true });
 
 // Hash password before saving

@@ -4,7 +4,8 @@ const Table = require('../Models/Table');
 // @route   GET /api/table
 const getTables = async (req, res) => {
   try {
-    const tables = await Table.find().sort({ tableName: 1 });
+    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const tables = await Table.find(filter).sort({ tableName: 1 });
     res.json(tables);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching tables' });
