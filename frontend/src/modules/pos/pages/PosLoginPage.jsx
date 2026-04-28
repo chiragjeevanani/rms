@@ -35,7 +35,7 @@ export default function PosLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-
+console.log(response.ok)
       const data = await response.json();
       if (response.ok) {
         localStorage.setItem('pos_access', data.token);

@@ -32,6 +32,8 @@ const comboSchema = new mongoose.Schema({
   },
   isAvailable: { type: Boolean, default: true },
   sku: { type: String },
+  alphaShortCode: { type: String },
+  numericShortCode: { type: String },
   
   // Stock Management
   trackStock: { type: Boolean, default: false },

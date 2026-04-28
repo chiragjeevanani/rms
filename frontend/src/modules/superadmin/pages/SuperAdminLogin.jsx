@@ -97,7 +97,7 @@ export default function SuperAdminLogin() {
               {loading ? 'Authenticating...' : (
                 <>
                   Enter Orchestrator
-                  <Arrow size={18} strokeWidth={3} />
+                  <ArrowRight size={18} strokeWidth={3} />
                 </>
               )}
             </button>

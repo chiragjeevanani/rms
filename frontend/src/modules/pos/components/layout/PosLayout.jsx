@@ -62,69 +62,91 @@ export default function PosLayout() {
         {isSidebarOpen && (
           <motion.aside
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 280, opacity: 1 }}
+            animate={{ width: 240, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="h-full bg-[var(--primary-color)] flex flex-col border-r border-white/5 z-[101] overflow-hidden shrink-0"
+            className="h-full bg-[var(--primary-color)] flex flex-col border-r border-white/10 z-[101] overflow-hidden shrink-0 relative shadow-2xl text-white"
           >
-            <div className="px-4 py-4 flex items-center justify-between border-b border-white/5 shrink-0">
-              <h2 className="text-sm font-bold text-white/40 uppercase tracking-widest">POS Navigator</h2>
-              <button onClick={closeSidebar} className="p-1 text-white/40 hover:text-white">
-                <X size={18} />
+            <div className="px-5 py-5 flex items-center justify-between border-b border-black/10 shrink-0 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-black/20 shadow-inner">
+                  <Monitor size={16} className="text-white" />
+                </div>
+                <h2 className="text-xs font-black text-white uppercase tracking-widest">
+                  POS <span className="text-white/70">Navigator</span>
+                </h2>
+              </div>
+              <button 
+                onClick={closeSidebar} 
+                className="p-1.5 bg-black/10 hover:bg-black/20 rounded-lg text-white/80 hover:text-white transition-colors"
+              >
+                <X size={16} />
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto no-scrollbar py-2">
-                <p className="px-4 pt-3 pb-1 text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Operations</p>
+            <div className="flex-1 overflow-y-auto no-scrollbar py-4 relative z-10">
+                <p className="px-6 pb-2 text-[9px] font-black text-white/50 uppercase tracking-[0.2em]">Operations</p>
                 <DrawerItem
                   onClick={() => { closeSidebar(); navigate('/pos/dashboard'); }}
                   icon={<LayoutGrid size={18} />} label="Dashboard"
                   active={window.location.pathname === '/pos/dashboard'}
                 />
+                
                 <DrawerItem
                   onClick={() => { closeSidebar(); navigate('/pos/tables'); }}
                   icon={<Globe size={18} />} label="Tables"
                   active={window.location.pathname.includes('/pos/tables')}
                 />
-                <div className="bg-black/10">
-                  <DrawerSubItem label="Table View" onClick={() => { closeSidebar(); navigate('/pos/tables'); }} />
-                  <DrawerSubItem label="Table List" onClick={() => { closeSidebar(); navigate('/pos/tables/list'); }} />
-                  <DrawerSubItem label="Reservations" onClick={() => { closeSidebar(); navigate('/pos/tables/reservations'); }} />
+                <div className="bg-black/10 my-1 mx-3 rounded-xl overflow-hidden py-1 border border-black/5">
+                  <DrawerSubItem label="Table View" onClick={() => { closeSidebar(); navigate('/pos/tables'); }} active={window.location.pathname === '/pos/tables'} />
+                  <DrawerSubItem label="Table List" onClick={() => { closeSidebar(); navigate('/pos/tables/list'); }} active={window.location.pathname === '/pos/tables/list'} />
+                  <DrawerSubItem label="Reservations" onClick={() => { closeSidebar(); navigate('/pos/tables/reservations'); }} active={window.location.pathname === '/pos/tables/reservations'} />
                 </div>
 
                 <DrawerItem
                   onClick={() => { closeSidebar(); navigate('/pos/orders/active'); }}
                   icon={<ShoppingCart size={18} />} label="Active Orders"
+                  active={window.location.pathname.includes('/pos/orders')}
                 />
-                <div className="bg-black/10">
-                  <DrawerSubItem label="Active Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/active'); }} />
-                  <DrawerSubItem label="Completed Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/completed'); }} />
-                  <DrawerSubItem label="Cancelled Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/cancelled'); }} />
+                <div className="bg-black/10 my-1 mx-3 rounded-xl overflow-hidden py-1 border border-black/5">
+                  <DrawerSubItem label="Active Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/active'); }} active={window.location.pathname === '/pos/orders/active'} />
+                  <DrawerSubItem label="Completed Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/completed'); }} active={window.location.pathname === '/pos/orders/completed'} />
+                  <DrawerSubItem label="Cancelled Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/cancelled'); }} active={window.location.pathname === '/pos/orders/cancelled'} />
                 </div>
 
                 <DrawerItem
                   onClick={() => { closeSidebar(); navigate('/pos/billing'); }}
                   icon={<Wallet size={18} />} label="Billing"
+                  active={window.location.pathname.includes('/pos/billing')}
                 />
-                <div className="bg-black/10">
-                  <DrawerSubItem label="Generate Invoice" onClick={() => { closeSidebar(); navigate('/pos/billing/generate'); }} />
-                  <DrawerSubItem label="Payment History" onClick={() => { closeSidebar(); navigate('/pos/billing/history'); }} />
-                  <DrawerSubItem label="Cash Register" onClick={() => { closeSidebar(); navigate('/pos/billing/register'); }} />
+                <div className="bg-black/10 my-1 mx-3 rounded-xl overflow-hidden py-1 border border-black/5">
+                  <DrawerSubItem label="Generate Invoice" onClick={() => { closeSidebar(); navigate('/pos/billing/generate'); }} active={window.location.pathname === '/pos/billing/generate'} />
+                  <DrawerSubItem label="Payment History" onClick={() => { closeSidebar(); navigate('/pos/billing/history'); }} active={window.location.pathname === '/pos/billing/history'} />
+                  <DrawerSubItem label="Cash Register" onClick={() => { closeSidebar(); navigate('/pos/billing/register'); }} active={window.location.pathname === '/pos/billing/register'} />
                 </div>
 
-                <p className="px-4 pt-4 pb-1 text-[9px] font-black text-white/30 uppercase tracking-[0.2em] border-t border-white/5 mt-2">Management</p>
+                <p className="px-6 pt-6 pb-2 text-[9px] font-black text-white/50 uppercase tracking-[0.2em] mt-2 border-t border-black/10">Management</p>
                 <DrawerItem onClick={() => { closeSidebar(); navigate('/pos/menu'); }} icon={<Settings size={18} />} label="Menu Settings" />
                 <DrawerItem onClick={() => { closeSidebar(); navigate('/pos/operations'); }} icon={<SlidersHorizontal size={18} />} label="Operational Control" />
-                <DrawerItem onClick={() => { closeSidebar(); localStorage.removeItem('pos_access'); navigate('/pos/login'); }} icon={<Power size={18} />} label="Logout Terminal" color="text-rose-400" />
+                <DrawerItem onClick={() => { closeSidebar(); localStorage.removeItem('pos_access'); navigate('/pos/login'); }} icon={<Power size={18} />} label="Logout Terminal" color="text-red-200 group-hover:text-red-100" hoverBg="hover:bg-red-500/20" />
             </div>
 
-            <div className="p-4 border-t border-white/5 bg-black/10 space-y-1">
-                <div className="flex justify-between text-[9px] text-white/30 font-bold uppercase tracking-wider">
-                  <span>Ref: RMS-POS</span><span>v2.4.1</span>
+            <div className="p-5 border-t border-black/10 bg-black/10 space-y-2 relative z-10">
+                <div className="flex justify-between text-[10px] text-white/50 font-bold uppercase tracking-widest">
+                  <span>Ref: RMS-POS</span>
+                  <span className="text-white/80">v2.4.1</span>
                 </div>
-                <p className="text-[10px] text-white/60 font-black text-center pt-1 uppercase">
-                  Station: {user?.name || 'Main Biller'}
-                </p>
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white shadow-inner">
+                    <Users size={14} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] text-white/50 font-black uppercase tracking-wider leading-tight">Station Operator</p>
+                    <p className="text-xs text-white font-bold tracking-wide">
+                      {user?.name || 'Main Biller'}
+                    </p>
+                  </div>
+                </div>
             </div>
           </motion.aside>
         )}
@@ -288,28 +310,40 @@ export default function PosLayout() {
 }
 
 // Helper Components
-function DrawerItem({ icon, label, active, color, onClick }) {
+function DrawerItem({ icon, label, active, color, hoverBg, onClick }) {
   return (
     <div
       onClick={() => { playClickSound(); onClick(); }}
-      className={`px-4 py-3.5 flex items-center justify-between cursor-pointer transition-all hover:bg-white/5 ${active ? 'bg-black/20' : ''}`}
+      className={`mx-3 my-1 px-4 py-3.5 rounded-xl flex items-center justify-between cursor-pointer transition-all duration-300 group ${
+        active 
+        ? 'bg-black/20 shadow-inner' 
+        : hoverBg || 'hover:bg-black/10'
+      }`}
     >
-      <div className={`flex items-center gap-3 ${color || (active ? 'text-white' : 'text-white/40')}`}>
+      <div className={`flex items-center gap-3 ${color || (active ? 'text-white' : 'text-white/70 group-hover:text-white')}`}>
         {icon}
         <span className="text-[11px] font-black uppercase tracking-widest">{label}</span>
       </div>
-      <ChevronRight size={14} className="text-white/10" />
+      <ChevronRight size={14} className={`transition-transform duration-300 ${active ? 'text-white' : 'text-white/40 group-hover:text-white/70 group-hover:translate-x-1'}`} />
     </div>
   );
 }
 
-function DrawerSubItem({ label, onClick }) {
+function DrawerSubItem({ label, onClick, active }) {
   return (
     <div
       onClick={() => { playClickSound(); onClick(); }}
-      className="pl-12 pr-4 py-2 text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white hover:bg-white/5 cursor-pointer transition-all flex items-center gap-2"
+      className={`pl-12 pr-4 py-2.5 text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center gap-3 group ${
+        active 
+        ? 'text-white bg-black/10' 
+        : 'text-white/60 hover:text-white hover:bg-black/10'
+      }`}
     >
-      <span className="w-1 h-1 rounded-full bg-white/20" />
+      <span className={`w-1.5 h-1.5 rounded-full transition-all ${
+        active 
+        ? 'bg-white scale-125 shadow-sm' 
+        : 'bg-white/40 group-hover:bg-white/80'
+      }`} />
       {label}
     </div>
   );

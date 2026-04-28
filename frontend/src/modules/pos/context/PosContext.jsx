@@ -120,7 +120,6 @@ export function PosProvider({ children }) {
       });
       const result = await response.json();
       if (result.success) {
-        toast.success(result.message || 'KOT Placed Successfully');
         syncAll();
         return true;
       }
@@ -140,7 +139,6 @@ export function PosProvider({ children }) {
       });
       const result = await response.json();
       if (result.success) {
-        toast.success('Bill Settled Successfully');
         syncAll();
         return true;
       }
@@ -158,7 +156,6 @@ export function PosProvider({ children }) {
       });
       const result = await response.json();
       if (result.success) {
-        toast.success('Item Voided');
         syncAll();
         return true;
       }
@@ -257,6 +254,25 @@ export function PosProvider({ children }) {
     }
   };
 
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      const result = await response.json();
+      if (result.success) {
+        syncAll();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      toast.error('Failed to update order status');
+      return false;
+    }
+  };
+
   // ── Car Service Helpers (local) ──
   const addCarOrder = (carNumber, initialCart = [], total = 0, staff = null) => {
     const key = carNumber.trim().toUpperCase();
@@ -312,7 +328,7 @@ export function PosProvider({ children }) {
       orders, tables, reservations, loading,
       fetchActiveTableOrders: syncAll,
       fetchReservations, createReservation, updateReservationStatus,
-      placeKOT, settleOrder, voidItem, updateTableStatus, addTable,
+      placeKOT, settleOrder, voidItem, updateTableStatus, updateOrderStatus, addTable,
 
       // Local state
       sections, setSections,

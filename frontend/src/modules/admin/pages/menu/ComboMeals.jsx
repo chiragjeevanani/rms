@@ -37,6 +37,8 @@ export default function ComboMeals() {
     status: 'Published',
     isAvailable: true,
     sku: '',
+    alphaShortCode: '',
+    numericShortCode: '',
     preparationTime: 20,
     trackStock: false,
     stockCount: 0,
@@ -122,6 +124,8 @@ export default function ComboMeals() {
         status: combo.status || 'Published',
         isAvailable: combo.isAvailable ?? true,
         sku: combo.sku || `CMB-${Date.now().toString().slice(-6)}`,
+        alphaShortCode: combo.alphaShortCode || '',
+        numericShortCode: combo.numericShortCode || '',
         preparationTime: combo.preparationTime || 20,
         trackStock: combo.trackStock || false,
         stockCount: combo.stockCount || 0,
@@ -139,6 +143,8 @@ export default function ComboMeals() {
         status: 'Published',
         isAvailable: true,
         sku: `CMB-${Date.now().toString().slice(-6)}`,
+        alphaShortCode: '',
+        numericShortCode: '',
         preparationTime: 20,
         trackStock: false,
         stockCount: 0,
@@ -611,7 +617,7 @@ export default function ComboMeals() {
              </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preparation (Mins)</label>
                 <div className="relative">
@@ -633,7 +639,27 @@ export default function ComboMeals() {
                 onChange={(e) => setFormData({...formData, sku: e.target.value})}
               />
             </div>
-            <div className="flex flex-col justify-end">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alpha Short Code</label>
+              <input 
+                type="text"
+                className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl uppercase"
+                value={formData.alphaShortCode}
+                onChange={(e) => setFormData({...formData, alphaShortCode: e.target.value})}
+                placeholder="e.g. CBM"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numeric Short Code</label>
+              <input 
+                type="number"
+                className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl"
+                value={formData.numericShortCode}
+                onChange={(e) => setFormData({...formData, numericShortCode: e.target.value})}
+                placeholder="e.g. 501"
+              />
+            </div>
+            <div className="flex flex-col justify-end md:col-span-2">
                <button 
                 type="button"
                 onClick={() => setFormData({ ...formData, isAvailable: !formData.isAvailable })}

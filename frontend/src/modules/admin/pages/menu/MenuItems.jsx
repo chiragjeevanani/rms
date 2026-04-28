@@ -48,6 +48,8 @@ export default function MenuItems() {
     isAvailable: true,
     preparationTime: 20,
     sku: '',
+    alphaShortCode: '',
+    numericShortCode: '',
     tags: [],
     isFeatured: false,
     status: 'Published',
@@ -110,7 +112,9 @@ export default function MenuItems() {
         modifiers: item.modifiers?.map(m => m._id) || [],
         trackStock: item.trackStock || false,
         stockCount: item.stockCount || 0,
-        minStockLevel: item.minStockLevel || 5
+        minStockLevel: item.minStockLevel || 5,
+        alphaShortCode: item.alphaShortCode || '',
+        numericShortCode: item.numericShortCode || ''
       });
     } else {
       setEditingItem(null);
@@ -130,6 +134,8 @@ export default function MenuItems() {
         isAvailable: true,
         preparationTime: 20,
         sku: `ITM-${Date.now().toString().slice(-6)}`,
+        alphaShortCode: '',
+        numericShortCode: '',
         tags: [],
         isFeatured: false,
         status: 'Published',
@@ -765,7 +771,7 @@ export default function MenuItems() {
           </div>
 
           {/* Section 4: Settings & Metadata */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preparation (Mins)</label>
                 <div className="relative">
@@ -790,7 +796,27 @@ export default function MenuItems() {
                    />
                 </div>
               </div>
-              <div className="flex flex-col justify-end gap-3 pb-1">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alpha Short Code</label>
+                <input 
+                  type="text"
+                  className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl uppercase"
+                  value={formData.alphaShortCode}
+                  onChange={(e) => setFormData({...formData, alphaShortCode: e.target.value})}
+                  placeholder="e.g. CB"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numeric Short Code</label>
+                <input 
+                  type="number"
+                  className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black text-slate-900 outline-none rounded-2xl"
+                  value={formData.numericShortCode}
+                  onChange={(e) => setFormData({...formData, numericShortCode: e.target.value})}
+                  placeholder="e.g. 101"
+                />
+              </div>
+              <div className="flex flex-col justify-end gap-3 pb-1 md:col-span-2">
                  <button 
                   type="button"
                   onClick={() => setFormData({ ...formData, isFeatured: !formData.isFeatured })}

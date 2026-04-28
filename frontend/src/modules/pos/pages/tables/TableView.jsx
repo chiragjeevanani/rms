@@ -19,6 +19,9 @@ const S = {
   'running-kot': { bg: '#EAB308', border: '#CA8A04', text: '#FFFFFF' },
   active:      { bg: '#EAB308', border: '#CA8A04', text: '#FFFFFF' },
 
+  // Orange → Saved (Table occupied but KOT not yet sent)
+  saved:       { bg: '#F97316', border: '#EA580C', text: '#FFFFFF' },
+
   // Green → Bill generated (printed)
   printed:  { bg: '#16A34A', border: '#15803D', text: '#FFFFFF' },
   billed:   { bg: '#16A34A', border: '#15803D', text: '#FFFFFF' },
@@ -29,15 +32,22 @@ const S = {
 };
 
 const getS = (order, table) => {
-  // Reserved check from table data
+  // 1. Reserved (Blue)
   if (table && (table.status === 'Reserved' || table.isReserved)) return S.reserved;
-  if (!order) return S.blank;
+  if (order && (order.status || '').toLowerCase() === 'reserved') return S.reserved;
 
+  // 2. Available (Grey) - If no order or order is finished
+  if (!order) return S.available;
   const st = (order.status || '').toLowerCase();
-  if (st.includes('paid') || st.includes('settled') || st.includes('complet')) return S.paid;
-  if (st.includes('print') || st.includes('bill') || st.includes('generat')) return S.printed;
-  if (st.includes('reserved')) return S.reserved;
-  // Default: order exists → running
+  if (st === 'paid' || st === 'settled' || st === 'completed' || st === 'void' || st === 'cancelled') return S.available;
+
+  // 3. Billing Done (Green)
+  if (st === 'billed' || st === 'printed' || st === 'billing done') return S.printed;
+
+  // 4. Saved but KOT Pending (Orange)
+  if (st === 'saved') return S.saved;
+
+  // 5. Running (Yellow) - KOT Sent / Preparing
   return S.running;
 };
 
@@ -68,7 +78,7 @@ export default function TableView() {
       tables.forEach(t => {
         const sec = (t.section || t.area || 'General').toUpperCase();
         if (!bySection[sec]) bySection[sec] = [];
-        bySection[sec].push(t.tableName || t.name || t._id);
+        bySection[sec].push(t);
       });
       return bySection;
     }
@@ -121,8 +131,9 @@ export default function TableView() {
         {/* Legend dots */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <LegendDot color="#F3F4F6" border="#D1D5DB" label="AVAILABLE" />
-          <LegendDot color="#EAB308" label="RUNNING" />
-          <LegendDot color="#16A34A" label="BILL GENERATED" />
+          <LegendDot color="#F97316" label="SAVED (KOT PENDING)" />
+          <LegendDot color="#EAB308" label="RUNNING (KOT SENT)" />
+          <LegendDot color="#16A34A" label="BILLING DONE" />
           <LegendDot color="#2563EB" label="RESERVED" />
         </div>
       </div>
@@ -138,7 +149,7 @@ export default function TableView() {
             {/* Table grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 85px)', gap: 8 }}>
               {tableArr.map((tableId, idx) => {
-                const id = typeof tableId === 'string' ? tableId : (tableId.id || tableId.name);
+                const id = typeof tableId === 'string' ? tableId : (tableId.tableName || tableId.name || tableId.id);
                 const tableObj = typeof tableId === 'object' ? tableId : null;
                 const order = orders[id];
                 const cfg = getS(order, tableObj);

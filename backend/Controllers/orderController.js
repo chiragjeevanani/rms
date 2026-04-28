@@ -27,16 +27,53 @@ const createOrder = async (req, res) => {
       source 
     } = req.body;
     
-    // New Order creation (Always create a new record as requested)
+    // Check if an active order exists for this table
+    let order = await Order.findOne({ 
+      tableName, 
+      status: { $nin: ['Paid', 'Cancelled', 'Void'] } 
+    });
+
+    const io = req.app.get('socketio');
+
+    if (order) {
+      // Update existing order
+      // Merge items if they are provided
+      if (items && items.length > 0) {
+        order.items = [...order.items, ...items];
+      }
+      
+      // Update financials if provided
+      if (subTotal !== undefined) order.subTotal = subTotal;
+      if (tax !== undefined) order.tax = tax;
+      if (discount !== undefined) order.discount = discount;
+      if (serviceCharge !== undefined) order.serviceCharge = serviceCharge;
+      if (deliveryCharge !== undefined) order.deliveryCharge = deliveryCharge;
+      if (containerCharge !== undefined) order.containerCharge = containerCharge;
+      if (grandTotal !== undefined) order.grandTotal = grandTotal;
+      if (orderType !== undefined) order.orderType = orderType;
+      if (waiterName !== undefined) order.waiterName = waiterName;
+      if (status !== undefined) order.status = status;
+      
+      await order.save();
+      if (io) io.emit('statusUpdated', order); // Notify KDS and others
+      
+      // Update table status if dine-in
+      if (order.orderType === 'Dine-In') {
+        await Table.findOneAndUpdate({ tableName }, { status: 'Occupied', isAvailable: false });
+        if (io) io.emit('tableStatusChanged');
+      }
+
+      return res.status(200).json({ success: true, message: 'Order updated successfully', data: order });
+    }
+
+    // New Order creation
     const orderNumber = await generateOrderNumber();
-    
-    // Find table to get its ID
     const table = await Table.findOne({ tableName });
 
     const newOrder = new Order({
       orderNumber,
       tableName,
-      tableId: table?._id, // Link table ID
+      tableId: table?._id,
       items,
       subTotal,
       tax,
@@ -53,7 +90,6 @@ const createOrder = async (req, res) => {
 
     await newOrder.save();
 
-    const io = req.app.get('socketio');
     if (io) io.emit('orderCreated', newOrder);
 
     // Update table status if dine-in

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import PosLayout from '../components/layout/PosLayout';
 import PosLoginPage from '../pages/PosLoginPage';
 
@@ -31,13 +31,14 @@ import OperationsDashboard from '../pages/operations/OperationsDashboard';
 import { PosProvider } from '../context/PosContext';
 
 export default function PosRoutes() {
+  const location = useLocation();
   const isPosAuthenticated = !!localStorage.getItem('pos_access');
 
-  if (isPosAuthenticated && window.location.pathname === '/pos/login') {
+  if (isPosAuthenticated && location.pathname === '/pos/login') {
     return <Navigate to="/pos/dashboard" replace />;
   }
 
-  if (!isPosAuthenticated && window.location.pathname !== '/pos/login') {
+  if (!isPosAuthenticated && location.pathname !== '/pos/login') {
     return (
       <Routes>
         <Route path="/login" element={<PosLoginPage />} />

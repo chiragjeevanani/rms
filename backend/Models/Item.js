@@ -41,6 +41,8 @@ const itemSchema = new mongoose.Schema({
   preparationTime: { type: Number }, // in minutes
   
   sku: { type: String },
+  alphaShortCode: { type: String },
+  numericShortCode: { type: String },
   tags: [{ type: String }],
   isFeatured: { type: Boolean, default: false },
   

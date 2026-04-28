@@ -45,7 +45,7 @@ export default function KdsDashboard() {
   const liveStats = useMemo(() => {
     return {
       total: orders.length,
-      incoming: orders.filter(o => o.status === 'new').length,
+      incoming: orders.filter(o => o.status === 'pending').length,
       preparing: orders.filter(o => o.status === 'preparing').length,
       completed: orders.filter(o => ['ready', 'completed', 'served'].includes(o.status)).length,
     };
@@ -86,7 +86,7 @@ export default function KdsDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Total Orders', value: finalStats.total, icon: Package, color: 'text-stone-400', bg: 'bg-stone-500/10' },
-          { label: 'New Orders', value: finalStats.incoming || finalStats.new, icon: Bell, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+          { label: 'New Orders', value: finalStats.pending || finalStats.new, icon: Bell, color: 'text-blue-500', bg: 'bg-blue-500/10' },
           { label: 'Preparing', value: finalStats.preparing, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
           { label: 'Completed', value: finalStats.completed, icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
         ].map((item, idx) => (
@@ -194,14 +194,20 @@ export default function KdsDashboard() {
           </button>
         </div>
 
-        {orders.filter(o => o.status !== 'ready' && o.status !== 'completed' && o.status !== 'cancelled').length === 0 ? (
+        {orders.filter(o => {
+          const s = o.status?.toLowerCase();
+          return s !== 'ready' && s !== 'completed' && s !== 'cancelled' && s !== 'saved' && s !== 'paid' && s !== 'void';
+        }).length === 0 ? (
           <div className="py-24 rounded-[3rem] border border-dashed flex flex-col items-center justify-center opacity-40">
             <Package size={64} className="mb-6 text-stone-500" />
             <h4 className="text-lg font-black uppercase tracking-widest text-[#ff7a00]">No Active Orders</h4>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
-            {orders.filter(o => o.status !== 'ready' && o.status !== 'completed' && o.status !== 'cancelled').map((order) => (
+            {orders.filter(o => {
+              const s = o.status?.toLowerCase();
+              return s !== 'ready' && s !== 'completed' && s !== 'cancelled' && s !== 'saved' && s !== 'paid' && s !== 'void';
+            }).map((order) => (
               <KdsDashboardOrderCard key={order.id} order={order} onUpdate={updateOrderStatus} />
             ))}
           </div>
@@ -237,13 +243,13 @@ function KdsDashboardOrderCard({ order, onUpdate }) {
       </div>
 
       <div className="pt-6 border-t border-stone-100 dark:border-white/5 space-y-3">
-        {order.status === 'new' && (
-          <button onClick={() => onUpdate(order.id, 'preparing')} className="w-full bg-[#ff7a00] text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-[#ea6c00] transition-all">
-            Start Preparing
+        {(order.status?.toLowerCase() === 'pending' || order.status?.toLowerCase() === 'billed') && (
+          <button onClick={() => onUpdate(order.id, 'Preparing')} className="w-full bg-[#ff7a00] text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-[#ea6c00] transition-all">
+            {order.status?.toLowerCase() === 'billed' ? 'Prepare Billed Order' : 'Start Preparing'}
           </button>
         )}
-        {order.status === 'preparing' && (
-          <button onClick={() => onUpdate(order.id, 'ready')} className="w-full bg-emerald-600 text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-emerald-500 transition-all">
+        {order.status?.toLowerCase() === 'preparing' && (
+          <button onClick={() => onUpdate(order.id, 'Ready')} className="w-full bg-emerald-600 text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-emerald-500 transition-all">
             Mark Ready
           </button>
         )}
