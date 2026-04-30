@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Lock as LockIcon, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -78,7 +78,7 @@ export default function SuperAdminLogin() {
             <div className="space-y-4">
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Access Key</label>
               <div className="relative group">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={20} />
+                <LockIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={20} />
                 <input
                   type={showPassword ? "text" : "password"}
                   required

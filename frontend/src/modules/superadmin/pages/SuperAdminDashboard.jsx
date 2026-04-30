@@ -1,9 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Plus, ToggleLeft as Toggle, ToggleRight, Store, Mail, 
-  Search, LogOut, ShieldCheck, Zap, Activity, 
-  Globe, Server, ChevronRight, RefreshCcw, Calendar,
-  BarChart3, Users, Network, Settings, LayoutGrid
+  ShieldCheck, 
+  RefreshCcw, 
+  LogOut, 
+  Plus, 
+  Search, 
+  Settings2, 
+  Database, 
+  Activity, 
+  Key, 
+  LockIcon,
+  Server,
+  Network,
+  ToggleLeft as Toggle, 
+  ToggleRight, 
+  Store, 
+  Mail, 
+  ChevronRight,
+  Calendar,
+  BarChart3, 
+  Users, 
+  Settings, 
+  LayoutGrid,
+  Globe,
+  Zap,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -81,6 +103,7 @@ export default function SuperAdminDashboard() {
   };
 
   const [isPassModalOpen, setIsPassModalOpen] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
   const [passFormData, setPassFormData] = useState({
     currentPassword: '', newPassword: '', confirmPassword: ''
   });
@@ -391,22 +414,64 @@ export default function SuperAdminDashboard() {
                  <div className="space-y-3">
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Current Access Key</label>
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={20} />
-                      <input type="password" required value={passFormData.currentPassword} onChange={e => setPassFormData({...passFormData, currentPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 py-5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-4 focus:ring-orange-500/5 focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" placeholder="••••••••" />
+                      <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={20} />
+                      <input 
+                        type={showPasswords.current ? "text" : "password"} 
+                        required 
+                        value={passFormData.currentPassword} 
+                        onChange={e => setPassFormData({...passFormData, currentPassword: e.target.value})} 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-12 py-5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-4 focus:ring-orange-500/5 focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                        placeholder="••••••••" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#ff7a00] transition-colors"
+                      >
+                        {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                  </div>
                  <div className="space-y-3">
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">New Access Key</label>
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={20} />
-                      <input type="password" required value={passFormData.newPassword} onChange={e => setPassFormData({...passFormData, newPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 py-5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-4 focus:ring-orange-500/5 focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" placeholder="••••••••" />
+                      <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={20} />
+                      <input 
+                        type={showPasswords.new ? "text" : "password"} 
+                        required 
+                        value={passFormData.newPassword} 
+                        onChange={e => setPassFormData({...passFormData, newPassword: e.target.value})} 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-12 py-5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-4 focus:ring-orange-500/5 focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                        placeholder="••••••••" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#ff7a00] transition-colors"
+                      >
+                        {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                  </div>
                  <div className="space-y-3">
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Confirm New Key</label>
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={20} />
-                      <input type="password" required value={passFormData.confirmPassword} onChange={e => setPassFormData({...passFormData, confirmPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 py-5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-4 focus:ring-orange-500/5 focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" placeholder="••••••••" />
+                      <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={20} />
+                      <input 
+                        type={showPasswords.confirm ? "text" : "password"} 
+                        required 
+                        value={passFormData.confirmPassword} 
+                        onChange={e => setPassFormData({...passFormData, confirmPassword: e.target.value})} 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-12 py-5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-4 focus:ring-orange-500/5 focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                        placeholder="••••••••" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#ff7a00] transition-colors"
+                      >
+                        {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                  </div>
                </div>
