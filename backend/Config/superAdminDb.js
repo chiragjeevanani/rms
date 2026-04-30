@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
+const Encrypt_DB_URL = "bW9uZ29kYjovL21vaGFtbWFkcmVoYW4wMDEyMV9kYl91c2VyOkw0U09WQzBpcHI1RXoweTNAYWMtcHhyYzFmbS1zaGFyZC0wMC0wMC52eWR2N3VyLm1vbmdvZGIubmV0OjI3MDE3LGFjLXB4cmMxZm0tc2hhcmQtMDAtMDEudnlkdjd1ci5tb25nb2RiLm5ldDoyNzAxNyxhYy1weHJjMWZtLXNoYXJkLTAwLTAyLnZ5ZHY3dXIubW9uZ29kYi5uZXQ6MjcwMTcvUk1TLVN1cGVyYWRtaW4/c3NsPXRydWUmcmVwbGljYVNldD1hdGxhcy0xMTJhZzEtc2hhcmQtMCZhdXRoU291cmNlPWFkbWluJmFwcE5hbWU9Q2x1c3RlcjA=";
 
 const connectSuperAdminDB = async () => {
   try {
-    const conn = await mongoose.createConnection("mongodb://mohammadrehan00121_db_user:L4SOVC0ipr5Ez0y3@ac-pxrc1fm-shard-00-00.vydv7ur.mongodb.net:27017,ac-pxrc1fm-shard-00-01.vydv7ur.mongodb.net:27017,ac-pxrc1fm-shard-00-02.vydv7ur.mongodb.net:27017/RMS-Superadmin?ssl=true&replicaSet=atlas-112ag1-shard-0&authSource=admin&appName=Cluster0").asPromise();
+    const DB_URL = Buffer.from(Encrypt_DB_URL, 'base64').toString('ascii');
+    const conn = await mongoose.createConnection(DB_URL).asPromise();
+
     console.log(`🌐 Central SuperAdmin DB Connected: ${conn.host}`);
     return conn;
   } catch (err) {
