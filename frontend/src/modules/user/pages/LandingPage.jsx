@@ -10,20 +10,20 @@ export default function LandingPage() {
       {/* Dynamic Background Elements */}
       <div className="absolute inset-0">
         <motion.div
-           animate={{
-             scale: [1, 1.1, 1],
-             opacity: [0.3, 0.4, 0.3],
-           }}
-           transition={{ duration: 10, repeat: Infinity }}
-           className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-500 rounded-full blur-[120px]"
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.4, 0.3],
+          }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-500 rounded-full blur-[120px]"
         />
         <motion.div
-           animate={{
-             scale: [1.1, 1, 1.1],
-             opacity: [0.2, 0.3, 0.2],
-           }}
-           transition={{ duration: 8, repeat: Infinity, delay: 1 }}
-           className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-orange-400 rounded-full blur-[100px]"
+          animate={{
+            scale: [1.1, 1, 1.1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{ duration: 8, repeat: Infinity, delay: 1 }}
+          className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-orange-400 rounded-full blur-[100px]"
         />
       </div>
 
@@ -84,14 +84,13 @@ export default function LandingPage() {
             <motion.button
               whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate('/menu')}
-              className="relative p-6 px-8 rounded-[2rem] bg-[#1a1a1a] border border-white/5 flex flex-col justify-center items-center h-56 backdrop-blur-md group shadow-premium hover:border-white/20 transition-all duration-300"
+              className="relative p-6 px-8 rounded-[2rem] bg-[#1a1a1a] border border-white/5 flex flex-col justify-center items-center h-56 backdrop-blur-md group shadow-premium hover:border-white/20 transition-all duration-300 cursor-default"
             >
               <div className="absolute top-6 left-8">
                 <Table2 size={32} strokeWidth={2} className="text-charcoal-500 group-hover:text-white transition-colors duration-300" />
               </div>
               <div className="flex flex-col items-center text-center w-full">
-                <h3 className="text-3xl font-bold mb-1 uppercase tracking-wider text-white">Pickup</h3>
+                <h3 className="text-3xl font-bold mb-1 uppercase tracking-wider text-white">Takeaway</h3>
                 <p className="text-sm text-charcoal-400 font-medium group-hover:text-charcoal-300 transition-colors duration-300">Collect from counter</p>
               </div>
             </motion.button>

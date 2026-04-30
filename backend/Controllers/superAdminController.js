@@ -134,3 +134,38 @@ exports.getGlobalAdmins = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+exports.changeSuperAdminPassword = async (req, res) => {
+  const { email, currentPassword, newPassword } = req.body;
+  
+  try {
+    const centralConn = await connectSuperAdminDB();
+    if (!centralConn) return res.status(500).json({ success: false, message: 'Central DB Connection Failed' });
+
+    const SuperAdminsCollection = centralConn.collection('superadmins');
+    const admin = await SuperAdminsCollection.findOne({ email });
+
+    if (!admin) {
+      await centralConn.close();
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, admin.password);
+    if (!isMatch) {
+      await centralConn.close();
+      return res.status(401).json({ success: false, message: 'Current password incorrect' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await SuperAdminsCollection.updateOne(
+      { email },
+      { $set: { password: hashedPassword } }
+    );
+
+    await centralConn.close();
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

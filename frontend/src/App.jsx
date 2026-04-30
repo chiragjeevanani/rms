@@ -64,6 +64,7 @@ function App() {
                     <Route path="/superadmin/*" element={
                       <SuperAdminThemeProvider>
                         <Routes>
+                          <Route index element={<Navigate to="login" replace />} />
                           <Route path="login" element={<SuperAdminLogin />} />
                           <Route path="dashboard" element={<SuperAdminDashboard />} />
                         </Routes>
