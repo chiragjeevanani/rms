@@ -15,16 +15,6 @@ import { usePos } from '../../context/PosContext';
 import { playClickSound } from '../../utils/sounds';
 import PosTopNavbar from '../../components/PosTopNavbar';
 
-// Mock data for the chart - in real app, fetch this from /orders/analytics
-const mockChartData = [
-  { name: '10 AM', sales: 4000 },
-  { name: '12 PM', sales: 7500 },
-  { name: '2 PM', sales: 6200 },
-  { name: '4 PM', sales: 9800 },
-  { name: '6 PM', sales: 12500 },
-  { name: '8 PM', sales: 18000 },
-  { name: '10 PM', sales: 15500 },
-];
 
 export default function PosDashboard() {
   const navigate = useNavigate();
@@ -158,7 +148,7 @@ export default function PosDashboard() {
                 </div>
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mockChartData}>
+                    <AreaChart data={stats?.hourlyTrends || []}>
                       <defs>
                         <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="var(--primary-color, #ff7a00)" stopOpacity={0.1}/>

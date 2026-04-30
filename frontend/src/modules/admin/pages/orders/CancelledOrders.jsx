@@ -9,6 +9,10 @@ export default function CancelledOrders() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState(null);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
+
   const [cancellations, setCancellations] = useState([
     { id: 'ORD-7701', type: 'Dine-in', reason: 'Customer Changed Mind', value: 450, refund: 'Processed', time: '11:20 AM' },
     { id: 'ORD-7702', type: 'App Order', reason: 'Item Out of Stock', value: 1200, refund: 'Pending', time: '11:45 AM' },
@@ -38,6 +42,16 @@ export default function CancelledOrders() {
   };
 
   const filteredCancellations = cancellations.filter(o => o.id.toLowerCase().includes(searchQuery.toLowerCase()) || o.reason.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredCancellations.length / recordsPerPage);
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredCancellations.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
@@ -79,7 +93,7 @@ export default function CancelledOrders() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {filteredCancellations.map((order) => (
+            {currentRecords.map((order) => (
               <tr key={order.id} className="hover:bg-rose-50/30 group transition-colors underline decoration-transparent">
                 <td className="px-6 py-4">
                   <div className="flex flex-col underline decoration-transparent">
@@ -117,6 +131,54 @@ export default function CancelledOrders() {
             ))}
           </tbody>
         </table>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+              Showing <span className="text-slate-900">{indexOfFirstRecord + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastRecord, filteredCancellations.length)}</span> of <span className="text-slate-900">{filteredCancellations.length}</span> voids
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm border transition-all ${
+                  currentPage === 1 
+                    ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 active:scale-95 shadow-sm'
+                }`}
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-7 h-7 text-[9px] font-black rounded-sm border transition-all ${
+                      currentPage === i + 1
+                        ? 'bg-rose-600 text-white border-rose-600 shadow-md'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm border transition-all ${
+                  currentPage === totalPages 
+                    ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 active:scale-95 shadow-sm'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <AdminModal

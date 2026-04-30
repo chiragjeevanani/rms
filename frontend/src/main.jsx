@@ -9,5 +9,17 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
+// Register Service Worker for Firebase Cloud Messaging
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/firebase-messaging-sw.js')
+    .then((registration) => {
+      console.log('FCM Service Worker registered with scope:', registration.scope);
+    })
+    .catch((err) => {
+      console.error('FCM Service Worker registration failed:', err);
+    });
+}
+
 
 

@@ -88,6 +88,27 @@ export default function KdsTopNavbar() {
         </div>
 
         <button 
+          onClick={() => {
+            if (Notification.permission !== 'granted') {
+              Notification.requestPermission().then(p => {
+                if(p === 'granted') window.location.reload();
+              });
+            }
+          }}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all relative ${
+            Notification.permission === 'granted'
+              ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-200')
+              : (isDarkMode ? 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse' : 'bg-red-50 text-red-600 border-red-200 animate-pulse')
+          }`}
+          title={Notification.permission === 'granted' ? "Notifications Enabled" : "Click to Enable Notifications"}
+        >
+          <Bell size={16} />
+          {Notification.permission !== 'granted' && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-bounce" />
+          )}
+        </button>
+
+        <button 
           onClick={toggleTheme}
           className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all ${
             isDarkMode ? 'bg-white/6 text-stone-300 border-white/8 hover:bg-white/12' : 'bg-stone-50 text-stone-500 border-stone-200 hover:bg-stone-100'

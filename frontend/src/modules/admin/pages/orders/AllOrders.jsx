@@ -20,6 +20,10 @@ export default function AllOrders() {
     status: 'Pending'
   });
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -43,6 +47,10 @@ export default function AllOrders() {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, selectedBranchFilter, searchQuery]);
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -93,6 +101,12 @@ export default function AllOrders() {
     return matchesSearch && matchesStatus && branchMatch;
   });
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredOrders.slice(indexOfFirstRecord, indexOfLastRecord);
+
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500 min-h-screen bg-[#FDFCFB]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -139,7 +153,7 @@ export default function AllOrders() {
              className="w-full bg-transparent border-none text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer"
            >
               <option value="All">All Statuses</option>
-              {['Pending', 'Confirmed', 'Preparing', 'Ready', 'Served', 'Paid', 'Cancelled'].map(s => (
+              {['Pending', 'Preparing', 'Completed', 'Paid', 'Cancelled'].map(s => (
                 <option key={s} value={s}>{s}</option>
               ))}
            </select>
@@ -165,7 +179,7 @@ export default function AllOrders() {
                     <td colSpan={5} className="px-8 py-6 h-20 bg-slate-50/20" />
                   </tr>
                 ))
-              ) : filteredOrders.length > 0 ? filteredOrders.map((order) => (
+              ) : currentRecords.length > 0 ? currentRecords.map((order) => (
                 <tr key={order._id} className="hover:bg-slate-50/80 group transition-all duration-300">
                   <td className="px-8 py-6">
                     <div className="flex flex-col">
@@ -207,6 +221,54 @@ export default function AllOrders() {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Showing <span className="text-slate-900">{indexOfFirstRecord + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastRecord, filteredOrders.length)}</span> of <span className="text-slate-900">{filteredOrders.length}</span> results
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
+                  currentPage === 1 
+                    ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 active:scale-95 shadow-sm'
+                }`}
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-8 h-8 text-[10px] font-black rounded-lg border transition-all ${
+                      currentPage === i + 1
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
+                  currentPage === totalPages 
+                    ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 active:scale-95 shadow-sm'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <AdminModal
@@ -216,6 +278,7 @@ export default function AllOrders() {
         subtitle="Operational Manifest & Status Override"
         onSubmit={handleUpdateStatus}
         submitLabel="Synchronize Flow"
+        isSubmitDisabled={viewingOrder?.status === 'cancelled'}
       >
         {viewingOrder && (
           <div className="space-y-8">
@@ -246,16 +309,25 @@ export default function AllOrders() {
             <div className="space-y-3">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-2">Status Lifecycle Management</label>
               <div className="grid grid-cols-3 gap-2">
-                {['Pending', 'Confirmed', 'Preparing', 'Ready', 'Served', 'Paid', 'Cancelled'].map((status) => (
+                {(() => {
+                  const current = viewingOrder.status;
+                  let base = ['Pending', 'Preparing', 'Completed', 'Paid'];
+                  const st = current?.toLowerCase();
+                  if (st !== 'paid' && st !== 'completed' && st !== 'cancelled') {
+                    base.push('Cancelled');
+                  }
+                  return [...new Set(base)];
+                })().map((status) => (
                   <button
                     key={status}
                     type="button"
+                    disabled={viewingOrder.status === 'cancelled'}
                     onClick={() => setFormData({ status })}
                     className={`py-3 text-[9px] font-black uppercase tracking-widest rounded-xl border transition-all ${
                       formData.status === status 
                         ? 'bg-slate-900 text-white border-slate-900 shadow-xl' 
                         : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50'
-                    }`}
+                    } ${viewingOrder.status === 'cancelled' ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {status}
                   </button>

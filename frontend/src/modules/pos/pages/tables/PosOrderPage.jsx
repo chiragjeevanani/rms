@@ -52,6 +52,11 @@ export default function PosOrderPage() {
   const [cart, setCart] = useState([]);
   const [selectedWaiter] = useState(MOCK_WAITERS[0]);
 
+  // Reset cart when switching tables
+  useEffect(() => {
+    setCart([]);
+  }, [tableId]);
+
   // ── Billing state ──────────────────────────────────────────────────────────
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [isSalesReturn, setIsSalesReturn] = useState(false);
@@ -662,8 +667,8 @@ export default function PosOrderPage() {
 
           {/* Row 4: Action buttons */}
           <div style={{ display: 'flex', gap: 3, padding: '7px 8px', flexWrap: 'nowrap', borderBottom: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto' }}>
-            <ActionBtn label="SAVE"         onClick={() => handleSave(false, 'ready')} dark />
-            <ActionBtn label="SAVE & PRINT" onClick={() => handleSave(true, 'ready')}  dark />
+            <ActionBtn label="SAVE"         onClick={() => handleSave(false, 'completed')} dark />
+            <ActionBtn label="SAVE & PRINT" onClick={() => handleSave(true, 'completed')}  dark />
             {orderType === 'Dine-In' && (
               <>
                 <ActionBtn label="KOT"          onClick={() => handleKOT(false)} light />

@@ -97,6 +97,9 @@ export default function AdminRoutes() {
           {/* Order Management */}
           <Route path="orders" element={<OrderManagement />} />
           <Route path="orders/recent" element={<RecentOrders />} />
+          <Route path="orders/dine-in" element={<RecentOrders />} />
+          <Route path="orders/takeaway" element={<RecentOrders />} />
+          <Route path="orders/delivery" element={<RecentOrders />} />
           <Route path="orders/all" element={<AllOrders />} />
           <Route path="orders/online" element={<OnlineOrders />} />
           <Route path="orders/cancelled" element={<CancelledOrders />} />

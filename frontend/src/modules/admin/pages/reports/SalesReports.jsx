@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, Download, Calendar, ArrowUpRight, TrendingUp, 
   DollarSign, Package, ShoppingBag, Activity, Search, Filter,
-  ChevronDown
+  ChevronDown, FileText, File
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BranchSelector from '../../components/BranchSelector';
@@ -24,6 +24,7 @@ export default function SalesReports() {
   const [searchTerm, setSearchTerm] = useState('');
   const [branches, setBranches] = useState([]);
   const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const fetchSalesData = async () => {
     setLoading(true);
@@ -69,8 +70,10 @@ export default function SalesReports() {
   };
 
   useEffect(() => {
-    fetchSalesData();
-  }, [dateRange, customRange, selectedBranchFilter]);
+    if (dateRange !== 'custom') {
+      fetchSalesData();
+    }
+  }, [dateRange, selectedBranchFilter]);
 
   useEffect(() => {
     fetchBranches();
@@ -94,7 +97,7 @@ export default function SalesReports() {
     );
   }
 
-  const handleExport = () => {
+  const handleExportCSV = () => {
     if (!trends || trends.length === 0) return;
     const headers = ['Date', 'Day', 'Orders', 'Revenue', 'Avg Order Value'];
     const rows = trends.map(t => [
@@ -114,6 +117,40 @@ export default function SalesReports() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setIsExportOpen(false);
+  };
+
+  const handleExportPDF = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+    
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.text('RMS Sales Intelligence Report', 14, 22);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    doc.text(`Range: ${rangeLabels[dateRange]}`, 14, 35);
+    doc.text(`Revenue: Rs.${metrics?.filteredRevenue?.toLocaleString()}`, 14, 40);
+
+    const tableData = filteredTrends.map(day => [
+      `${day.date} (${day.name})`,
+      day.orders,
+      `Rs.${day.revenue.toLocaleString()}`,
+      `Rs.${(day.revenue / (day.orders || 1)).toFixed(0)}`
+    ]);
+
+    autoTable(doc, {
+      startY: 50,
+      head: [['Date & Day', 'Total Orders', 'Gross Inflow', 'Average Value']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 9 }
+    });
+
+    doc.save(`sales_report_${dateRange}.pdf`);
+    setIsExportOpen(false);
   };
 
   const rangeLabels = {
@@ -122,6 +159,7 @@ export default function SalesReports() {
     '30d': 'Last 30 Days',
     'custom': 'Custom Range'
   };
+
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-slate-50/30 min-h-screen pb-20">
@@ -210,13 +248,46 @@ export default function SalesReports() {
             </AnimatePresence>
           </div>
 
-          <button 
-            onClick={handleExport}
-            className="h-[58px] px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
-          >
-            <Download size={14} />
-            Export Dataset
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsExportOpen(!isExportOpen)}
+              className="h-[58px] px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
+            >
+              <Download size={14} />
+              Export Dataset
+              <ChevronDown size={14} className={`transition-transform ${isExportOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {isExportOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-3 w-48 bg-white rounded-3xl shadow-2xl border border-slate-100 p-2 z-50"
+                >
+                  <button 
+                    onClick={handleExportCSV}
+                    className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center gap-3"
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <FileText size={12} />
+                    </div>
+                    CSV Format
+                  </button>
+                  <button 
+                    onClick={handleExportPDF}
+                    className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center gap-3"
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                      <File size={12} />
+                    </div>
+                    PDF Document
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
@@ -246,48 +317,115 @@ export default function SalesReports() {
       </div>
 
       {/* Main Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Trend Chart */}
-        <div className="lg:col-span-2 bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm">
-          <div className="flex items-center justify-between mb-10">
-             <div className="flex items-center gap-4">
-                <div className="w-1.5 h-6 bg-slate-900 rounded-full" />
-                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Revenue Stream Analysis</h3>
-             </div>
-             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temporal Inflow</p>
-          </div>
-          <div className="h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trends}>
-                <defs>
-                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
-                <Tooltip 
-                   contentStyle={{ backgroundColor: '#0f172a', borderRadius: '1rem', border: 'none', color: '#fff', fontSize: '10px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}
-                   itemStyle={{ color: '#fff', textTransform: 'uppercase', fontWeight: 900 }}
-                   formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
-                />
-                <Area type="monotone" dataKey="revenue" stroke="#0f172a" strokeWidth={4} fillOpacity={1} fill="url(#colorRev)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+        <div className="xl:col-span-2 bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm flex flex-col">
+           <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-50">
+              <div className="flex items-center gap-4">
+                 <div className="w-1.5 h-8 bg-slate-900 rounded-full" />
+                 <div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Revenue Stream Analysis</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Temporal Inflow Distribution</p>
+                 </div>
+              </div>
+              <div className="flex items-center gap-6">
+                 <div className="text-right">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Peak Revenue</p>
+                    <p className="text-sm font-black text-slate-900">₹{Math.max(...(trends?.map(t => t.revenue) || [0])).toLocaleString()}</p>
+                 </div>
+              </div>
+           </div>
+           <div className="h-[350px] w-full">
+             <ResponsiveContainer width="100%" height="100%">
+               <AreaChart data={trends}>
+                 <defs>
+                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1}/>
+                     <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
+                   </linearGradient>
+                 </defs>
+                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} dy={10} />
+                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
+                 <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderRadius: '1.5rem', border: 'none', color: '#fff', padding: '20px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
+                    itemStyle={{ color: '#fff', textTransform: 'uppercase', fontWeight: 900, fontSize: '10px' }}
+                    labelStyle={{ color: '#64748b', textTransform: 'uppercase', fontWeight: 900, fontSize: '8px', marginBottom: '8px' }}
+                    formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                 />
+                 <Area type="monotone" dataKey="revenue" stroke="#0f172a" strokeWidth={5} fillOpacity={1} fill="url(#colorRev)" />
+               </AreaChart>
+             </ResponsiveContainer>
+           </div>
         </div>
 
-        {/* Top Products Sidebar */}
-        <div className="bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm flex flex-col">
-           <div className="flex items-center gap-4 mb-10">
-              <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-              <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Top Selling Units</h3>
+        {/* Order Distribution Sidebar */}
+        <div className="bg-[#0f172a] p-10 rounded-[2.5rem] shadow-2xl flex flex-col relative overflow-hidden group">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-slate-800/10 rounded-full blur-3xl -mr-32 -mt-32" />
+           
+           <div className="relative z-10 flex flex-col h-full">
+              <div className="flex items-center gap-4 mb-10">
+                 <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                 <h3 className="text-sm font-black uppercase tracking-widest text-white">Order Distribution</h3>
+              </div>
+
+              <div className="space-y-8 flex-1">
+                 {metrics?.orderTypes?.length > 0 ? metrics.orderTypes.map((type, i) => (
+                    <div key={i} className="space-y-3">
+                       <div className="flex justify-between items-end">
+                          <div>
+                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">{type._id || 'Standard'}</p>
+                             <p className="text-xl font-black text-white leading-none tracking-tight">₹{type.revenue.toLocaleString()}</p>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-[10px] font-black text-emerald-500">{((type.revenue / (metrics.filteredRevenue || 1)) * 100).toFixed(1)}%</p>
+                             <p className="text-[8px] font-bold text-slate-500 uppercase">{type.orders} Units</p>
+                          </div>
+                       </div>
+                       <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                          <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: `${(type.revenue / (metrics.filteredRevenue || 1)) * 100}%` }}
+                             className={`h-full ${i === 0 ? 'bg-emerald-500' : i === 1 ? 'bg-blue-500' : 'bg-indigo-500'}`}
+                          />
+                       </div>
+                    </div>
+                 )) : (
+                    <div className="flex flex-col items-center justify-center h-full opacity-20 text-white">
+                       <Activity size={40} className="mb-4" />
+                       <p className="text-[10px] font-black uppercase tracking-widest">Awaiting Distribution Data</p>
+                    </div>
+                 )}
+              </div>
+
+              <div className="mt-10 pt-10 border-t border-slate-800">
+                 <div className="flex items-center justify-between p-6 bg-slate-800/30 rounded-2xl border border-white/5">
+                    <div>
+                       <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Avg Order Value</p>
+                       <p className="text-xl font-black text-white">₹{(metrics?.filteredRevenue / (metrics?.filteredOrders || 1)).toFixed(0)}</p>
+                    </div>
+                    <div className="w-10 h-10 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center">
+                       <TrendingUp size={18} />
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Top Products */}
+        <div className="lg:col-span-2 bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm">
+           <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center gap-4">
+                 <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Top Performing Products</h3>
+              </div>
+              <button onClick={() => navigate('/admin/menu/items')} className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Catalog Insights</button>
            </div>
            
-           <div className="space-y-6 flex-1 max-h-[400px] overflow-y-auto pr-4 scrollbar-hide">
-              {topProducts?.length > 0 ? topProducts.map((product, i) => (
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+              {topProducts?.map((product, i) => (
                 <div key={i} className="group cursor-pointer">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-black uppercase tracking-tight text-slate-700 group-hover:text-emerald-500 transition-colors">
@@ -302,30 +440,32 @@ export default function SalesReports() {
                        className="h-full bg-slate-900 group-hover:bg-emerald-500 transition-colors"
                     />
                   </div>
-                  <div className="flex justify-between mt-1.5">
-                     <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">Market Volume</span>
-                     <span className="text-[9px] font-black text-slate-500">₹{product.revenue.toLocaleString()}</span>
-                  </div>
                 </div>
-              )) : (
-                <div className="h-full flex flex-col items-center justify-center opacity-30 text-center py-20">
-                   <Package size={40} className="mb-4" />
-                   <p className="text-[10px] font-black uppercase tracking-widest">No Sales Data</p>
-                </div>
-              )}
+              ))}
            </div>
+        </div>
 
-           <div className="mt-10 pt-10 border-t border-slate-50 text-center">
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Production Efficiency</p>
-              <div className="flex items-center justify-center gap-4">
-                 <div className="text-center">
-                    <div className="text-xl font-black text-slate-900">{efficiency?.qualityScore || '95.0'}%</div>
-                    <div className="text-[7px] font-black text-emerald-500 uppercase tracking-widest">Quality Score</div>
+        {/* Operational Efficiency */}
+        <div className="bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm flex flex-col">
+           <div className="flex items-center gap-4 mb-10">
+              <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
+              <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Production Efficiency</h3>
+           </div>
+           
+           <div className="flex-1 flex flex-col justify-center space-y-12">
+              <div className="text-center">
+                 <div className="text-5xl font-black text-slate-900 tracking-tighter mb-2">{efficiency?.qualityScore || '95.0'}%</div>
+                 <div className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Service Quality Index</div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="bg-slate-50 p-6 rounded-3xl text-center">
+                    <p className="text-[8px] font-black text-slate-400 uppercase mb-2">Avg Preparation</p>
+                    <p className="text-xl font-black text-slate-900">{efficiency?.avgPrepTime || '12'}m</p>
                  </div>
-                 <div className="w-px h-10 bg-slate-100" />
-                 <div className="text-center">
-                    <div className="text-xl font-black text-slate-900">{efficiency?.avgPrepTime || '12'}m</div>
-                    <div className="text-[7px] font-black text-blue-500 uppercase tracking-widest">Avg Prep Time</div>
+                 <div className="bg-slate-50 p-6 rounded-3xl text-center">
+                    <p className="text-[8px] font-black text-slate-400 uppercase mb-2">Service Velocity</p>
+                    <p className="text-xl font-black text-slate-900">Fast</p>
                  </div>
               </div>
            </div>

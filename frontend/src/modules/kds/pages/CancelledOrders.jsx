@@ -8,6 +8,7 @@ export default function CancelledOrders() {
       statusFilter={['cancelled', 'void']} 
       emptyMessage="No cancelled orders"
       accentColor="red"
+      hideActions={true}
     />
   );
 }

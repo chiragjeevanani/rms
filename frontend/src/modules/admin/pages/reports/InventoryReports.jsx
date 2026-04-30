@@ -21,6 +21,7 @@ export default function InventoryReports() {
   const [searchTerm, setSearchTerm] = useState('');
   const [branches, setBranches] = useState([]);
   const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const fetchInventoryData = async () => {
     try {
@@ -76,25 +77,62 @@ export default function InventoryReports() {
     );
   }
 
-  const handleExport = () => {
-     if (!items || items.length === 0) return;
-     const headers = ['SKU Name', 'Quantity', 'Unit', 'Category', 'Price', 'Asset Value', 'Min Level', 'Status'];
-     const rows = items.map(i => {
-       const status = i.quantity === 0 ? 'Zero Point' : (i.quantity <= i.minLevel ? 'Low' : (i.quantity > i.minLevel * 3 ? 'High' : 'Nominal'));
-       return [
-         i.name, i.quantity, i.unit, i.category, i.price, (i.quantity * i.price), i.minLevel, status
-       ];
-     });
-     const csvContent = "data:text/csv;charset=utf-8," 
-       + headers.join(",") + "\n" 
-       + rows.map(r => r.join(",")).join("\n");
-     const encodedUri = encodeURI(csvContent);
-     const link = document.createElement("a");
-     link.setAttribute("href", encodedUri);
-     link.setAttribute("download", "inventory_audit.csv");
-     document.body.appendChild(link);
-     link.click();
-     document.body.removeChild(link);
+
+  const handleExportCSV = () => {
+    if (!items || items.length === 0) return;
+    const headers = ['SKU Name', 'Quantity', 'Unit', 'Category', 'Price', 'Asset Value', 'Min Level', 'Status'];
+    const rows = items.map(i => {
+      const status = i.quantity === 0 ? 'Zero Point' : (i.quantity <= i.minLevel ? 'Low' : (i.quantity > i.minLevel * 3 ? 'High' : 'Nominal'));
+      return [
+        i.name, i.quantity, i.unit, i.category, i.price, (i.quantity * i.price), i.minLevel, status
+      ];
+    });
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(",") + "\n" 
+      + rows.map(r => r.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "inventory_audit.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setIsExportOpen(false);
+  };
+
+  const handleExportPDF = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+    
+    const doc = new jsPDF('l', 'mm', 'a4');
+    doc.setFontSize(22);
+    doc.text('Inventory Intelligence Audit', 14, 22);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+    doc.text(`Total Valuation: Rs.${stats?.totalValue?.toLocaleString()}`, 14, 35);
+
+    const tableData = items.map(i => [
+      i.name,
+      `${i.quantity} ${i.unit}`,
+      i.category,
+      `Rs.${i.price.toLocaleString()}`,
+      `Rs.${(i.quantity * i.price).toLocaleString()}`,
+      i.minLevel,
+      i.quantity <= i.minLevel ? 'LOW STOCK' : 'OPTIMIZED'
+    ]);
+
+    autoTable(doc, {
+      startY: 45,
+      head: [['SKU Name', 'Quantity', 'Category', 'Unit Price', 'Asset Value', 'Threshold', 'Status']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 8 }
+    });
+
+    doc.save(`inventory_audit_${new Date().getTime()}.pdf`);
+    setIsExportOpen(false);
   };
 
   return (
@@ -108,17 +146,18 @@ export default function InventoryReports() {
              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Logistics & Raw Material Ledger Control</p>
           </div>
         </div>
+        
         <div className="flex items-center gap-3">
-          <div className="flex bg-white p-1 rounded-2xl border border-slate-200">
+          <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
              <button 
                 onClick={() => setView('distribution')}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'distribution' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'distribution' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
              >
-                Market Dist.
+                Capital Dist.
              </button>
              <button 
                 onClick={() => setView('wastage')}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'wastage' ? 'bg-rose-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'wastage' ? 'bg-rose-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
              >
                 Wastage Log
              </button>
@@ -130,13 +169,46 @@ export default function InventoryReports() {
             onSelect={setSelectedBranchFilter}
           />
 
-          <button 
-            onClick={handleExport}
-            className="h-12 px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
-          >
-            <Package size={14} />
-            Export Audit
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsExportOpen(!isExportOpen)}
+              className="h-[58px] px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
+            >
+              <Package size={14} />
+              Export Audit
+              <ChevronRight size={14} className={`transition-transform ${isExportOpen ? 'rotate-90' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {isExportOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-3 w-48 bg-white rounded-3xl shadow-2xl border border-slate-100 p-2 z-50"
+                >
+                  <button 
+                    onClick={handleExportCSV}
+                    className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-3"
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <Activity size={12} />
+                    </div>
+                    CSV Format
+                  </button>
+                  <button 
+                    onClick={handleExportPDF}
+                    className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-3"
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                      <Package size={12} />
+                    </div>
+                    PDF Document
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 

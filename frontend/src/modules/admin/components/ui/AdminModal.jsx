@@ -12,7 +12,8 @@ export default function AdminModal({
   children, 
   onSubmit, 
   submitLabel = 'Commit Record',
-  maxWidth = 'max-w-lg'
+  maxWidth = 'max-w-lg',
+  isSubmitDisabled = false
 }) {
   return (
     <AnimatePresence>
@@ -64,7 +65,12 @@ export default function AdminModal({
                         >Cancel Protocol</button>
                         <button 
                           type="submit" 
-                          className="h-12 px-10 bg-[#2C2C2C] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
+                          disabled={isSubmitDisabled}
+                          className={`h-12 px-10 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl transition-all flex items-center gap-2 ${
+                            isSubmitDisabled 
+                              ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none' 
+                              : 'bg-[#2C2C2C] text-white shadow-slate-900/20 hover:scale-[1.02] active:scale-95'
+                          }`}
                         >
                           <Save size={14} strokeWidth={3} />
                           {submitLabel}

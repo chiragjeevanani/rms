@@ -22,7 +22,6 @@ const S = {
   running:     { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
   'running-kot': { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
   preparing:   { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
-  ready:       { bg: '#10B981', border: '#059669', text: '#FFFFFF' },
 
   // Green → Bill Generated - Vibrant Lime Green with White text
   printed:  { bg: '#84CC16', border: '#65A30D', text: '#FFFFFF' },
@@ -39,10 +38,10 @@ const getS = (order, table) => {
   const st = (order.status || '').toLowerCase();
 
   // 1. Settled (Grey)
-  if (st === 'completed') return S.paid;
+  if (st === 'paid') return S.paid;
 
-  // 2. Printed/Ready (Green)
-  if (order.isBilled || st === 'billed' || st === 'printed' || st === 'ready') return S.ready;
+  // 2. Printed/Ready/Completed (Green)
+  if (order.isBilled || st === 'billed' || st === 'printed' || st === 'ready' || st === 'completed') return S.ready;
 
   // 3. KOT Sent / Running (Yellow)
   if (st === 'preparing') return S.running;

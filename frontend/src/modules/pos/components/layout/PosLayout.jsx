@@ -7,6 +7,7 @@ import { usePos } from '../../context/PosContext';
 import { useNavigate } from 'react-router-dom';
 import { playClickSound } from '../../utils/sounds';
 import QuickOrderModal from '../QuickOrderModal';
+import NotificationManager from '../../../../components/NotificationManager';
 
 export default function PosLayout() {
   const { orders, updateOrderStatus } = useOrders();
@@ -71,6 +72,7 @@ export default function PosLayout() {
 
   return (
     <div className="flex h-screen bg-white overflow-hidden relative">
+      <NotificationManager role="pos" branchId={user?.branchId?._id || user?.branchId} />
       {/* Sidebar - Now persistent and pushes content */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (

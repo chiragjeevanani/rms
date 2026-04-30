@@ -9,6 +9,10 @@ export default function OnlineOrders() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState(null);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
+
   const [onlineOrders, setOnlineOrders] = useState([
     { id: 'ON-9901', platform: 'Website', customer: 'Aman Varma', total: 750, status: 'Preparing', courier: 'Self-Delivery' },
     { id: 'ON-9902', platform: 'Mobile App', customer: 'Ishita Jain', total: 420, status: 'Ready', courier: 'Third Party' },
@@ -38,6 +42,16 @@ export default function OnlineOrders() {
   };
 
   const filteredOrders = onlineOrders.filter(o => o.id.toLowerCase().includes(searchQuery.toLowerCase()) || o.customer.toLowerCase().includes(searchQuery.toLowerCase()) || o.platform.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredOrders.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
@@ -70,7 +84,7 @@ export default function OnlineOrders() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 underline decoration-transparent">
-        {filteredOrders.map((order) => (
+        {currentRecords.map((order) => (
           <div key={order.id} className="bg-white border border-slate-100 rounded-sm p-5 hover:border-blue-500/30 transition-all hover:shadow-xl group relative overflow-hidden underline decoration-transparent">
             <div className="absolute -right-4 -top-4 w-12 h-12 bg-slate-50 rotate-45 group-hover:bg-blue-50 transition-colors underline decoration-transparent" />
             
@@ -109,6 +123,54 @@ export default function OnlineOrders() {
           </div>
         ))}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="bg-white border border-slate-100 rounded-sm px-6 py-4 flex items-center justify-between shadow-sm">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+            Showing <span className="text-slate-900">{indexOfFirstRecord + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastRecord, onlineOrders.length)}</span> of <span className="text-slate-900">{onlineOrders.length}</span> digital signals
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm border transition-all ${
+                currentPage === 1 
+                  ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 active:scale-95 shadow-sm'
+              }`}
+            >
+              Previous
+            </button>
+            <div className="flex items-center gap-1">
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-7 h-7 text-[9px] font-black rounded-sm border transition-all ${
+                    currentPage === i + 1
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm border transition-all ${
+                currentPage === totalPages 
+                  ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 active:scale-95 shadow-sm'
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       <AdminModal
         isOpen={isModalOpen}

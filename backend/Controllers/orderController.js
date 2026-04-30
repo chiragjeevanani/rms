@@ -1,6 +1,7 @@
 const Order = require('../Models/Order');
 const Table = require('../Models/Table');
 const mongoose = require('mongoose');
+const { sendToTopic } = require('../Utils/firebaseAdmin');
 
 // 1. Create a dynamic order number helper
 const generateOrderNumber = async () => {
@@ -59,11 +60,26 @@ const createOrder = async (req, res) => {
       if (customer !== undefined) order.customer = customer;
       
       await order.save();
-      if (io) io.emit('statusUpdated', order); // Notify KDS and others
       
+      // Notify KDS via Socket
+      if (io) io.emit('statusUpdated', order);
+      
+      // Notify KDS via Firebase
+      const bId = branchId || order.branchId;
+      if (bId) {
+        sendToTopic(`kds_${bId}`, "New KOT Received", `New items added for ${tableName} (Order #${order.orderNumber}).`, { orderId: order._id.toString() });
+      }
+
       // Update table status if dine-in
       if (order.orderType === 'Dine-In') {
-        await Table.findOneAndUpdate({ tableName }, { status: 'Occupied', isAvailable: false });
+        const terminatingStatuses = ['paid', 'cancelled'];
+        const currentStatus = order.status ? order.status.toLowerCase() : '';
+        
+        if (terminatingStatuses.includes(currentStatus)) {
+          await Table.findOneAndUpdate({ tableName }, { status: 'Available', isAvailable: true });
+        } else {
+          await Table.findOneAndUpdate({ tableName }, { status: 'Occupied', isAvailable: false });
+        }
         if (io) io.emit('tableStatusChanged');
       }
 
@@ -98,12 +114,24 @@ const createOrder = async (req, res) => {
 
     if (io) io.emit('orderCreated', newOrder);
 
+    // Notify KDS via Firebase
+    if (newOrder.branchId) {
+      sendToTopic(`kds_${newOrder.branchId}`, "New KOT Received", `New order for ${tableName} (Order #${orderNumber}).`, { orderId: newOrder._id.toString() });
+    }
+
     // Update table status if dine-in
     if (orderType === 'Dine-In') {
-       await Table.findOneAndUpdate(
-         { tableName }, 
-         { status: 'Occupied', isAvailable: false }
-       );
+       const terminatingStatuses = ['paid', 'cancelled'];
+       const currentStatus = newOrder.status ? newOrder.status.toLowerCase() : '';
+
+       if (terminatingStatuses.includes(currentStatus)) {
+         await Table.findOneAndUpdate({ tableName }, { status: 'Available', isAvailable: true });
+       } else {
+         await Table.findOneAndUpdate(
+           { tableName }, 
+           { status: 'Occupied', isAvailable: false }
+         );
+       }
        if (io) io.emit('tableStatusChanged');
     }
 
@@ -129,7 +157,7 @@ const getAllOrders = async (req, res) => {
 
 const getActiveOrders = async (req, res) => {
   try {
-    const filter = { status: { $nin: ['completed', 'cancelled'] } };
+    const filter = { status: { $nin: ['paid', 'cancelled'] } };
     if (req.query.branchId) filter.branchId = req.query.branchId;
     const orders = await Order.find(filter)
       .populate('items.itemId')
@@ -186,7 +214,7 @@ const settleOrder = async (req, res) => {
     }
     
     order.payments = payments || [];
-    order.status = 'completed';
+    order.status = 'paid';
     order.isBilled = true;
     order.closedAt = new Date();
     
@@ -196,7 +224,7 @@ const settleOrder = async (req, res) => {
     if (order.tableName) {
        await Table.findOneAndUpdate(
          { tableName: order.tableName }, 
-         { status: 'Dirty', isAvailable: false }
+         { status: 'Available', isAvailable: true }
        );
     }
 
@@ -215,7 +243,7 @@ const settleOrder = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const updateData = { status };
+    const updateData = { status: status?.toLowerCase() };
     
     if (status.toLowerCase() === 'preparing') updateData.prepStartedAt = new Date();
     if (status.toLowerCase() === 'ready') updateData.readyAt = new Date();
@@ -230,7 +258,7 @@ const updateOrderStatus = async (req, res) => {
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
     // Free the table if status is Paid/Cancelled/Void
-    const terminatingStatuses = ['completed', 'cancelled'];
+    const terminatingStatuses = ['paid', 'cancelled'];
     const currentStatus = status ? status.toLowerCase() : '';
     if (terminatingStatuses.includes(currentStatus)) {
         if (order.tableName) {
@@ -246,6 +274,11 @@ const updateOrderStatus = async (req, res) => {
     if (io) {
         io.emit('statusUpdated', order);
         io.emit('tableStatusChanged');
+    }
+
+    // Notify POS via Firebase if status is Ready
+    if (status.toLowerCase() === 'ready' && order.branchId) {
+      sendToTopic(`pos_${order.branchId}`, "Order Ready", `Order #${order.orderNumber} is now ready for service.`, { orderId: order._id.toString() });
     }
 
     res.json({ success: true, data: order });
@@ -284,7 +317,14 @@ const getKitchenAnalytics = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const filter = req.query.branchId ? { branchId: new mongoose.Types.ObjectId(req.query.branchId) } : {};
+    let filter = {};
+    if (req.query.branchId && req.query.branchId !== 'undefined' && req.query.branchId !== '[object Object]') {
+      if (mongoose.Types.ObjectId.isValid(req.query.branchId)) {
+        filter = { branchId: new mongoose.Types.ObjectId(req.query.branchId) };
+      } else {
+        return res.status(400).json({ success: false, message: 'Invalid Branch ID format' });
+      }
+    }
     
     const counts = {
       total: await Order.countDocuments(filter),
@@ -349,40 +389,61 @@ const getSalesAnalytics = async (req, res) => {
   try {
     const { startDate, endDate, branchId } = req.query;
     
-    let filter = { status: 'Paid' };
-    if (startDate && endDate) {
-      filter.closedAt = { 
-        $gte: new Date(startDate), 
-        $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)) 
+    const parseDate = (dateStr) => {
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const startDateObj = parseDate(startDate);
+    const endDateObj = parseDate(endDate) ? new Date(new Date(endDate).setHours(23, 59, 59, 999)) : new Date();
+    
+    let dateFilter = {};
+    if (startDateObj) {
+      dateFilter = { 
+        $or: [
+          { closedAt: { $gte: startDateObj, $lte: endDateObj } },
+          { updatedAt: { $gte: startDateObj, $lte: endDateObj }, closedAt: { $exists: false } }
+        ]
       };
     }
-    if (branchId && branchId !== 'all') {
-      filter.branchId = new mongoose.Types.ObjectId(branchId);
-    }
+
+    const filter = { 
+      status: { $in: ['paid', 'Paid'] },
+      ...(branchId && branchId !== 'all' ? { branchId: new mongoose.Types.ObjectId(branchId) } : {}),
+      ...dateFilter
+    };
 
     const todayStart = new Date(); 
     todayStart.setHours(0, 0, 0, 0);
-
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
 
     const metricsMatch = branchId && branchId !== 'all' ? { branchId: new mongoose.Types.ObjectId(branchId) } : {};
 
     // 1. Core Metrics
     const metricsResult = await Order.aggregate([
-      { $match: { status: 'Paid', ...metricsMatch } },
+      { $match: { status: { $in: ['paid', 'Paid'] }, ...metricsMatch } },
       { $facet: {
         allTime: [
           { $group: { _id: null, totalRevenue: { $sum: '$grandTotal' }, totalOrders: { $sum: 1 } } }
         ],
         today: [
-          { $match: { closedAt: { $gte: todayStart } } },
+          { $match: { 
+              $or: [
+                { closedAt: { $gte: todayStart, $lte: todayEnd } },
+                { updatedAt: { $gte: todayStart, $lte: todayEnd }, closedAt: { $exists: false } }
+              ]
+            } 
+          },
           { $group: { _id: null, todayRevenue: { $sum: '$grandTotal' }, todayOrders: { $sum: 1 } } }
         ],
         filtered: [
-          { $match: filter.closedAt ? { closedAt: filter.closedAt } : {} },
+          { $match: dateFilter },
           { $group: { _id: null, revenue: { $sum: '$grandTotal' }, orders: { $sum: 1 } } }
+        ],
+        orderTypes: [
+          { $match: dateFilter },
+          { $group: { _id: "$orderType", revenue: { $sum: "$grandTotal" }, orders: { $sum: 1 } } }
         ]
       }}
     ]);
@@ -393,22 +454,35 @@ const getSalesAnalytics = async (req, res) => {
       todayRevenue: metricsResult[0].today[0]?.todayRevenue || 0,
       todayOrders: metricsResult[0].today[0]?.todayOrders || 0,
       filteredRevenue: metricsResult[0].filtered[0]?.revenue || 0,
-      filteredOrders: metricsResult[0].filtered[0]?.orders || 0
+      filteredOrders: metricsResult[0].filtered[0]?.orders || 0,
+      orderTypes: metricsResult[0].orderTypes || []
     };
 
     // 2. Trends
-    const trendStart = startDate ? new Date(startDate) : sevenDaysAgo;
-    const trendEnd = endDate ? new Date(endDate) : new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const trendStart = startDateObj || sevenDaysAgo;
+    const trendEnd = endDateObj;
     
     const dailyTrends = await Order.aggregate([
       { $match: { 
-          status: 'Paid', 
+          status: { $in: ['paid', 'Paid'] }, 
           ...metricsMatch,
-          closedAt: { $gte: trendStart, $lte: new Date(new Date(trendEnd).setHours(23, 59, 59, 999)) } 
+          $or: [
+            { closedAt: { $gte: trendStart, $lte: trendEnd } },
+            { updatedAt: { $gte: trendStart, $lte: trendEnd }, closedAt: { $exists: false } }
+          ]
         } 
       },
+      { $project: {
+          grandTotal: 1,
+          date: { $ifNull: ["$closedAt", "$updatedAt"] }
+        }
+      },
       { $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$closedAt" } },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
           revenue: { $sum: "$grandTotal" },
           orders: { $sum: 1 }
         }
@@ -512,22 +586,68 @@ const getStaffDailyStats = async (req, res) => {
 
 const getStaffDashboardSnapshot = async (req, res) => {
   try {
-    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const { branchId } = req.query;
+    const filter = branchId && branchId !== 'undefined' ? { branchId: new mongoose.Types.ObjectId(branchId) } : {};
+    
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
 
     const [availableCount, reservedCount, pendingCount, preparingCount, readyCount, completedCount, cancelledCount, todayOrders] = await Promise.all([
       Table.countDocuments({ ...filter, status: 'Available' }),
       Table.countDocuments({ ...filter, status: 'Reserved' }),
-      Order.countDocuments({ ...filter, status: 'pending' }),
-      Order.countDocuments({ ...filter, status: 'preparing' }),
-      Order.countDocuments({ ...filter, status: 'ready' }),
-      Order.countDocuments({ ...filter, status: 'completed', updatedAt: { $gte: todayStart } }),
-      Order.countDocuments({ ...filter, status: 'cancelled', updatedAt: { $gte: todayStart } }),
-      Order.find({ ...filter, status: 'completed', updatedAt: { $gte: todayStart } })
+      Order.countDocuments({ ...filter, status: { $in: ['pending', 'Pending'] } }),
+      Order.countDocuments({ ...filter, status: { $in: ['preparing', 'Preparing'] } }),
+      Order.countDocuments({ ...filter, status: { $in: ['ready', 'Ready'] } }),
+      Order.countDocuments({ 
+        ...filter, 
+        status: { $in: ['completed', 'Completed', 'paid', 'Paid'] }, 
+        updatedAt: { $gte: todayStart, $lte: todayEnd } 
+      }),
+      Order.countDocuments({ 
+        ...filter, 
+        status: { $in: ['cancelled', 'Cancelled'] }, 
+        updatedAt: { $gte: todayStart, $lte: todayEnd } 
+      }),
+      Order.find({ 
+        ...filter, 
+        status: { $in: ['completed', 'Completed', 'paid', 'Paid'] }, 
+        updatedAt: { $gte: todayStart, $lte: todayEnd } 
+      })
     ]);
 
     const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+
+    // 5. Hourly Trends for Today
+    const hourlyRevenue = await Order.aggregate([
+      { 
+        $match: { 
+          ...filter, 
+          status: { $in: ['completed', 'Completed', 'paid', 'Paid'] }, 
+          updatedAt: { $gte: todayStart, $lte: todayEnd } 
+        } 
+      },
+      {
+        $group: {
+          _id: { $hour: "$updatedAt" },
+          sales: { $sum: "$grandTotal" }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    // Format hourly data for the chart (0-23 hours)
+    const hourlyTrends = Array.from({ length: 24 }, (_, i) => {
+      const hourData = hourlyRevenue.find(h => h._id === i);
+      const ampm = i >= 12 ? 'PM' : 'AM';
+      const hour12 = i % 12 || 12;
+      return {
+        name: `${hour12} ${ampm}`,
+        sales: hourData ? hourData.sales : 0,
+        hour: i
+      };
+    }).filter(h => h.hour >= 8 && h.hour <= 23); // Only show business hours 8 AM - 11 PM
 
     res.json({
       success: true,
@@ -539,10 +659,12 @@ const getStaffDashboardSnapshot = async (req, res) => {
         readyOrders: readyCount,
         completedToday: completedCount,
         cancelledToday: cancelledCount,
-        todayRevenue
+        todayRevenue,
+        hourlyTrends
       }
     });
   } catch (error) {
+    console.error('Staff Snapshot Error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -576,6 +698,22 @@ const updateItemQuantity = async (req, res) => {
   }
 };
 
+const registerToken = async (req, res) => {
+  try {
+    const { token, topic } = req.body;
+    if (!token || !topic) return res.status(400).json({ success: false, message: 'Token and Topic are required' });
+
+    const admin = require('firebase-admin');
+    await admin.messaging().subscribeToTopic(token, topic);
+    
+    console.log(`Token registered to topic: ${topic}`);
+    res.json({ success: true, message: `Successfully subscribed to ${topic}` });
+  } catch (error) {
+    console.error('Registration Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createOrder,
   getAllOrders,
@@ -589,5 +727,6 @@ module.exports = {
   getKitchenAnalytics,
   getSalesAnalytics,
   getStaffDailyStats,
-  getStaffDashboardSnapshot
+  getStaffDashboardSnapshot,
+  registerToken
 };

@@ -3,7 +3,12 @@ const Category = require('../Models/Category');
 const getCategories = async (req, res) => {
   try {
     const mongoose = require('mongoose');
-    const matchStage = req.query.branchId ? { $match: { branchId: new mongoose.Types.ObjectId(req.query.branchId) } } : { $match: {} };
+    let matchStage = { $match: {} };
+    if (req.query.branchId && req.query.branchId !== 'undefined' && req.query.branchId !== '[object Object]') {
+      if (mongoose.Types.ObjectId.isValid(req.query.branchId)) {
+        matchStage = { $match: { branchId: new mongoose.Types.ObjectId(req.query.branchId) } };
+      }
+    }
     const categories = await Category.aggregate([
       matchStage,
       {

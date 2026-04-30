@@ -74,16 +74,16 @@ const updateProfile = async (req, res) => {
     if (address) admin.address = address;
 
     await admin.save();
-    res.json({ 
-      message: 'Profile updated successfully', 
-      admin: { 
-        name: admin.name, 
-        email: admin.email, 
+    res.json({
+      message: 'Profile updated successfully',
+      admin: {
+        name: admin.name,
+        email: admin.email,
         profileImg: admin.profileImg,
         restaurantName: admin.restaurantName,
         mobileNumber: admin.mobileNumber,
         address: admin.address
-      } 
+      }
     });
   } catch (error) {
     console.error('Update Profile Error:', error);
@@ -117,7 +117,7 @@ const updateTheme = async (req, res) => {
     if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
     if (!admin.theme) admin.theme = {};
-    
+
     if (mode) admin.theme.mode = mode;
     if (primaryColor) admin.theme.primaryColor = primaryColor;
     if (borderRadius) admin.theme.borderRadius = borderRadius;
@@ -142,7 +142,12 @@ const Combo = require('../Models/Combo');
 const getDashboardStats = async (req, res) => {
   try {
     const { branchId } = req.query;
-    const filter = branchId ? { branchId: new mongoose.Types.ObjectId(branchId) } : {};
+    let filter = {};
+    if (branchId && branchId !== 'all' && branchId !== 'undefined' && branchId !== '[object Object]') {
+      if (mongoose.Types.ObjectId.isValid(branchId)) {
+        filter = { branchId: new mongoose.Types.ObjectId(branchId) };
+      }
+    }
 
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
@@ -150,9 +155,14 @@ const getDashboardStats = async (req, res) => {
     // 1. Order Metrics Row
     const orderStats = {
       total: await Order.countDocuments(filter),
-      pending: await Order.countDocuments({ ...filter, status: 'Pending' }),
-      preparing: await Order.countDocuments({ ...filter, status: 'Preparing' }),
-      completed: await Order.countDocuments({ ...filter, status: { $in: ['Ready', 'Served', 'Paid', 'Completed'] } })
+      pending: await Order.countDocuments({ ...filter, status: { $in: ['pending', 'Pending'] } }),
+      preparing: await Order.countDocuments({ ...filter, status: { $in: ['preparing', 'Preparing'] } }),
+      completed: await Order.countDocuments({ ...filter, status: { $in: ['completed', 'Completed'] } }),
+      settled: await Order.countDocuments({ ...filter, status: { $in: ['paid', 'Paid'] } }),
+      cancelled: await Order.countDocuments({ ...filter, status: { $in: ['cancelled', 'Cancelled'] } }),
+      todayDineIn: await Order.countDocuments({ ...filter, createdAt: { $gte: todayStart, $lte: todayEnd }, orderType: 'Dine-In' }),
+      todayTakeaway: await Order.countDocuments({ ...filter, createdAt: { $gte: todayStart, $lte: todayEnd }, orderType: 'Takeaway' }),
+      todayDelivery: await Order.countDocuments({ ...filter, createdAt: { $gte: todayStart, $lte: todayEnd }, orderType: 'Delivery' })
     };
 
     // 2. Content Inventory Row
@@ -177,56 +187,56 @@ const getDashboardStats = async (req, res) => {
     // 3. Revenue Trend Logic
     const dailyHistory = [];
     for (let i = 29; i >= 0; i--) {
-       const d = new Date(); d.setDate(d.getDate() - i);
-       const start = new Date(d); start.setHours(0,0,0,0);
-       const end = new Date(d); end.setHours(23,59,59,999);
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const start = new Date(d); start.setHours(0, 0, 0, 0);
+      const end = new Date(d); end.setHours(23, 59, 59, 999);
 
-       const matchStage = { 
-         createdAt: { $gte: start, $lte: end }, 
-         status: { $ne: 'Cancelled' } 
-       };
-       if (branchId) matchStage.branchId = new mongoose.Types.ObjectId(branchId);
+      const matchStage = {
+        createdAt: { $gte: start, $lte: end },
+        status: { $ne: 'Cancelled' }
+      };
+      if (branchId) matchStage.branchId = new mongoose.Types.ObjectId(branchId);
 
-       const rev = await Order.aggregate([
-         { $match: matchStage },
-         { $group: { _id: null, total: { $sum: '$grandTotal' } } }
-       ]);
-       dailyHistory.push({
-         date: d.toLocaleDateString(),
-         revenue: rev.length > 0 ? rev[0].total : 0,
-         day: d.toLocaleDateString('en-US', { weekday: 'short' }),
-         fullDate: d
-       });
+      const rev = await Order.aggregate([
+        { $match: matchStage },
+        { $group: { _id: null, total: { $sum: '$grandTotal' } } }
+      ]);
+      dailyHistory.push({
+        date: d.toLocaleDateString(),
+        revenue: rev.length > 0 ? rev[0].total : 0,
+        day: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        fullDate: d
+      });
     }
 
     // Monthly
     const monthlyHistory = [];
     for (let i = 5; i >= 0; i--) {
-       const d = new Date(); d.setMonth(d.getMonth() - i);
-       const startMonth = new Date(d.getFullYear(), d.getMonth(), 1);
-       const endMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+      const d = new Date(); d.setMonth(d.getMonth() - i);
+      const startMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+      const endMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
 
-       const matchStage = { 
-         createdAt: { $gte: startMonth, $lte: endMonth }, 
-         status: { $ne: 'Cancelled' } 
-       };
-       if (branchId) matchStage.branchId = new mongoose.Types.ObjectId(branchId);
+      const matchStage = {
+        createdAt: { $gte: startMonth, $lte: endMonth },
+        status: { $ne: 'Cancelled' }
+      };
+      if (branchId) matchStage.branchId = new mongoose.Types.ObjectId(branchId);
 
-       const rev = await Order.aggregate([
-         { $match: matchStage },
-         { $group: { _id: null, total: { $sum: '$grandTotal' } } }
-       ]);
-       monthlyHistory.push({
-          name: d.toLocaleString('default', { month: 'short' }),
-          revenue: rev.length > 0 ? rev[0].total : 0
-       });
+      const rev = await Order.aggregate([
+        { $match: matchStage },
+        { $group: { _id: null, total: { $sum: '$grandTotal' } } }
+      ]);
+      monthlyHistory.push({
+        name: d.toLocaleString('default', { month: 'short' }),
+        revenue: rev.length > 0 ? rev[0].total : 0
+      });
     }
 
     // 4. Recent Activity
     const recentOrders = await Order.find(filter)
       .sort({ createdAt: -1 })
-      .limit(8)
-      .select('orderNumber tableName grandTotal status createdAt');
+      .limit(20)
+      .select('orderNumber tableName grandTotal status createdAt orderType');
 
     res.json({
       success: true,
@@ -234,13 +244,13 @@ const getDashboardStats = async (req, res) => {
         orders: orderStats,
         content: contentStats,
         trends: {
-           daily: dailyHistory,
-           monthly: monthlyHistory
+          daily: dailyHistory,
+          monthly: monthlyHistory
         },
         recentOrders,
         metrics: {
-           todayRevenue: dailyHistory[dailyHistory.length - 1].revenue,
-           todayOrders: await Order.countDocuments({ ...filter, createdAt: { $gte: todayStart, $lte: todayEnd } })
+          todayRevenue: dailyHistory[dailyHistory.length - 1].revenue,
+          todayOrders: await Order.countDocuments({ ...filter, createdAt: { $gte: todayStart, $lte: todayEnd } })
         }
       }
     });

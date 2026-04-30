@@ -254,15 +254,6 @@ export default function KdsOrderDetailsPage() {
                  </div>
                  
                   <div className="space-y-4">
-                    {['new', 'pending', 'confirmed'].includes(order.status) && (
-                      <button 
-                        onClick={() => handleStatusChange('Preparing')}
-                        className="w-full h-20 bg-[#ff7a00] text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-[#ff7a00]/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
-                      >
-                        <ChefHat size={24} />
-                        Start Preparing
-                      </button>
-                    )}
                     
                     {order.status === 'preparing' && (
                       <button 

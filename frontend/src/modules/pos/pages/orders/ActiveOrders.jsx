@@ -67,7 +67,7 @@ export default function ActiveOrders() {
   const updateStatus = async (orderId, newStatus) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/status`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus.toLowerCase() })
       });

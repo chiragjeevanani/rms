@@ -3,7 +3,7 @@ import { Clock, AlertCircle, ShoppingBag, Hash, CheckCircle } from 'lucide-react
 import { useKdsTimer } from '../hooks/useKdsTimer';
 import { useTheme } from '../../user/context/ThemeContext';
 
-export function KdsOrderCard({ order, onClick, onStatusChange }) {
+export function KdsOrderCard({ order, onClick, onStatusChange, hideActions }) {
   const maxPrepTimeEst = order.items.reduce((max, item) => Math.max(max, item.prepTimeEst || 0), 0);
   const { elapsed, totalDuration, formatTime, isDelayed, isNegative } = useKdsTimer(order.startTime, order.status, order.prepTime, order.readyTime, maxPrepTimeEst);
   const { isDarkMode } = useTheme();
@@ -20,13 +20,16 @@ export function KdsOrderCard({ order, onClick, onStatusChange }) {
       case 'completed':
       case 'served':
         return { color: 'bg-emerald-600', text: 'Ready', border: 'border-emerald-600/30' };
+      case 'paid':
+      case 'settled':
+        return { color: 'bg-[#ff7a00]', text: 'Settled', border: 'border-orange-600/20' };
       default: return { color: 'bg-stone-600', text: status, border: 'border-stone-600/20' };
     }
   };
 
   const statusInfo = getStatusInfo(order.status);
   const effectiveStatusColor = isDelayed ? 'bg-red-700' : statusInfo.color;
-  const isFinalized = ['ready', 'completed', 'served'].includes(order.status);
+  const isFinalized = ['ready', 'completed', 'served', 'cancelled', 'paid'].includes(order.status);
 
   return (
     <motion.div
@@ -118,18 +121,20 @@ export function KdsOrderCard({ order, onClick, onStatusChange }) {
               {isDelayed ? 'TIME OVER' : statusInfo.text}
             </span>
           </div>
-          <div className={`flex items-center gap-1.5 font-mono text-sm font-black transition-colors ${
-            isDelayed ? 'text-red-400' : (isDarkMode ? 'text-[#D4AF37]' : 'text-[#fdba74]')
-          }`}>
-            <Clock size={13} />
-            <span className="uppercase whitespace-nowrap">
-              {isFinalized ? `Ready in ${Math.ceil(totalDuration / 60)} min` : formatTime}
-            </span>
-          </div>
+          {!['cancelled', 'paid'].includes(order.status) && (
+            <div className={`flex items-center gap-1.5 font-mono text-sm font-black transition-colors ${
+              isDelayed ? 'text-red-400' : (isDarkMode ? 'text-[#D4AF37]' : 'text-[#fdba74]')
+            }`}>
+              <Clock size={13} />
+              <span className="uppercase whitespace-nowrap">
+                {isFinalized ? `Ready in ${Math.ceil(totalDuration / 60)} min` : formatTime}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Quick Action Button */}
-        {!isFinalized && (
+        {!isFinalized && !hideActions && (
           <div className="flex gap-2 w-full">
             <button
               onClick={(e) => {

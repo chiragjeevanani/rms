@@ -186,7 +186,7 @@ export function PosProvider({ children }) {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/settle`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payments: paymentDetails, status: 'completed' })
+        body: JSON.stringify({ payments: paymentDetails, status: 'paid' })
       });
       const result = await response.json();
       if (result.success) {
@@ -340,7 +340,7 @@ export function PosProvider({ children }) {
   const updateOrderStatus = async (orderId, status) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/status`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
       });

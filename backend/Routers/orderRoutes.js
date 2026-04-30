@@ -13,12 +13,14 @@ const {
   getKitchenAnalytics,
   getSalesAnalytics,
   getStaffDailyStats,
-  getStaffDashboardSnapshot
+  getStaffDashboardSnapshot,
+  registerToken
 } = require('../Controllers/orderController');
 
 const { protectAdmin, protectStaff } = require('../Middleware/authMiddleware');
 
 router.post('/', createOrder);
+router.post('/register-token', registerToken);
 router.get('/', getAllOrders);
 router.get('/active', getActiveOrders);
 router.get('/completed', getCompletedOrders);
@@ -29,7 +31,7 @@ router.get('/stats/staff/:staffName', getStaffDailyStats);
 router.get('/stats/staff-snapshot', getStaffDashboardSnapshot);
 
 router.put('/:orderId/settle', settleOrder);
-router.patch('/:id/status', updateOrderStatus);
+router.put('/:id/status', updateOrderStatus);
 router.put('/:orderId/item/:itemId/quantity', updateItemQuantity);
 router.delete('/:orderId/item/:itemId', voidItem);
 

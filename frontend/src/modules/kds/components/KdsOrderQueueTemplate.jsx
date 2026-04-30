@@ -10,7 +10,8 @@ export default function KdsOrderQueueTemplate({
   title, 
   statusFilter, 
   emptyMessage = "No orders in this queue", 
-  accentColor = "teal" 
+  accentColor = "teal",
+  hideActions = false
 }) {
   const { orders, fetchOrders, updateOrderStatus } = useOrders();
   const { isDarkMode } = useTheme();
@@ -93,6 +94,7 @@ export default function KdsOrderQueueTemplate({
                   order={order} 
                   onClick={(o) => navigate(`/kds/orders/${o.id}`)} 
                   onStatusChange={updateOrderStatus}
+                  hideActions={hideActions}
                 />
               ))}
             </AnimatePresence>

@@ -8,6 +8,7 @@ export default function IncomingOrders() {
       statusFilter={['pending', 'confirmed']} 
       emptyMessage="No new orders"
       accentColor="blue"
+      hideActions={true}
     />
   );
 }

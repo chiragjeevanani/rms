@@ -65,9 +65,10 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
           path: '/admin/orders', 
           icon: ShoppingCart,
           subItems: [
-            
             { label: 'Recent Orders', path: '/admin/orders/recent' },
-            { label: 'All Orders', path: '/admin/orders/all' },
+            { label: 'Dine In Orders', path: '/admin/orders/dine-in' },
+            { label: 'Takeaway Orders', path: '/admin/orders/takeaway' },
+            { label: 'Delivery Orders', path: '/admin/orders/delivery' },
           ]
         },
         { 
