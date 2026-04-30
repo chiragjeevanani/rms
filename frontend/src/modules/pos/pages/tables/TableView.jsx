@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, Plus, Info, Clock, Printer, Car, Search, X } from 'lucide-react';
+import { RefreshCw, Plus, Info, Clock, Printer, Car, Search, X, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PosTopNavbar from '../../components/PosTopNavbar';
 import { usePos } from '../../context/PosContext';
@@ -8,47 +8,49 @@ import { printKOTReceipt } from '../../utils/printKOT';
 
 // ── Business logic status colors ───────────────────────────────────────────
 const S = {
-  // Grey → Available / Settled (no active order)
+  // Grey → Available / Settled
   blank:    { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
   available:{ bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
   paid:     { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
   settled:  { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
 
-  // Yellow → Running (active order placed, KOT running)
-  running:     { bg: '#EAB308', border: '#CA8A04', text: '#FFFFFF' },
-  'running-kot': { bg: '#EAB308', border: '#CA8A04', text: '#FFFFFF' },
-  active:      { bg: '#EAB308', border: '#CA8A04', text: '#FFFFFF' },
+  // Blue → Order Started (Pending KOT)
+  pending:  { bg: '#3B82F6', border: '#2563EB', text: '#FFFFFF' },
+  occupied: { bg: '#3B82F6', border: '#2563EB', text: '#FFFFFF' },
 
-  // Orange → Saved (Table occupied but KOT not yet sent)
-  saved:       { bg: '#F97316', border: '#EA580C', text: '#FFFFFF' },
+  // Yellow → KOT Sent (Running) - Vibrant Amber/Orange with White text
+  running:     { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
+  'running-kot': { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
+  preparing:   { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
+  ready:       { bg: '#10B981', border: '#059669', text: '#FFFFFF' },
 
-  // Green → Bill generated (printed)
-  printed:  { bg: '#16A34A', border: '#15803D', text: '#FFFFFF' },
-  billed:   { bg: '#16A34A', border: '#15803D', text: '#FFFFFF' },
+  // Green → Bill Generated - Vibrant Lime Green with White text
+  printed:  { bg: '#84CC16', border: '#65A30D', text: '#FFFFFF' },
+  billed:   { bg: '#84CC16', border: '#65A30D', text: '#FFFFFF' },
+  ready:    { bg: '#84CC16', border: '#65A30D', text: '#FFFFFF' },
 
-  // Blue → Reserved
-  reserved: { bg: '#2563EB', border: '#1D4ED8', text: '#FFFFFF' },
-  Reserved: { bg: '#2563EB', border: '#1D4ED8', text: '#FFFFFF' },
+  // Blue-Light → Reserved (Legacy/Optional)
+  reserved: { bg: '#60A5FA', border: '#2563EB', text: '#FFFFFF' },
 };
 
 const getS = (order, table) => {
-  // 1. Reserved (Blue)
   if (table && (table.status === 'Reserved' || table.isReserved)) return S.reserved;
-  if (order && (order.status || '').toLowerCase() === 'reserved') return S.reserved;
-
-  // 2. Available (Grey) - If no order or order is finished
   if (!order) return S.available;
   const st = (order.status || '').toLowerCase();
-  if (st === 'paid' || st === 'settled' || st === 'completed' || st === 'void' || st === 'cancelled') return S.available;
 
-  // 3. Billing Done (Green)
-  if (st === 'billed' || st === 'printed' || st === 'billing done') return S.printed;
+  // 1. Settled (Grey)
+  if (st === 'completed') return S.paid;
 
-  // 4. Saved but KOT Pending (Orange)
-  if (st === 'saved') return S.saved;
+  // 2. Printed/Ready (Green)
+  if (order.isBilled || st === 'billed' || st === 'printed' || st === 'ready') return S.ready;
 
-  // 5. Running (Yellow) - KOT Sent / Preparing
-  return S.running;
+  // 3. KOT Sent / Running (Yellow)
+  if (st === 'preparing') return S.running;
+
+  // 4. Order Started / Pending (Blue)
+  if (st === 'pending') return S.pending;
+
+  return S.available;
 };
 
 const elapsed = (t) => {
@@ -66,7 +68,7 @@ const MOCK = {
 
 export default function TableView() {
   const navigate = useNavigate();
-  const { orders, tables, carOrders, addCarOrder, clearCarOrder, fetchActiveTableOrders: sync } = usePos();
+  const { orders, tables, carOrders, addCarOrder, clearCarOrder, fetchActiveTableOrders: sync, setIsQuickOrderModalOpen } = usePos();
   const [carSearch, setCarSearch] = useState('');
   const [showAddCar, setShowAddCar] = useState(false);
   const [newCarNum, setNewCarNum] = useState('');
@@ -103,27 +105,25 @@ export default function TableView() {
           >
             <RefreshCw size={16} color="#6B7280" />
           </button>
-          <button
-            style={{ background: '#2563EB', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 14px', fontWeight: 900, fontSize: 12, textTransform: 'uppercase', cursor: 'pointer', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}
-          >
-            <Plus size={13} strokeWidth={3} /> Delivery
-          </button>
-          <button
-            style={{ background: '#1E293B', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 14px', fontWeight: 900, fontSize: 12, textTransform: 'uppercase', cursor: 'pointer', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}
-          >
-            <Plus size={13} strokeWidth={3} /> Add Table
-          </button>
+         
         </div>
       </div>
 
       {/* ── Legend / Filter Bar ── */}
       <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '8px 20px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-        <button style={{ background: 'none', border: '1.5px solid #D1D5DB', borderRadius: 5, padding: '5px 12px', fontWeight: 800, fontSize: 11, textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, color: '#374151' }}>
-          <Plus size={11} strokeWidth={3} /> Contactless
-        </button>
-        <button style={{ background: 'none', border: '1.5px solid #D1D5DB', borderRadius: 5, padding: '5px 12px', fontWeight: 800, fontSize: 11, textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, color: '#374151' }}>
-          <Info size={11} /> Reconnect Bridge
-        </button>
+     
+        
+        <div className="flex bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+           <div className="px-6 py-2.5 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest cursor-default">
+              Dine In
+           </div>
+           <button 
+             onClick={() => navigate('/pos/order/Takeaway')}
+             className="px-6 py-2.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors"
+           >
+              Takeaway
+           </button>
+        </div>
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />
@@ -131,10 +131,9 @@ export default function TableView() {
         {/* Legend dots */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <LegendDot color="#F3F4F6" border="#D1D5DB" label="AVAILABLE" />
-          <LegendDot color="#F97316" label="SAVED (KOT PENDING)" />
-          <LegendDot color="#EAB308" label="RUNNING (KOT SENT)" />
-          <LegendDot color="#16A34A" label="BILLING DONE" />
-          <LegendDot color="#2563EB" label="RESERVED" />
+          <LegendDot color="#3B82F6" label="RESERVED" />
+          <LegendDot color="#FEF9C3" border="#EAB308" label="RUNNING" />
+          <LegendDot color="#DCFCE7" border="#22C55E" label="BILLED" />
         </div>
       </div>
 
@@ -264,6 +263,7 @@ export default function TableView() {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }

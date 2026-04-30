@@ -44,21 +44,6 @@ export default function OrderSuccessPage() {
            </motion.button>
         </div>
 
-        {/* Loyalty Reward Preview */}
-        <motion.div 
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           transition={{ delay: 0.8 }}
-           className="bg-brand-500/10 p-6 rounded-[2rem] border border-brand-500/20 backdrop-blur-md"
-        >
-           <div className="flex items-center gap-3 mb-3">
-              <Star size={16} className="text-brand-500 fill-brand-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-brand-400">+45 Points Earned</span>
-           </div>
-           <p className="text-[10px] text-charcoal-600 dark:text-charcoal-500 font-bold uppercase tracking-widest leading-relaxed">
-             You are 2 orders away from a <span className="text-charcoal-900 dark:text-white">Free Dessert!</span>
-           </p>
-        </motion.div>
       </div>
     </div>
   );

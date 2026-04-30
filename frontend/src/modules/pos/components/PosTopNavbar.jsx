@@ -11,7 +11,7 @@ import { playClickSound } from '../utils/sounds';
 
 export default function PosTopNavbar() {
   const navigate = useNavigate();
-  const { user, toggleSidebar } = usePos();
+  const { user, toggleSidebar, setIsQuickOrderModalOpen } = usePos();
   const [isRecentOpen, setIsRecentOpen] = useState(false);
 
   return (
@@ -39,7 +39,7 @@ export default function PosTopNavbar() {
         </div>
 
         <button
-          onClick={() => { playClickSound(); navigate('/pos/tables'); }}
+          onClick={() => { playClickSound(); setIsQuickOrderModalOpen(true); }}
           className="font-black text-white text-sm uppercase tracking-widest hover:opacity-90 transition-opacity px-1"
         >
           NEW ORDER

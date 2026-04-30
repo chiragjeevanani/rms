@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function CheckoutPage() {
-  const { subtotal, tax, total, items, orderType, tableNumber, clearCart } = useCart();
+  const { subtotal, tax, total, items, orderType, tableNumber, clearCart, branchId } = useCart();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -38,7 +38,8 @@ export default function CheckoutPage() {
       subTotal: subtotal,
       tax: tax,
       grandTotal: total,
-      waiterName: 'Customer App'
+      waiterName: 'Customer App',
+      branchId: branchId
     };
 
     createOrder(newOrder);

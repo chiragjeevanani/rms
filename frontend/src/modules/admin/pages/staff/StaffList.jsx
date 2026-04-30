@@ -24,8 +24,7 @@ export default function StaffList() {
     email: '',
     role: '',
     status: 'Active',
-    branchId: '',
-    pin: '1234'
+    branchId: ''
   });
 
   useEffect(() => {
@@ -69,8 +68,7 @@ export default function StaffList() {
         email: member.email,
         role: member.role?._id || '',
         status: member.status || 'Active',
-        branchId: member.branchId || '',
-        pin: member.pin || '1234'
+        branchId: member.branchId || ''
       });
     } else {
       setEditingStaff(null);
@@ -79,8 +77,7 @@ export default function StaffList() {
         email: '',
         role: '',
         status: 'Active',
-        branchId: selectedBranchFilter !== 'all' ? selectedBranchFilter : '',
-        pin: '1234'
+        branchId: selectedBranchFilter !== 'all' ? selectedBranchFilter : ''
       });
     }
     setIsModalOpen(true);
@@ -248,7 +245,10 @@ export default function StaffList() {
                       <Shield size={10} className="text-blue-500" /> {member.role?.name || 'Unit'}
                     </div>
                     <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
-                      <MapPin size={10} className="text-amber-500" /> {member.branchId?.branchName || 'Global'}
+                      <MapPin size={10} className="text-amber-500" /> 
+                      <span className="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-md border border-amber-100">
+                        {member.branchId?.branchName || 'Global'}
+                      </span>
                     </div>
                   </div>
                 <div className="pt-4 border-t border-slate-50 flex items-center gap-1.5 mt-auto">
@@ -280,7 +280,11 @@ export default function StaffList() {
                    <tr key={member._id} className="group hover:bg-slate-50/20">
                       <td className="px-6 py-3 font-black text-slate-900">{member.name}</td>
                       <td className="px-6 py-3 text-[10px]">{member.role?.name || 'N/A'}</td>
-                      <td className="px-6 py-3 text-[10px]">{member.branchId?.branchName || 'Global'}</td>
+                      <td className="px-6 py-3">
+                        <span className="px-2 py-1 bg-amber-50 text-amber-600 rounded-md border border-amber-100 text-[8px] font-black uppercase tracking-widest">
+                           {member.branchId?.branchName || 'Global'}
+                        </span>
+                      </td>
                       <td className="px-6 py-3 text-[10px]">{member.status}</td>
                       <td className="px-6 py-3 text-right">
                         <button onClick={() => handleOpenModal(member)} className="text-slate-400 hover:text-slate-900 mr-2"><Edit2 size={14} /></button>
@@ -343,11 +347,7 @@ export default function StaffList() {
              </select>
            </div>
 
-           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Access PIN</label>
-                <input type="text" maxLength={4} className="w-full bg-slate-50 border border-slate-100 p-3.5 text-[10px] font-bold outline-none focus:border-slate-900 rounded-xl transition-all" value={formData.pin} onChange={(e) => setFormData({...formData, pin: e.target.value})} placeholder="1234" />
-              </div>
+           <div className="grid grid-cols-1 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Unit Pulse State</label>
                 <div className="flex gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100 h-[46px]">

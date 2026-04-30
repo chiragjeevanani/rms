@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { usePos } from '../../context/PosContext';
 import PosTopNavbar from '../../components/PosTopNavbar';
+import { jsPDF } from "jspdf";
 
 export default function PaymentHistory() {
   const { toggleSidebar } = usePos();
@@ -42,6 +43,36 @@ export default function PaymentHistory() {
 
   const handlePrintPDF = () => {
     window.print();
+  };
+
+  const generatePDF = (order) => {
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [80, 150 + (order.items.length * 5)]
+    });
+    const centerX = 40;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text('RESTAURANT', centerX, 10, { align: 'center' });
+    doc.setFontSize(7);
+    doc.text('Tax Invoice', centerX, 14, { align: 'center' });
+    doc.line(5, 20, 75, 20);
+    doc.setFontSize(8);
+    doc.text(`Bill No: ${order.orderNumber}`, 5, 25);
+    doc.text(`Table: ${order.tableName}`, 5, 29);
+    doc.line(5, 32, 75, 32);
+    let y = 37;
+    order.items.forEach(item => {
+      doc.text(item.name, 5, y);
+      doc.text(item.quantity.toString(), 45, y);
+      doc.text((item.price * item.quantity).toFixed(2), 75, y, { align: 'right' });
+      y += 5;
+    });
+    doc.line(5, y, 75, y);
+    y += 5;
+    doc.text(`Total: Rs. ${order.grandTotal.toFixed(2)}`, 75, y, { align: 'right' });
+    doc.save(`Bill_${order.orderNumber}.pdf`);
+    toast.success('PDF Generated');
   };
 
   const printSingleReceipt = (p) => {
@@ -226,7 +257,7 @@ export default function PaymentHistory() {
                      <tr className="bg-slate-50 border-b border-slate-100">
                         <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Location</th>
-                        <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Guest</th>
+                     
                         <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Settlement</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Value</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
@@ -257,10 +288,6 @@ export default function PaymentHistory() {
                              <td className="px-8 py-5">
                                 <span className="text-[12px] font-bold text-slate-700 uppercase italic tracking-tighter">{p.tableName}</span>
                              </td>
-                             <td className="px-8 py-5">
-                                <span className="text-[11px] font-bold text-slate-900 uppercase block">{p.customer?.name || 'Walk-in'}</span>
-                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tight">{p.customer?.mobile || 'No contact'}</span>
-                             </td>
                              <td className="px-8 py-5 text-center">
                                 <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg border text-[9px] font-bold ${
                                    p.payments?.[0]?.method === 'UPI' ? 'bg-blue-50/50 border-blue-100 text-blue-600' : 
@@ -277,13 +304,22 @@ export default function PaymentHistory() {
                                 ₹{p.grandTotal}
                              </td>
                              <td className="px-8 py-5 text-right">
-                                <button 
-                                  onClick={() => printSingleReceipt(p)}
-                                  className="p-2.5 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm group"
-                                  title="Download Original Receipt"
-                                >
-                                   <Receipt size={16} />
-                                </button>
+                                <div className="flex justify-end gap-2">
+                                   <button 
+                                     onClick={() => printSingleReceipt(p)}
+                                     className="p-2.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                                     title="Print Receipt"
+                                   >
+                                      <Printer size={16} />
+                                   </button>
+                                   <button 
+                                     onClick={() => generatePDF(p)}
+                                     className="p-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                     title="Download PDF"
+                                   >
+                                      <Download size={16} />
+                                   </button>
+                                </div>
                              </td>
                           </tr>
                         ))

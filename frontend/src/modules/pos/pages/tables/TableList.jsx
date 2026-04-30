@@ -13,7 +13,7 @@ import PosTopNavbar from '../../components/PosTopNavbar';
 
 export default function TableList() {
   const navigate = useNavigate();
-  const { tables, orders, loading, fetchActiveTableOrders, updateTableStatus, addTable } = usePos();
+  const { tables, orders, loading, fetchActiveTableOrders, updateTableStatus, addTable, setIsQuickOrderModalOpen } = usePos();
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
   const [newTableData, setNewTableData] = useState({
     tableName: '',
@@ -42,11 +42,13 @@ export default function TableList() {
   const getTableStatus = (table) => {
     const order = orders[table.tableName];
     if (order) {
-       // If there's an order, we check its status
-       if (order.status === 'Paid') return 'paid';
-       return 'running-kot';
+       const st = (order.status || '').toLowerCase();
+       if (st === 'completed') return 'paid'; // Grey (Settled)
+       if (order.isBilled || st === 'billed' || st === 'printed') return 'printed'; // Green (Billed)
+       if (st === 'pending') return 'Occupied'; // Blue (Order Started)
+       return 'running-kot'; // Yellow (KOT Sent/Running)
     }
-    return table.status; // Available, Dirty, Damaged, Reserved
+    return table.status === 'Available' ? 'blank' : table.status; // Grey (Blank)
   };
 
   const calculateElapsedTime = (startTime) => {
@@ -135,7 +137,10 @@ export default function TableList() {
                <Plus size={14} />
                Add Table
             </button>
-            <button className="flex items-center gap-2 px-4 py-1.5 bg-[var(--primary-color)] text-white rounded-lg text-xs font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg">
+            <button 
+              onClick={() => setIsQuickOrderModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-1.5 bg-[var(--primary-color)] text-white rounded-lg text-xs font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg"
+            >
                <Plus size={14} />
                New Order
             </button>
@@ -163,9 +168,17 @@ export default function TableList() {
             {area}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-4 text-[10px] font-bold text-gray-400">
-           <span>Total Tables: {tables.length}</span>
-           <span className="text-emerald-500">Available: {tables.filter(t => getTableStatus(t) === 'blank').length}</span>
+        <div className="ml-auto flex items-center gap-4">
+           <div className="flex items-center gap-3 border-r border-gray-200 pr-4">
+             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-gray-200" /> <span className="text-[9px] font-black uppercase text-gray-400">Available</span></div>
+             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-500" /> <span className="text-[9px] font-black uppercase text-gray-400">Reserved</span></div>
+             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-yellow-300" /> <span className="text-[9px] font-black uppercase text-gray-400">Running</span></div>
+             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-green-400" /> <span className="text-[9px] font-black uppercase text-gray-400">Billed</span></div>
+           </div>
+           <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400">
+              <span>Total: {tables.length}</span>
+              <span className="text-emerald-500">Free: {tables.filter(t => getTableStatus(t) === 'blank').length}</span>
+           </div>
         </div>
       </div>
 

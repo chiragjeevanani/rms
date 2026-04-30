@@ -2,14 +2,19 @@ import { Outlet } from 'react-router-dom';
 import { useOrders } from '../../../../context/OrderContext';
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, MoreVertical, X, Plus, Minus, LayoutGrid, ShoppingCart, Users, Wallet, SlidersHorizontal, TrendingUp, Monitor, Clock, Settings, RefreshCw, Power, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Globe, MoreVertical, X, Plus, Minus, LayoutGrid, ShoppingCart, Users, Wallet, SlidersHorizontal, TrendingUp, Monitor, Clock, Settings, RefreshCw, Power, ArrowLeft, ChevronRight, Shield, Table, Zap } from 'lucide-react';
 import { usePos } from '../../context/PosContext';
 import { useNavigate } from 'react-router-dom';
 import { playClickSound } from '../../utils/sounds';
+import QuickOrderModal from '../QuickOrderModal';
 
 export default function PosLayout() {
   const { orders, updateOrderStatus } = useOrders();
-  const { isSidebarOpen, closeSidebar, user } = usePos();
+  const { 
+    isSidebarOpen, closeSidebar, user,
+    isQuickOrderModalOpen, setIsQuickOrderModalOpen,
+    handleStartQuickOrder, tables 
+  } = usePos();
   const navigate = useNavigate();
   
   const [acceptingOrder, setAcceptingOrder] = useState(null);
@@ -28,6 +33,15 @@ export default function PosLayout() {
 
   const [deliveryTime, setDeliveryTime] = useState(30);
   const [prepTime, setPrepTime] = useState(0);
+  const [expandedMenus, setExpandedMenus] = useState([]);
+
+  const toggleSubmenu = (label) => {
+    setExpandedMenus(prev => 
+      prev.includes(label) 
+        ? prev.filter(l => l !== label) 
+        : [...prev, label]
+    );
+  };
 
   const incomingOrders = useMemo(() => 
     orders.filter(o => 
@@ -85,50 +99,57 @@ export default function PosLayout() {
             </div>
             
             <div className="flex-1 overflow-y-auto no-scrollbar py-4 relative z-10">
-                <p className="px-6 pb-2 text-[9px] font-black text-white/50 uppercase tracking-[0.2em]">Operations</p>
                 <DrawerItem
-                  onClick={() => { closeSidebar(); navigate('/pos/dashboard'); }}
+                  onClick={() => { navigate('/pos/dashboard'); }}
                   icon={<LayoutGrid size={18} />} label="Dashboard"
                   active={window.location.pathname === '/pos/dashboard'}
                 />
                 
                 <DrawerItem
-                  onClick={() => { closeSidebar(); navigate('/pos/tables'); }}
+                  onClick={() => { navigate('/pos/tables'); }}
                   icon={<Globe size={18} />} label="Tables"
                   active={window.location.pathname.includes('/pos/tables')}
                 />
-                <div className="bg-black/10 my-1 mx-3 rounded-xl overflow-hidden py-1 border border-black/5">
-                  <DrawerSubItem label="Table View" onClick={() => { closeSidebar(); navigate('/pos/tables'); }} active={window.location.pathname === '/pos/tables'} />
-                  <DrawerSubItem label="Table List" onClick={() => { closeSidebar(); navigate('/pos/tables/list'); }} active={window.location.pathname === '/pos/tables/list'} />
-                  <DrawerSubItem label="Reservations" onClick={() => { closeSidebar(); navigate('/pos/tables/reservations'); }} active={window.location.pathname === '/pos/tables/reservations'} />
+
+                <div>
+                  <DrawerItem
+                    onClick={() => toggleSubmenu('Orders')}
+                    icon={<ShoppingCart size={18} />} label="Orders"
+                    active={window.location.pathname.includes('/pos/orders')}
+                    isExpandable
+                    isExpanded={expandedMenus.includes('Orders')}
+                  />
+                  <AnimatePresence>
+                    {expandedMenus.includes('Orders') && (
+                      <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
+                        <DrawerSubItem 
+                          label="Dine-In Orders" 
+                          onClick={() => navigate('/pos/orders/active?type=Dine-In')} 
+                          active={window.location.pathname.includes('/pos/orders') && window.location.search.includes('type=Dine-In')} 
+                        />
+                        <DrawerSubItem 
+                          label="Quick Service" 
+                          onClick={() => navigate('/pos/orders/active?type=Takeaway')} 
+                          active={window.location.pathname.includes('/pos/orders') && window.location.search.includes('type=Takeaway')} 
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <DrawerItem
-                  onClick={() => { closeSidebar(); navigate('/pos/orders/active'); }}
-                  icon={<ShoppingCart size={18} />} label="Active Orders"
-                  active={window.location.pathname.includes('/pos/orders')}
-                />
-                <div className="bg-black/10 my-1 mx-3 rounded-xl overflow-hidden py-1 border border-black/5">
-                  <DrawerSubItem label="Active Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/active'); }} active={window.location.pathname === '/pos/orders/active'} />
-                  <DrawerSubItem label="Completed Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/completed'); }} active={window.location.pathname === '/pos/orders/completed'} />
-                  <DrawerSubItem label="Cancelled Orders" onClick={() => { closeSidebar(); navigate('/pos/orders/cancelled'); }} active={window.location.pathname === '/pos/orders/cancelled'} />
-                </div>
-
-                <DrawerItem
-                  onClick={() => { closeSidebar(); navigate('/pos/billing'); }}
-                  icon={<Wallet size={18} />} label="Billing"
+                  onClick={() => { navigate('/pos/billing'); }}
+                  icon={<Wallet size={18} />} label="Invoice & Billing"
                   active={window.location.pathname.includes('/pos/billing')}
                 />
-                <div className="bg-black/10 my-1 mx-3 rounded-xl overflow-hidden py-1 border border-black/5">
-                  <DrawerSubItem label="Generate Invoice" onClick={() => { closeSidebar(); navigate('/pos/billing/generate'); }} active={window.location.pathname === '/pos/billing/generate'} />
-                  <DrawerSubItem label="Payment History" onClick={() => { closeSidebar(); navigate('/pos/billing/history'); }} active={window.location.pathname === '/pos/billing/history'} />
-                  <DrawerSubItem label="Cash Register" onClick={() => { closeSidebar(); navigate('/pos/billing/register'); }} active={window.location.pathname === '/pos/billing/register'} />
-                </div>
+                
+                <DrawerItem
+                  onClick={() => { navigate('/pos/security'); }}
+                  icon={<Shield size={18} />} label="Security"
+                  active={window.location.pathname.includes('/pos/security')}
+                />
 
-                <p className="px-6 pt-6 pb-2 text-[9px] font-black text-white/50 uppercase tracking-[0.2em] mt-2 border-t border-black/10">Management</p>
-                <DrawerItem onClick={() => { closeSidebar(); navigate('/pos/menu'); }} icon={<Settings size={18} />} label="Menu Settings" />
-                <DrawerItem onClick={() => { closeSidebar(); navigate('/pos/operations'); }} icon={<SlidersHorizontal size={18} />} label="Operational Control" />
-                <DrawerItem onClick={() => { closeSidebar(); localStorage.removeItem('pos_access'); navigate('/pos/login'); }} icon={<Power size={18} />} label="Logout Terminal" color="text-red-200 group-hover:text-red-100" hoverBg="hover:bg-red-500/20" />
+                <DrawerItem onClick={() => { localStorage.removeItem('pos_access'); navigate('/pos/login'); }} icon={<Power size={18} />} label="Logout" color="text-red-200 group-hover:text-red-100" hoverBg="hover:bg-red-500/20" />
             </div>
 
             <div className="p-5 border-t border-black/10 bg-black/10 space-y-2 relative z-10">
@@ -141,7 +162,9 @@ export default function PosLayout() {
                     <Users size={14} />
                   </div>
                   <div>
-                    <p className="text-[9px] text-white/50 font-black uppercase tracking-wider leading-tight">Station Operator</p>
+                    <p className="text-[9px] text-white/50 font-black uppercase tracking-wider leading-tight">
+                      {user?.role || 'Operator'} • {user?.branchId?.branchName || user?.branchId?.name || 'Main Branch'}
+                    </p>
                     <p className="text-xs text-white font-bold tracking-wide">
                       {user?.name || 'Main Biller'}
                     </p>
@@ -305,12 +328,19 @@ export default function PosLayout() {
           </>
         )}
       </AnimatePresence>
+
+      <QuickOrderModal 
+        isOpen={isQuickOrderModalOpen}
+        onClose={() => setIsQuickOrderModalOpen(false)}
+        tables={tables}
+        onStartOrder={handleStartQuickOrder}
+      />
     </div>
   );
 }
 
 // Helper Components
-function DrawerItem({ icon, label, active, color, hoverBg, onClick }) {
+function DrawerItem({ icon, label, active, color, hoverBg, onClick, isExpandable, isExpanded }) {
   return (
     <div
       onClick={() => { playClickSound(); onClick(); }}
@@ -324,7 +354,13 @@ function DrawerItem({ icon, label, active, color, hoverBg, onClick }) {
         {icon}
         <span className="text-[11px] font-black uppercase tracking-widest">{label}</span>
       </div>
-      <ChevronRight size={14} className={`transition-transform duration-300 ${active ? 'text-white' : 'text-white/40 group-hover:text-white/70 group-hover:translate-x-1'}`} />
+      {isExpandable ? (
+        <motion.div animate={{ rotate: isExpanded ? 90 : 0 }}>
+          <ChevronRight size={14} className={`transition-transform duration-300 ${active ? 'text-white' : 'text-white/40 group-hover:text-white/70'}`} />
+        </motion.div>
+      ) : (
+        <ChevronRight size={14} className={`transition-transform duration-300 ${active ? 'text-white' : 'text-white/40 group-hover:text-white/70 group-hover:translate-x-1'}`} />
+      )}
     </div>
   );
 }

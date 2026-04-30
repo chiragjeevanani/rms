@@ -276,8 +276,13 @@ export default function Roles() {
                   </div>
                 </div>
 
-                <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-3 leading-tight">{role.name}</h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.08em] line-clamp-4 leading-relaxed italic mb-6">
+                <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-1 leading-tight">{role.name}</h2>
+                <div className="mb-3">
+                   <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-blue-100">
+                      {role.branchId?.branchName || role.branchId?.name || 'Global Role'}
+                   </span>
+                </div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.08em] line-clamp-3 leading-relaxed italic mb-6">
                   {role.description || 'No strategic description assigned to this unit.'}
                 </p>
 
@@ -306,8 +311,8 @@ export default function Roles() {
               <thead>
                  <tr className="bg-slate-50/50 border-b border-slate-100">
                     <th className="px-10 py-7 text-[10px] font-black text-slate-400 uppercase tracking-widest">Designation Node</th>
+                    <th className="px-10 py-7 text-[10px] font-black text-slate-400 uppercase tracking-widest">Allocated Branch</th>
                     <th className="px-10 py-7 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operational Detail</th>
-                    <th className="px-10 py-7 text-[10px] font-black text-slate-400 uppercase tracking-widest">Registry State</th>
                     <th className="px-10 py-7 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                  </tr>
               </thead>
@@ -323,15 +328,14 @@ export default function Roles() {
                          </div>
                       </td>
                       <td className="px-10 py-6">
-                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate max-w-[400px] italic">
-                            {role.description || 'No operational signal defined'}
-                         </p>
+                         <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-blue-100">
+                            {role.branchId?.branchName || role.branchId?.name || 'Global'}
+                         </span>
                       </td>
                       <td className="px-10 py-6">
-                         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all
-                            ${role.status === 'Published' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
-                            {role.status}
-                         </div>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate max-w-[300px] italic">
+                            {role.description || 'No operational signal defined'}
+                         </p>
                       </td>
                       <td className="px-10 py-6 text-right">
                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">

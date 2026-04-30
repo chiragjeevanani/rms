@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
 
@@ -6,7 +7,9 @@ const PosContext = createContext();
 const socket = io((import.meta.env.VITE_API_URL || '').replace('/api', ''));
 
 export function PosProvider({ children }) {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isQuickOrderModalOpen, setIsQuickOrderModalOpen] = useState(false);
   const [user, setUser] = useState({ name: 'Biller' });
   const [reservations, setReservations] = useState([]);
 
@@ -53,8 +56,19 @@ export function PosProvider({ children }) {
   // ── Backend Fetch Functions ──
   const fetchActiveTableOrders = async () => {
     try {
-      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const token = localStorage.getItem('staff_access');
+      let branchId = null;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          branchId = payload.branchId;
+        } catch(e) {}
+      }
+      if (!branchId) {
+        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+        branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
+      }
+      const branchQuery = branchId ? `?branchId=${branchId}` : '';
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/active${branchQuery}`);
       const result = await response.json();
       if (result.success) {
@@ -71,8 +85,19 @@ export function PosProvider({ children }) {
 
   const fetchTables = async () => {
     try {
-      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const token = localStorage.getItem('staff_access');
+      let branchId = null;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          branchId = payload.branchId;
+        } catch(e) {}
+      }
+      if (!branchId) {
+        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+        branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
+      }
+      const branchQuery = branchId ? `?branchId=${branchId}` : '';
       const response = await fetch(`${import.meta.env.VITE_API_URL}/table${branchQuery}`);
       if (response.ok) {
         const data = await response.json();
@@ -93,6 +118,14 @@ export function PosProvider({ children }) {
 
   useEffect(() => {
     syncAll();
+    
+    // Load staff info from localStorage
+    const staffInfo = localStorage.getItem('staff_info');
+    if (staffInfo) {
+      try {
+        setUser(JSON.parse(staffInfo));
+      } catch (e) {}
+    }
 
     socket.on('orderCreated', syncAll);
     socket.on('kotAdded', syncAll);
@@ -112,6 +145,19 @@ export function PosProvider({ children }) {
   // ── Backend Actions ──
   const placeKOT = async (tableName, cart, financials, waiter) => {
     try {
+      const token = localStorage.getItem('staff_access');
+      let branchId = null;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          branchId = payload.branchId;
+        } catch(e) {}
+      }
+      if (!branchId) {
+        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+        branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -119,7 +165,8 @@ export function PosProvider({ children }) {
           tableName,
           items: cart,
           ...financials,
-          waiterName: waiter?.name || 'Staff'
+          waiterName: waiter?.name || 'Staff',
+          branchId
         })
       });
       const result = await response.json();
@@ -139,7 +186,7 @@ export function PosProvider({ children }) {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/settle`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payments: paymentDetails, status: 'Paid' })
+        body: JSON.stringify({ payments: paymentDetails, status: 'completed' })
       });
       const result = await response.json();
       if (result.success) {
@@ -170,6 +217,25 @@ export function PosProvider({ children }) {
     }
   };
 
+  const updateItemQuantity = async (orderId, itemId, quantity) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/item/${itemId}/quantity`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity })
+      });
+      const result = await response.json();
+      if (result.success) {
+        syncAll();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Update quantity error:', err);
+      return false;
+    }
+  };
+
   const addTable = async (tableData) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/table`, {
@@ -193,8 +259,19 @@ export function PosProvider({ children }) {
 
   const fetchReservations = async () => {
     try {
-      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const token = localStorage.getItem('staff_access');
+      let branchId = null;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          branchId = payload.branchId;
+        } catch(e) {}
+      }
+      if (!branchId) {
+        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+        branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
+      }
+      const branchQuery = branchId ? `?branchId=${branchId}` : '';
       const response = await fetch(`${import.meta.env.VITE_API_URL}/reservations${branchQuery}`);
       const result = await response.json();
       if (result.success) setReservations(result.data);
@@ -320,6 +397,32 @@ export function PosProvider({ children }) {
     });
   };
 
+  const handleStartQuickOrder = async (orderData) => {
+    const { type, identifier, customer } = orderData;
+    
+    // Check if order already exists
+    if (orders[identifier]) {
+      navigate(`/pos/order/${identifier}`);
+      return;
+    }
+
+    // Create an empty order shell
+    const financials = {
+      orderType: type,
+      customer: customer,
+      subTotal: 0,
+      tax: 0,
+      grandTotal: 0,
+      status: 'Pending'
+    };
+
+    const success = await placeKOT(identifier, [], financials, { name: 'POS Staff' });
+    if (success) {
+      setIsQuickOrderModalOpen(false);
+      navigate(`/pos/order/${identifier}`);
+    }
+  };
+
   // ── UI Toggles ──
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
   const closeSidebar = () => setIsSidebarOpen(false);
@@ -328,13 +431,15 @@ export function PosProvider({ children }) {
     <PosContext.Provider value={{
       // UI state
       isSidebarOpen, toggleSidebar, closeSidebar,
+      isQuickOrderModalOpen, setIsQuickOrderModalOpen,
       user, setUser,
+      handleStartQuickOrder,
 
       // Backend-synced data
       orders, tables, reservations, loading,
       fetchActiveTableOrders: syncAll,
       fetchReservations, createReservation, updateReservationStatus,
-      placeKOT, settleOrder, voidItem, updateTableStatus, updateOrderStatus, addTable,
+      placeKOT, settleOrder, voidItem, updateItemQuantity, updateTableStatus, updateOrderStatus, addTable,
 
       // Local state
       sections, setSections,

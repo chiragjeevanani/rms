@@ -5,15 +5,33 @@ const bcrypt = require('bcryptjs');
 
 exports.superAdminLogin = async (req, res) => {
   const { email, password } = req.body;
-  // Hardcoded SuperAdmin for simplicity
-  if (email === 'superadmin@rms.com' && password === 'superadmin123') {
-    return res.json({ 
-      success: true, 
-      token: 'superadmin-secret-token', // In production, use JWT
-      user: { name: 'Super Admin', role: 'superadmin' } 
-    });
+  
+  try {
+    const centralConn = await connectSuperAdminDB();
+    if (!centralConn) {
+      return res.status(500).json({ success: false, message: 'Central DB connection failed' });
+    }
+
+    const SuperAdminsCollection = centralConn.collection('superadmins');
+    const admin = await SuperAdminsCollection.findOne({ email });
+    
+    if (admin) {
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (isMatch) {
+        await centralConn.close();
+        return res.json({ 
+          success: true, 
+          token: 'superadmin-secret-token', // In production, use JWT
+          user: { name: admin.name, role: 'superadmin' } 
+        });
+      }
+    }
+    
+    await centralConn.close();
+    res.status(401).json({ success: false, message: 'Invalid Credentials' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
   }
-  res.status(401).json({ success: false, message: 'Invalid Credentials' });
 };
 
 exports.createRestaurant = async (req, res) => {

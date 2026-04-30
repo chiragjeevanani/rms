@@ -17,7 +17,8 @@ import {
   Upload,
   Eye,
   EyeOff,
-  Mail
+  Mail,
+  Building2
 } from 'lucide-react';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { useNavigate } from 'react-router-dom';
@@ -245,9 +246,17 @@ export default function MyProfile() {
              <Mail size={10} className="text-slate-300" />
              {profile.email}
           </p>
-          <div className="flex items-center gap-2.5 px-4 py-1.5 bg-slate-100 rounded-2xl border border-slate-200/50">
-            <Shield size={12} className="text-slate-600" strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{profile.role?.name || 'Staff Member'}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 px-4 py-1.5 bg-slate-100 rounded-2xl border border-slate-200/50">
+              <Shield size={12} className="text-slate-600" strokeWidth={3} />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{profile.role?.name || 'Staff Member'}</span>
+            </div>
+            {profile.branchId && (
+              <div className="flex items-center gap-2.5 px-4 py-1.5 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <Building2 size={12} className="text-emerald-600" strokeWidth={3} />
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">{profile.branchId?.branchName || 'Assigned Branch'}</span>
+              </div>
+            )}
           </div>
         </div>
       </header>

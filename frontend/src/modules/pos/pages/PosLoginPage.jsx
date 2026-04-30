@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Zap, RefreshCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { usePos } from '../context/PosContext';
 
 export default function PosLoginPage() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ export default function PosLoginPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = usePos();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -40,6 +42,7 @@ console.log(response.ok)
       if (response.ok) {
         localStorage.setItem('pos_access', data.token);
         localStorage.setItem('staff_info', JSON.stringify(data));
+        setUser(data);
         toast.success(`Welcome, ${data.name}`);
         navigate('/pos/dashboard');
       } else {

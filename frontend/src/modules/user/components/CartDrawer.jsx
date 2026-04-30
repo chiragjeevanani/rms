@@ -71,7 +71,7 @@ export function CartDrawer({ isOpen, onClose }) {
                 items.map((item) => (
                   <div key={item.cartId} className="flex gap-4">
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-charcoal-100 dark:bg-white/5 shrink-0">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={item.image?.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.image?.startsWith('/') ? '' : '/'}${item.image}`} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">

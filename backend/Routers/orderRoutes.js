@@ -9,6 +9,7 @@ const {
   settleOrder,
   updateOrderStatus, 
   voidItem,
+  updateItemQuantity,
   getKitchenAnalytics,
   getSalesAnalytics,
   getStaffDailyStats,
@@ -28,7 +29,8 @@ router.get('/stats/staff/:staffName', getStaffDailyStats);
 router.get('/stats/staff-snapshot', getStaffDashboardSnapshot);
 
 router.put('/:orderId/settle', settleOrder);
-router.put('/:id/status', updateOrderStatus);
+router.patch('/:id/status', updateOrderStatus);
+router.put('/:orderId/item/:itemId/quantity', updateItemQuantity);
 router.delete('/:orderId/item/:itemId', voidItem);
 
 module.exports = router;

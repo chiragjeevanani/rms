@@ -13,7 +13,7 @@ import CryptoJS from 'crypto-js';
 const TABLE_SECRET = 'RMS_SECURE_DYNAMIC_PROTOCOL_2026';
 
 export default function MenuPage() {
-  const { isOrderOnline, setOrderingMode, tableNumber, setTable } = useCart();
+  const { isOrderOnline, setOrderingMode, tableNumber, setTable, setBranchId } = useCart();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [items, setItems] = useState([]);
@@ -29,27 +29,6 @@ export default function MenuPage() {
   const { itemCount, total } = useCart();
 
   useEffect(() => {
-    // Check URL for table parameter
-    const params = new URLSearchParams(window.location.search);
-    const encryptedTable = params.get('t');
-    const urlTable = params.get('table'); // Legacy support
-    
-    if (encryptedTable) {
-      try {
-        const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedTable), TABLE_SECRET);
-        const decryptedCode = bytes.toString(CryptoJS.enc.Utf8);
-        if (decryptedCode) {
-           setTable(decryptedCode);
-        }
-      } catch (e) {
-        console.error('Table Decryption Failed');
-      }
-    } else if (urlTable) {
-      setTable(urlTable);
-    } else if (!tableNumber || tableNumber === '7') {
-       setShowTablePicker(true);
-    }
-
     const fetchData = async () => {
       try {
         const [itemsRes, categoriesRes, combosRes, tablesRes] = await Promise.all([
@@ -63,11 +42,39 @@ export default function MenuPage() {
         const categoriesData = await categoriesRes.json();
         const combosData = await combosRes.json();
         const tablesData = await tablesRes.json();
+        const tablesList = Array.isArray(tablesData) ? tablesData : [];
 
         setItems((Array.isArray(itemsData) ? itemsData : []).filter(i => i.status === 'Published'));
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
         setCombos((combosData?.success ? combosData.data : []).filter(c => c.status === 'Published'));
-        setTables(Array.isArray(tablesData) ? tablesData : []);
+        setTables(tablesList);
+        
+        // Sync table and branch info from table info
+        let activeTableCode = tableNumber;
+        const params = new URLSearchParams(window.location.search);
+        const encryptedTable = params.get('t');
+        const urlTable = params.get('table');
+
+        if (encryptedTable) {
+           try {
+             const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedTable), TABLE_SECRET);
+             activeTableCode = bytes.toString(CryptoJS.enc.Utf8);
+           } catch(e){}
+        } else if (urlTable) {
+           activeTableCode = urlTable;
+        }
+
+        if (activeTableCode && activeTableCode !== '7') {
+          const currentTable = tablesList.find(t => t.tableCode === activeTableCode || t.tableName === activeTableCode);
+          if (currentTable) {
+            // CRITICAL: Use the actual tableName from DB to ensure POS matching
+            setTable(currentTable.tableName); 
+            const bId = currentTable.branchId?._id || currentTable.branchId;
+            if (bId) setBranchId(bId);
+          } else {
+            setTable(activeTableCode);
+          }
+        }
       } catch (err) {
         console.error('Failed to fetch menu data:', err);
       } finally {
@@ -78,6 +85,14 @@ export default function MenuPage() {
   }, []);
 
   const allCategories = useMemo(() => {
+    let branchIdToMatch = null;
+    if (tableNumber && tableNumber !== '7') {
+      const currentTable = tables.find(t => t.tableCode === tableNumber || t.tableName === tableNumber);
+      if (currentTable) {
+        branchIdToMatch = currentTable.branchId?._id || currentTable.branchId;
+      }
+    }
+
     const base = [
       { id: 'all', label: 'All', icon: '◉' },
       { id: 'popular', label: 'Popular', icon: '★' },
@@ -85,25 +100,48 @@ export default function MenuPage() {
     ];
     const backendCats = categories
       .filter(cat => cat.status === 'Published')
+      .filter(cat => {
+        if (!branchIdToMatch) return true;
+        const catBranchId = cat.branchId?._id || cat.branchId;
+        return !catBranchId || catBranchId === branchIdToMatch;
+      })
       .map(cat => ({
         id: cat._id,
         label: cat.name,
         icon: '◉'
       }));
     return [...base, ...backendCats];
-  }, [categories]);
+  }, [categories, tables, tableNumber]);
 
   const filteredItems = useMemo(() => {
+    let branchIdToMatch = null;
+    if (tableNumber && tableNumber !== '7') {
+      const currentTable = tables.find(t => t.tableCode === tableNumber || t.tableName === tableNumber);
+      if (currentTable) {
+        branchIdToMatch = currentTable.branchId?._id || currentTable.branchId;
+      }
+    }
+
+    const availableItems = branchIdToMatch ? items.filter(i => {
+      const iBranchId = i.branchId?._id || i.branchId;
+      return !iBranchId || iBranchId === branchIdToMatch;
+    }) : items;
+
+    const availableCombos = branchIdToMatch ? combos.filter(c => {
+      const cBranchId = c.branchId?._id || c.branchId;
+      return !cBranchId || cBranchId === branchIdToMatch;
+    }) : combos;
+
     let result = [];
     const isSearching = searchQuery.trim().length > 0;
 
     if (isSearching) {
-      result = [...items, ...combos];
+      result = [...availableItems, ...availableCombos];
     } else {
-      if (activeCategory === 'all') result = [...items, ...combos];
-      else if (activeCategory === 'popular') result = items.filter(i => i.isFeatured || i.tags?.includes('popular'));
-      else if (activeCategory === 'combos') result = combos;
-      else result = items.filter(i => i.category?._id === activeCategory);
+      if (activeCategory === 'all') result = [...availableItems, ...availableCombos];
+      else if (activeCategory === 'popular') result = availableItems.filter(i => i.isFeatured || i.tags?.includes('popular'));
+      else if (activeCategory === 'combos') result = availableCombos;
+      else result = availableItems.filter(i => i.category?._id === activeCategory);
     }
 
     if (isVegOnly) result = result.filter(i => i.foodType === 'Veg' || i.isVeg);
@@ -122,7 +160,7 @@ export default function MenuPage() {
       isVeg: i.foodType === 'Veg' || i.isVeg || (i.items && i.items.every(ci => ci.item?.foodType === 'Veg' || ci.item?.isVeg)),
       preparationTime: i.preparationTime || 15,
     }));
-  }, [activeCategory, items, combos, searchQuery, isVegOnly]);
+  }, [activeCategory, items, combos, searchQuery, isVegOnly, tables, tableNumber]);
 
   const handleSelectTable = (code) => {
     setTable(code);

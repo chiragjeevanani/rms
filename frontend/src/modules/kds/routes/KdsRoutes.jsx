@@ -4,6 +4,7 @@ import KdsDashboard from '../pages/KdsDashboard';
 import IncomingOrders from '../pages/IncomingOrders';
 import PreparingOrders from '../pages/PreparingOrders';
 import CompletedOrders from '../pages/CompletedOrders';
+import CancelledOrders from '../pages/CancelledOrders';
 import KdsAccountSettings from '../pages/KdsAccountSettings';
 import PreparationTime from '../pages/PreparationTime';
 import PriorityRules from '../pages/PriorityRules';
@@ -31,6 +32,7 @@ export default function KdsRoutes() {
         <Route path="/incoming" element={<IncomingOrders />} />
         <Route path="/preparing" element={<PreparingOrders />} />
         <Route path="/completed" element={<CompletedOrders />} />
+        <Route path="/cancelled" element={<CancelledOrders />} />
         <Route path="/orders/:id" element={<KdsOrderDetailsPage />} />
 
         {/* Settings Sub-routes */}

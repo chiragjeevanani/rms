@@ -94,14 +94,14 @@ export default function AdminDashboard() {
   const { orders, content, recentOrders, metrics } = data || {};
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-8 lg:p-12 space-y-10 selection:bg-slate-900 selection:text-white pb-32">
+    <div className="min-h-screen bg-[#F8FAFC] p-6 lg:p-8 space-y-8 selection:bg-slate-900 selection:text-white pb-32">
       {/* Top Header Strip */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <div className="flex items-center gap-3 mb-1">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ff7a00] bg-[#ff7a00]/10 px-2 py-0.5 rounded">Management Node</span>
            </div>
-           <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none uppercase italic">Dashboard</h1>
+           <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none uppercase italic">Dashboard</h1>
            <p className="text-xs font-semibold text-slate-400 mt-2 uppercase tracking-wide flex items-center gap-2">
              <Calendar size={12} /> {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })} · Status: Nominal
            </p>
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Row 1: Primary KPI Cards (Clickable) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'Revenue Today', value: `₹${metrics?.todayRevenue?.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100', path: '/admin/reports/sales' },
           { label: 'Queue Orders', value: orders?.pending, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-100', path: '/admin/orders/all' },
@@ -148,24 +148,24 @@ export default function AdminDashboard() {
              key={i} 
              onClick={() => navigate(stat.path)}
              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-             className="bg-white p-8 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] group hover:border-slate-800 hover:shadow-xl transition-all cursor-pointer relative overflow-hidden active:scale-[0.98]"
+             className="bg-white p-6 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] group hover:border-slate-800 hover:shadow-xl transition-all cursor-pointer relative overflow-hidden active:scale-[0.98]"
           >
-             <div className="flex items-center justify-between mb-8">
-                <div className={`w-12 h-12 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform`}>
-                   <stat.icon size={20} strokeWidth={2.5} />
+             <div className="flex items-center justify-between mb-6">
+                <div className={`w-10 h-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform`}>
+                   <stat.icon size={18} strokeWidth={2.5} />
                 </div>
                 <div className="p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                    <ChevronRight size={14} className="text-slate-400" />
                 </div>
              </div>
              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-             <div className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{stat.value || 0}</div>
+             <div className="text-3xl font-black text-slate-900 tracking-tighter leading-none">{stat.value || 0}</div>
           </motion.div>
         ))}
       </div>
 
       {/* Row 2: Menu Resource Grid (Clickable) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {[
           { label: 'Categories', total: content?.categories?.total, active: content?.categories?.active, inactive: content?.categories?.inactive, icon: LayoutGrid, accent: 'bg-[#ff7a00]', path: '/admin/menu/categories' },
           { label: 'Menu Inventory', total: content?.items?.total, active: content?.items?.active, inactive: content?.items?.inactive, icon: Utensils, accent: 'bg-slate-900', path: '/admin/menu/items' },
@@ -174,25 +174,25 @@ export default function AdminDashboard() {
           <div 
              key={i} 
              onClick={() => navigate(c.path)}
-             className="bg-white p-8 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex items-center gap-8 group hover:border-slate-800 hover:shadow-xl transition-all cursor-pointer active:scale-[0.98]"
+             className="bg-white p-6 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex items-center gap-6 group hover:border-slate-800 hover:shadow-xl transition-all cursor-pointer active:scale-[0.98]"
           >
-             <div className={`w-16 h-16 rounded-[1.25rem] ${c.accent} text-white flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform`}>
-                <c.icon size={28} strokeWidth={1.5} />
+             <div className={`w-14 h-14 rounded-[1.25rem] ${c.accent} text-white flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform`}>
+                <c.icon size={24} strokeWidth={1.5} />
              </div>
              <div className="flex-1">
-                <div className="flex items-baseline justify-between mb-4 border-b border-slate-50 pb-3">
+                <div className="flex items-baseline justify-between mb-3 border-b border-slate-50 pb-2">
                    <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">{c.label}</h3>
-                   <span className="text-2xl font-black text-slate-900 tracking-tighter">{c.total || 0}</span>
+                   <span className="text-xl font-black text-slate-900 tracking-tighter">{c.total || 0}</span>
                 </div>
-                <div className="flex gap-6">
+                <div className="flex gap-4">
                    <div className="flex flex-col">
                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Published</span>
-                      <span className="text-lg font-black text-emerald-600">{c.active || 0}</span>
+                      <span className="text-base font-black text-emerald-600">{c.active || 0}</span>
                    </div>
-                   <div className="w-px h-8 bg-slate-100" />
+                   <div className="w-px h-6 bg-slate-100" />
                    <div className="flex flex-col">
                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Drafts</span>
-                      <span className="text-lg font-black text-slate-300">{c.inactive || 0}</span>
+                      <span className="text-base font-black text-slate-300">{c.inactive || 0}</span>
                    </div>
                 </div>
              </div>
@@ -201,9 +201,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Row 3: Analytics Hub & Activity List */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-        <div className="xl:col-span-2 bg-white border border-slate-200 p-10 rounded-[2rem] shadow-sm flex flex-col relative overflow-hidden">
-           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 mb-12 border-b border-slate-50 pb-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm flex flex-col relative overflow-hidden">
+           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-slate-50 pb-6">
               <div className="flex items-center gap-4">
                  <div className="w-1.5 h-8 bg-emerald-500 rounded-full" />
                  <div>
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
               </div>
            </div>
            
-           <div className="flex-1 h-[420px] w-full">
+           <div className="flex-1 h-[360px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                  <AreaChart data={chartData}>
                     <defs>
@@ -268,8 +268,8 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Transaction Panel */}
-        <div className="bg-white border border-slate-200 p-10 rounded-[2rem] shadow-sm flex flex-col">
-           <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-50">
+        <div className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm flex flex-col">
+           <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-50">
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-[0.1em]">Recent Orders</h3>
               <div className="flex items-center gap-2">
                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />

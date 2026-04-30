@@ -10,8 +10,19 @@ export const OrderProvider = ({ children }) => {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const token = localStorage.getItem('staff_access');
+      let branchId = null;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          branchId = payload.branchId;
+        } catch(e) {}
+      }
+      if (!branchId) {
+        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+        branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
+      }
+      const branchQuery = branchId ? `?branchId=${branchId}` : '';
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders${branchQuery}`);
       if (response.ok) {
         const result = await response.json();
@@ -66,8 +77,19 @@ export const OrderProvider = ({ children }) => {
 
   const getOrderById = async (orderId) => {
     try {
-      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const token = localStorage.getItem('staff_access');
+      let branchId = null;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          branchId = payload.branchId;
+        } catch(e) {}
+      }
+      if (!branchId) {
+        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+        branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
+      }
+      const branchQuery = branchId ? `?branchId=${branchId}` : '';
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders${branchQuery}`);
       if (response.ok) {
         const result = await response.json();

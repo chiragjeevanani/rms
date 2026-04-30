@@ -1,13 +1,13 @@
 export const TABLE_STATUS_COLORS = {
-  blank:       { color: '#F0F0F0', textColor: '#999', borderColor: '#ddd', borderStyle: 'solid', dot: 'transparent' },
-  'running-kot': { color: '#BBDEFB', textColor: '#1565C0', borderColor: '#42A5F5', borderStyle: 'solid', dot: '#3b82f6' },
-  printed:     { color: '#FFF9C4', textColor: '#F57F17', borderColor: '#FFCA28', borderStyle: 'dashed', dot: '#f59e0b' },
-  paid:        { color: '#C8E6C9', textColor: '#1B5E20', borderColor: '#66BB6A', borderStyle: 'solid', dot: '#10b981' },
-  Reserved:    { color: '#FFF9EA', textColor: '#D84315', borderColor: '#FFAB40', borderStyle: 'dashed', dot: '#f59e0b' },
-  Available:   { color: '#F0F0F0', textColor: '#999', borderColor: '#ddd', borderStyle: 'solid', dot: 'transparent' },
-  Occupied:    { color: '#BBDEFB', textColor: '#1565C0', borderColor: '#42A5F5', borderStyle: 'solid', dot: '#3b82f6' },
-  Dirty:       { color: '#FFEBEE', textColor: '#C62828', borderColor: '#FF1744', borderStyle: 'solid', dot: '#ef4444' },
-  Damaged:     { color: '#ECEFF1', textColor: '#455A64', borderColor: '#B0BEC5', borderStyle: 'solid', dot: '#64748b' },
+  blank:         { color: '#F3F4F6', textColor: '#6B7280', borderColor: '#E5E7EB', borderStyle: 'solid', dot: '#9CA3AF' }, // Grey
+  'running-kot': { color: '#F59E0B', textColor: '#FFFFFF', borderColor: '#D97706', borderStyle: 'solid', dot: '#FFFFFF' }, // Vibrant Amber
+  printed:       { color: '#84CC16', textColor: '#FFFFFF', borderColor: '#65A30D', borderStyle: 'solid', dot: '#FFFFFF' }, // Vibrant Lime Green
+  paid:          { color: '#F3F4F6', textColor: '#6B7280', borderColor: '#E5E7EB', borderStyle: 'solid', dot: '#9CA3AF' }, // Grey (Settled)
+  Reserved:      { color: '#DBEAFE', textColor: '#1E40AF', borderColor: '#93C5FD', borderStyle: 'dashed', dot: '#3B82F6' },
+  Available:     { color: '#F3F4F6', textColor: '#6B7280', borderColor: '#E5E7EB', borderStyle: 'solid', dot: '#9CA3AF' },
+  Occupied:      { color: '#3B82F6', textColor: '#FFFFFF', borderColor: '#2563EB', borderStyle: 'solid', dot: '#FFFFFF' }, // Blue (Order Started)
+  Dirty:         { color: '#FFEBEE', textColor: '#C62828', borderColor: '#FF1744', borderStyle: 'solid', dot: '#ef4444' },
+  Damaged:       { color: '#ECEFF1', textColor: '#455A64', borderColor: '#B0BEC5', borderStyle: 'solid', dot: '#64748b' },
 };
 
 

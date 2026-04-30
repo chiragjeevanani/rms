@@ -31,7 +31,7 @@ export function FoodCard({ item, onAdd }) {
         <div className="relative w-28 h-36 rounded-[1.5rem] overflow-hidden bg-charcoal-100 dark:bg-charcoal-800 shrink-0">
           <motion.img
             layoutId={`img-${item.id}`}
-            src={item.image}
+            src={item.image?.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.image?.startsWith('/') ? '' : '/'}${item.image}`}
             alt={item.name}
             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
           />

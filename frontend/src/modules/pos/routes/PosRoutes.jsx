@@ -24,6 +24,9 @@ import CashRegister from '../pages/billing/CashRegister';
 // CRM
 import CustomerList from '../pages/customers/CustomerList';
 
+// Settings
+import PosSecurityPage from '../pages/settings/PosSecurityPage';
+
 // New pages (rms 2.0 additions)
 import MenuManagement from '../pages/menu/MenuManagement';
 import OperationsDashboard from '../pages/operations/OperationsDashboard';
@@ -34,60 +37,57 @@ export default function PosRoutes() {
   const location = useLocation();
   const isPosAuthenticated = !!localStorage.getItem('pos_access');
 
-  if (isPosAuthenticated && location.pathname === '/pos/login') {
-    return <Navigate to="/pos/dashboard" replace />;
-  }
-
-  if (!isPosAuthenticated && location.pathname !== '/pos/login') {
-    return (
-      <Routes>
-        <Route path="/login" element={<PosLoginPage />} />
-        <Route path="*" element={<Navigate to="/pos/login" replace />} />
-      </Routes>
-    );
-  }
-
   return (
     <PosProvider>
-      <Routes>
-        <Route path="/login" element={<PosLoginPage />} />
-        <Route element={<PosLayout />}>
-          <Route index element={<Navigate to="/pos/dashboard" replace />} />
+      {!isPosAuthenticated && location.pathname !== '/pos/login' ? (
+        <Routes>
+          <Route path="/login" element={<PosLoginPage />} />
+          <Route path="*" element={<Navigate to="/pos/login" replace />} />
+        </Routes>
+      ) : (
+        <Routes>
+          <Route path="/login" element={<PosLoginPage />} />
+          <Route element={<PosLayout />}>
+            <Route index element={<Navigate to="/pos/dashboard" replace />} />
 
-          {/* Dashboard */}
-          <Route path="dashboard" element={<PosDashboard />} />
+            {/* Dashboard */}
+            <Route path="dashboard" element={<PosDashboard />} />
 
-          {/* Tables / Floor */}
-          <Route path="tables" element={<TableView />} />
-          <Route path="tables/list" element={<TableList />} />
-          <Route path="tables/reservations" element={<Reservations />} />
-          <Route path="order/:tableId" element={<PosOrderPage />} />
+            {/* Tables / Floor */}
+            <Route path="tables" element={<TableView />} />
+            <Route path="tables/list" element={<TableList />} />
+            <Route path="tables/reservations" element={<Reservations />} />
+            <Route path="order/:tableId" element={<PosOrderPage />} />
 
-          {/* Orders */}
-          <Route path="orders" element={<Navigate to="/pos/orders/active" replace />} />
-          <Route path="orders/active" element={<ActiveOrders />} />
-          <Route path="orders/completed" element={<CompletedOrders />} />
-          <Route path="orders/cancelled" element={<CancelledOrders />} />
+            {/* Orders */}
+            <Route path="orders" element={<Navigate to="/pos/orders/active" replace />} />
+            <Route path="orders/active" element={<ActiveOrders />} />
+            <Route path="orders/completed" element={<CompletedOrders />} />
+            <Route path="orders/cancelled" element={<CancelledOrders />} />
 
-          {/* Billing */}
-          <Route path="billing" element={<Navigate to="/pos/billing/generate" replace />} />
-          <Route path="billing/generate" element={<GenerateInvoice />} />
-          <Route path="billing/history" element={<PaymentHistory />} />
-          <Route path="billing/register" element={<CashRegister />} />
+            {/* Billing */}
+            <Route path="billing" element={<Navigate to="/pos/billing/generate" replace />} />
+            <Route path="billing/generate" element={<GenerateInvoice />} />
+            <Route path="billing/history" element={<PaymentHistory />} />
+            <Route path="billing/register" element={<CashRegister />} />
 
-          {/* CRM */}
-          <Route path="customers/list" element={<CustomerList />} />
+            {/* CRM */}
+            <Route path="customers/list" element={<CustomerList />} />
 
-          {/* New: Menu Management */}
-          <Route path="menu" element={<MenuManagement />} />
+            {/* Settings & Security */}
+            <Route path="security" element={<PosSecurityPage />} />
 
-          {/* New: Operations Dashboard */}
-          <Route path="operations" element={<OperationsDashboard />} />
+            {/* New: Menu Management */}
+            <Route path="menu" element={<MenuManagement />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/pos/dashboard" replace />} />
-        </Route>
-      </Routes>
+            {/* New: Operations Dashboard */}
+            <Route path="operations" element={<OperationsDashboard />} />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/pos/dashboard" replace />} />
+          </Route>
+        </Routes>
+      )}
     </PosProvider>
   );
 }

@@ -269,7 +269,7 @@ export default function ItemDetailPage() {
 
       <div className="relative z-10 max-w-lg mx-auto pb-24">
         <div className="relative w-full aspect-[4/5] overflow-hidden rounded-b-[4rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
-          <img src={item?.image} className="w-full h-full object-cover" alt={item?.name} />
+          <img src={item?.image?.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item?.image?.startsWith('/') ? '' : '/'}${item?.image}`} className="w-full h-full object-cover" alt={item?.name} />
           <div className="absolute inset-0 bg-gradient-to-t from-cream-50 dark:from-charcoal-900 via-transparent to-black/20" />
           <button onClick={() => navigate(-1)} className="absolute top-10 left-6 w-12 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-2xl flex items-center justify-center text-charcoal-900 dark:text-white border border-charcoal-900/10 dark:border-white/10 z-20">
             <ArrowLeft size={20} />
@@ -364,7 +364,7 @@ export default function ItemDetailPage() {
                    {item.items.map((ci, idx) => (
                       <div key={idx} className="flex items-center gap-4 bg-white/5 p-4 rounded-3xl border border-white/5">
                          <div className="w-12 h-12 rounded-2xl overflow-hidden bg-charcoal-800 shrink-0 border border-white/5">
-                            <img src={ci.item?.image} className="w-full h-full object-cover" alt="" />
+                            <img src={ci.item?.image?.startsWith('http') ? ci.item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${ci.item?.image?.startsWith('/') ? '' : '/'}${ci.item?.image}`} className="w-full h-full object-cover" alt="" />
                          </div>
                          <div className="flex-1">
                             <p className="text-sm font-bold text-white uppercase">{ci.item?.name}</p>

@@ -10,6 +10,7 @@ const initialState = {
   tableNumber: '7',
   specialInstructions: '',
   isOrderOnline: true, // Master toggle for ordering
+  branchId: null,
 };
 
 function cartReducer(state, action) {
@@ -71,6 +72,8 @@ function cartReducer(state, action) {
       return { ...state, specialInstructions: action.payload };
     case 'SET_ORDERING_MODE':
       return { ...state, isOrderOnline: action.payload };
+    case 'SET_BRANCH_ID':
+      return { ...state, branchId: action.payload };
     default:
       return state;
   }
@@ -101,6 +104,7 @@ export function CartProvider({ children }) {
   const setTable = (table) => dispatch({ type: 'SET_TABLE', payload: table });
   const setInstructions = (instructions) =>
     dispatch({ type: 'SET_INSTRUCTIONS', payload: instructions });
+  const setBranchId = (branchId) => dispatch({ type: 'SET_BRANCH_ID', payload: branchId });
 
   return (
     <CartContext.Provider
@@ -120,6 +124,7 @@ export function CartProvider({ children }) {
         setOrderType,
         setTable,
         setInstructions,
+        setBranchId,
       }}
     >
       {children}

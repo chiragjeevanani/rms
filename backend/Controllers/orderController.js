@@ -1,5 +1,6 @@
 const Order = require('../Models/Order');
 const Table = require('../Models/Table');
+const mongoose = require('mongoose');
 
 // 1. Create a dynamic order number helper
 const generateOrderNumber = async () => {
@@ -24,13 +25,15 @@ const createOrder = async (req, res) => {
       orderType, 
       waiterName,
       status,
-      source 
+      source,
+      branchId,
+      customer
     } = req.body;
     
     // Check if an active order exists for this table
     let order = await Order.findOne({ 
       tableName, 
-      status: { $nin: ['Paid', 'Cancelled', 'Void'] } 
+      status: { $nin: ['completed', 'cancelled'] } 
     });
 
     const io = req.app.get('socketio');
@@ -53,6 +56,7 @@ const createOrder = async (req, res) => {
       if (orderType !== undefined) order.orderType = orderType;
       if (waiterName !== undefined) order.waiterName = waiterName;
       if (status !== undefined) order.status = status;
+      if (customer !== undefined) order.customer = customer;
       
       await order.save();
       if (io) io.emit('statusUpdated', order); // Notify KDS and others
@@ -68,7 +72,7 @@ const createOrder = async (req, res) => {
 
     // New Order creation
     const orderNumber = await generateOrderNumber();
-    const table = await Table.findOne({ tableName });
+    const table = await Table.findOne({ $or: [{ tableName }, { tableCode: tableName }] });
 
     const newOrder = new Order({
       orderNumber,
@@ -84,8 +88,10 @@ const createOrder = async (req, res) => {
       grandTotal,
       orderType,
       waiterName,
-      status: status || 'Pending',
-      source: source || 'POS Terminal'
+      status: status?.toLowerCase() || 'pending',
+      source: source || 'POS Terminal',
+      customer,
+      branchId: branchId || table?.branchId
     });
 
     await newOrder.save();
@@ -123,7 +129,7 @@ const getAllOrders = async (req, res) => {
 
 const getActiveOrders = async (req, res) => {
   try {
-    const filter = { status: { $nin: ['Paid', 'Cancelled', 'Void'] } };
+    const filter = { status: { $nin: ['completed', 'cancelled'] } };
     if (req.query.branchId) filter.branchId = req.query.branchId;
     const orders = await Order.find(filter)
       .populate('items.itemId')
@@ -137,7 +143,7 @@ const getActiveOrders = async (req, res) => {
 
 const getCompletedOrders = async (req, res) => {
   try {
-    const filter = { status: 'Paid' };
+    const filter = { status: 'completed' };
     if (req.query.branchId) filter.branchId = req.query.branchId;
     const orders = await Order.find(filter)
       .populate('items.itemId')
@@ -151,7 +157,7 @@ const getCompletedOrders = async (req, res) => {
 
 const getCancelledOrders = async (req, res) => {
   try {
-    const filter = { status: { $in: ['cancelled', 'Void'] } };
+    const filter = { status: 'cancelled' };
     if (req.query.branchId) filter.branchId = req.query.branchId;
     const orders = await Order.find(filter)
       .populate('items.itemId')
@@ -167,7 +173,7 @@ const getCancelledOrders = async (req, res) => {
 const settleOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { payments, status = 'Paid' } = req.body;
+    const { payments, status = 'completed' } = req.body;
     
     const order = await Order.findById(orderId);
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
@@ -180,7 +186,8 @@ const settleOrder = async (req, res) => {
     }
     
     order.payments = payments || [];
-    order.status = status;
+    order.status = 'completed';
+    order.isBilled = true;
     order.closedAt = new Date();
     
     await order.save();
@@ -210,20 +217,26 @@ const updateOrderStatus = async (req, res) => {
     const { status } = req.body;
     const updateData = { status };
     
-    if (status === 'Preparing') updateData.prepStartedAt = new Date();
-    if (status === 'Ready') updateData.readyAt = new Date();
-    if (status.toLowerCase() === 'paid') updateData.closedAt = new Date();
+    if (status.toLowerCase() === 'preparing') updateData.prepStartedAt = new Date();
+    if (status.toLowerCase() === 'ready') updateData.readyAt = new Date();
+    if (status.toLowerCase() === 'completed') updateData.closedAt = new Date();
+    if (status.toLowerCase() === 'billed' || status.toLowerCase() === 'printed') {
+      updateData.isBilled = true;
+      // Keep previous status or default to ready
+      delete updateData.status; 
+    }
 
     const order = await Order.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
     // Free the table if status is Paid/Cancelled/Void
-    const terminatingStatuses = ['paid', 'cancelled', 'void'];
-    if (terminatingStatuses.includes(status.toLowerCase())) {
+    const terminatingStatuses = ['completed', 'cancelled'];
+    const currentStatus = status ? status.toLowerCase() : '';
+    if (terminatingStatuses.includes(currentStatus)) {
         if (order.tableName) {
             await Table.findOneAndUpdate(
                 { tableName: order.tableName }, 
-                { status: 'Dirty', isAvailable: false }
+                { status: 'Available', isAvailable: true }
             );
             console.log(`Table ${order.tableName} released due to order status: ${status}`);
         }
@@ -271,7 +284,7 @@ const getKitchenAnalytics = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const filter = req.query.branchId ? { branchId: new mongoose.Types.ObjectId(req.query.branchId) } : {};
     
     const counts = {
       total: await Order.countDocuments(filter),
@@ -310,7 +323,7 @@ const getKitchenAnalytics = async (req, res) => {
 
     // 2. Category Distribution (Top Items)
     const matchStage = Object.keys(filter).length > 0 
-      ? { $match: { branchId: new require('mongoose').Types.ObjectId(req.query.branchId) } } 
+      ? { $match: { branchId: filter.branchId } } 
       : { $match: {} };
       
     const categories = await Order.aggregate([
@@ -500,30 +513,66 @@ const getStaffDailyStats = async (req, res) => {
 const getStaffDashboardSnapshot = async (req, res) => {
   try {
     const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
-    const [availableCount, occupiedCount, reservedCount, pendingCount, readyCount, activeCount, completedCount] = await Promise.all([
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [availableCount, reservedCount, pendingCount, preparingCount, readyCount, completedCount, cancelledCount, todayOrders] = await Promise.all([
       Table.countDocuments({ ...filter, status: 'Available' }),
-      Table.countDocuments({ ...filter, status: 'Occupied' }),
       Table.countDocuments({ ...filter, status: 'Reserved' }),
-      Order.countDocuments({ ...filter, status: 'Pending' }),
-      Order.countDocuments({ ...filter, status: 'Ready' }),
-      Order.countDocuments({ ...filter, status: { $nin: ['Paid', 'Cancelled', 'Void'] } }),
-      Order.countDocuments({ ...filter, status: 'Paid', createdAt: { $gte: new Date().setHours(0,0,0,0) } })
+      Order.countDocuments({ ...filter, status: 'pending' }),
+      Order.countDocuments({ ...filter, status: 'preparing' }),
+      Order.countDocuments({ ...filter, status: 'ready' }),
+      Order.countDocuments({ ...filter, status: 'completed', updatedAt: { $gte: todayStart } }),
+      Order.countDocuments({ ...filter, status: 'cancelled', updatedAt: { $gte: todayStart } }),
+      Order.find({ ...filter, status: 'completed', updatedAt: { $gte: todayStart } })
     ]);
+
+    const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
 
     res.json({
       success: true,
       data: {
         availableTables: availableCount,
-        occupiedTables: occupiedCount,
         reservedTables: reservedCount,
         pendingOrders: pendingCount,
-        readyPickups: readyCount,
-        activeOrders: activeCount,
-        completedOrders: completedCount
+        preparingOrders: preparingCount,
+        readyOrders: readyCount,
+        completedToday: completedCount,
+        cancelledToday: cancelledCount,
+        todayRevenue
       }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Update specific item quantity
+const updateItemQuantity = async (req, res) => {
+  try {
+    const { orderId, itemId } = req.params;
+    const { quantity } = req.body;
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    const item = order.items.find(i => i._id.toString() === itemId);
+    if (!item) return res.status(404).json({ success: false, message: 'Item not found in order' });
+
+    item.quantity = Math.max(1, quantity);
+    
+    // Re-calculate totals
+    order.subTotal = order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    order.tax = Math.round(order.subTotal * 0.05);
+    order.grandTotal = order.subTotal + order.tax + (order.serviceCharge || 0) + (order.deliveryCharge || 0) + (order.containerCharge || 0) - (order.discount?.amount || 0);
+    
+    await order.save();
+
+    const io = req.app.get('socketio');
+    if (io) io.emit('statusUpdated', order);
+
+    res.json({ success: true, message: 'Quantity Updated', data: order });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -536,6 +585,7 @@ module.exports = {
   settleOrder,
   updateOrderStatus,
   voidItem,
+  updateItemQuantity,
   getKitchenAnalytics,
   getSalesAnalytics,
   getStaffDailyStats,

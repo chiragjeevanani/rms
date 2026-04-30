@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  LayoutGrid, Bell, Clock, CheckCircle, 
+  LayoutGrid, Bell, Clock, CheckCircle, XCircle,
   Settings2, LogOut, Search, Activity, User, Sun, Moon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -17,6 +17,7 @@ export default function KdsTopNavbar() {
     { path: "/kds/incoming", icon: Bell, label: "Incoming" },
     { path: "/kds/preparing", icon: Clock, label: "Preparing" },
     { path: "/kds/completed", icon: CheckCircle, label: "Completed" },
+    { path: "/kds/cancelled", icon: XCircle, label: "Cancelled" },
   ];
 
   const settingsNav = [

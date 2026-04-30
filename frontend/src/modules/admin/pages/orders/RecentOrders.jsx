@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Filter, Clock, Eye, MapPin, User, Hash, Calendar } from 'lucide-react';
+import { ShoppingBag, Search, Filter, Clock, Eye, MapPin, User, Hash, Calendar, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
@@ -96,7 +96,8 @@ export default function RecentOrders() {
                          o.waiterName?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'All' || o.status === statusFilter;
-    const branchMatch = selectedBranchFilter === 'all' || o.branchId === selectedBranchFilter;
+    const oBranchId = typeof o.branchId === 'object' && o.branchId !== null ? o.branchId._id : o.branchId;
+    const branchMatch = selectedBranchFilter === 'all' || oBranchId === selectedBranchFilter;
     
     return matchesSearch && matchesStatus && branchMatch;
   });
@@ -236,7 +237,7 @@ export default function RecentOrders() {
       >
         {viewingOrder && (
           <div className="space-y-8">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Source Entity</label>
                 <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
@@ -245,10 +246,17 @@ export default function RecentOrders() {
                 </div>
               </div>
               <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Sector Designation</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Sector</label>
                 <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
                    <MapPin size={14} className="text-brand-500" />
                    {viewingOrder.tableName}
+                </div>
+              </div>
+              <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Branch</label>
+                <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
+                   <Building2 size={14} className="text-brand-500" />
+                   {branches.find(b => b._id === (typeof viewingOrder.branchId === 'object' ? viewingOrder.branchId?._id : viewingOrder.branchId))?.branchName || 'Global/Unknown'}
                 </div>
               </div>
             </div>

@@ -19,13 +19,21 @@ export default function PosSidebar({ isOpen }) {
       label: 'Operations',
       items: [
         { 
-          label: 'Orders', 
-          path: '/pos/orders', 
-          icon: ShoppingCart,
+          label: 'Dine-In Orders', 
+          path: '/pos/orders/dine-in', 
+          icon: Table,
           subItems: [
-            { label: 'Active Orders', path: '/pos/orders/active', icon: Clock },
-            { label: 'Completed Orders', path: '/pos/orders/completed', icon: CheckCircle2 },
-            { label: 'Cancelled Orders', path: '/pos/orders/cancelled', icon: XCircle },
+            { label: 'Active Dine-In', path: '/pos/orders/active?type=Dine-In', icon: Clock },
+            { label: 'Completed', path: '/pos/orders/completed?type=Dine-In', icon: CheckCircle2 },
+          ]
+        },
+        { 
+          label: 'Quick Service', 
+          path: '/pos/orders/quick-service', 
+          icon: Zap,
+          subItems: [
+            { label: 'Active Takeaway', path: '/pos/orders/active?type=Takeaway', icon: Clock },
+            { label: 'Completed', path: '/pos/orders/completed?type=Takeaway', icon: CheckCircle2 },
           ]
         },
       ]
@@ -77,7 +85,20 @@ export default function PosSidebar({ isOpen }) {
     }
   ];
 
-  const [expandedMenus, setExpandedMenus] = useState([]);
+  const [expandedMenus, setExpandedMenus] = useState(() => {
+    // Auto-expand the active group on initial load
+    const activeGroups = [];
+    navGroups.forEach(group => {
+      group.items.forEach(item => {
+        const isChildActive = item.subItems?.some(sub => {
+          const [path, query] = sub.path.split('?');
+          return location.pathname === path && (!query || location.search === '?' + query);
+        });
+        if (isChildActive) activeGroups.push(item.label);
+      });
+    });
+    return activeGroups;
+  });
 
   const toggleSubmenu = (label) => {
     setExpandedMenus(prev => 
@@ -151,7 +172,8 @@ export default function PosSidebar({ isOpen }) {
                         className="overflow-hidden pl-3 space-y-0.5 pt-0.5 pb-1"
                       >
                         {item.subItems.map((subItem) => {
-                          const isSubActive = location.pathname === subItem.path;
+                          const [subPath, subQuery] = subItem.path.split('?');
+                          const isSubActive = location.pathname === subPath && (!subQuery || location.search === '?' + subQuery);
                           return (
                             <button
                               key={subItem.label}
