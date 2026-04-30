@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Store, Utensils, Box, Users, 
@@ -17,102 +17,114 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const navGroups = [
-    {
-      label: 'Main',
-      items: [
-        { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-        { label: 'Branches', path: '/admin/branches', icon: Store },
-      ]
-    },
-    {
-      label: 'Catalog & Items',
-      items: [
-        { 
-          label: 'Menu Management', 
-          path: '/admin/menu', 
-          icon: Utensils,
-          subItems: [
-            { label: 'Categories', path: '/admin/menu/categories' },
-            { label: 'Items', path: '/admin/menu/items' },
-            { label: 'Modifiers', path: '/admin/menu/modifiers' },
-            { label: 'Combo Meals', path: '/admin/menu/combos' },
-          ]
-        },
-      ]
-    },
-    {
-      label: 'Supply Chain',
-      items: [
-        { 
-          label: 'Inventory Management', 
-          path: '/admin/inventory', 
-          icon: Box,
-          subItems: [
-            { label: 'Stock Management', path: '/admin/inventory/stock' },
-            { label: 'Vendors', path: '/admin/inventory/vendors' },
-            { label: 'Purchase Orders', path: '/admin/inventory/orders' },
-            { label: 'Wastage', path: '/admin/inventory/wastage' },
-          ]
-        },
-      ]
-    },
-    {
-      label: 'Operations',
-      items: [
-        { 
-          label: 'Order Management', 
-          path: '/admin/orders', 
-          icon: ShoppingCart,
-          subItems: [
-            { label: 'Recent Orders', path: '/admin/orders/recent' },
-            { label: 'Dine In Orders', path: '/admin/orders/dine-in' },
-            { label: 'Takeaway Orders', path: '/admin/orders/takeaway' },
-            { label: 'Delivery Orders', path: '/admin/orders/delivery' },
-          ]
-        },
-        { 
-          label: 'Table Management', 
-          path: '/admin/tables', 
-          icon: Grid,
-          subItems: [
-            { label: 'All Tables', path: '/admin/tables/all' },
-            { label: 'Occupied Tables', path: '/admin/tables/occupied' },
-          ]
-        },
-      ]
-    },
-    {
-      label: 'Personnel',
-      items: [
-        { 
-          label: 'Staff & User Management', 
-          path: '/admin/staff', 
-          icon: Users,
-          subItems: [
-            { label: 'Staff List', path: '/admin/staff/list' },
-            { label: 'Roles', path: '/admin/staff/roles' },
-            { label: 'Attendance', path: '/admin/staff/attendance' },
-          ]
-        },
-      ]
-    },
-    {
-      label: 'Compliance & Config',
-      items: [
-        { 
-          label: 'Reports & Settings', 
-          path: '/admin/reports', 
-          icon: BarChart3,
-          subItems: [
-            { label: 'Sales Reports', path: '/admin/reports/sales' },
-            { label: 'Inventory Reports', path: '/admin/reports/inventory' },
-            { label: 'System Settings', path: '/admin/settings/profile' },
-          ]
-        },
-      ]
+  const adminInfo = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('admin_info') || '{}');
+    } catch (e) {
+      return {};
     }
-  ];
+  }, []);
+
+  const navGroups = useMemo(() => {
+    const groups = [
+      {
+        label: 'Main',
+        items: [
+          { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Branches', path: '/admin/branches', icon: Store },
+        ]
+      },
+      {
+        label: 'Catalog & Items',
+        items: [
+          { 
+            label: 'Menu Management', 
+            path: '/admin/menu', 
+            icon: Utensils,
+            subItems: [
+              { label: 'Categories', path: '/admin/menu/categories' },
+              { label: 'Items', path: '/admin/menu/items' },
+              { label: 'Modifiers', path: '/admin/menu/modifiers' },
+              { label: 'Combo Meals', path: '/admin/menu/combos' },
+            ]
+          },
+        ]
+      },
+      {
+        label: 'Supply Chain',
+        items: [
+          { 
+            label: 'Inventory Management', 
+            path: '/admin/inventory', 
+            icon: Box,
+            subItems: [
+              { label: 'Stock Management', path: '/admin/inventory/stock' },
+              { label: 'Vendors', path: '/admin/inventory/vendors' },
+              { label: 'Purchase Orders', path: '/admin/inventory/orders' },
+              { label: 'Wastage', path: '/admin/inventory/wastage' },
+            ]
+          },
+        ]
+      },
+      {
+        label: 'Operations',
+        items: [
+          { 
+            label: 'Order Management', 
+            path: '/admin/orders', 
+            icon: ShoppingCart,
+            subItems: [
+              { label: 'Recent Orders', path: '/admin/orders/recent' },
+              { label: 'Dine In Orders', path: '/admin/orders/dine-in' },
+              { label: 'Takeaway Orders', path: '/admin/orders/takeaway' },
+              { label: 'Delivery Orders', path: '/admin/orders/delivery' },
+            ]
+          },
+          { 
+            label: 'Table Management', 
+            path: '/admin/tables', 
+            icon: Grid,
+            subItems: [
+              { label: 'All Tables', path: '/admin/tables/all' },
+              { label: 'Occupied Tables', path: '/admin/tables/occupied' },
+            ]
+          },
+        ]
+      },
+      {
+        label: 'Personnel',
+        items: [
+          { 
+            label: 'Staff & User Management', 
+            path: '/admin/staff', 
+            icon: Users,
+            subItems: [
+              { label: 'Staff List', path: '/admin/staff/list' },
+              { label: 'Roles', path: '/admin/staff/roles' },
+              { label: 'Attendance', path: '/admin/staff/attendance' },
+            ]
+          },
+        ]
+      },
+      {
+        label: 'Compliance & Config',
+        items: [
+          { 
+            label: 'Reports & Settings', 
+            path: '/admin/reports', 
+            icon: BarChart3,
+            subItems: [
+              { label: 'Sales Reports', path: '/admin/reports/sales' },
+              { label: 'Inventory Reports', path: '/admin/reports/inventory' },
+              ...(adminInfo.thirdPartyApi ? [{ label: 'Integrations', path: '/admin/settings/integrations' }] : []),
+              { label: 'System Settings', path: '/admin/settings/profile' },
+            ]
+          },
+        ]
+      }
+    ];
+    return groups;
+  }, [adminInfo.thirdPartyApi]);
 
   const [expandedMenus, setExpandedMenus] = useState(['Settings']);
 

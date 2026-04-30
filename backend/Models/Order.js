@@ -60,11 +60,12 @@ const orderSchema = new mongoose.Schema({
   grandTotal: { type: Number, required: true },
   roundOff: { type: Number, default: 0 },
   
-  status: {
+  source: {
     type: String,
-    enum: ['pending', 'preparing', 'ready', 'completed', 'cancelled', 'paid'],
-    default: 'pending'
+    enum: ['POS Terminal', 'Customer App', 'SWIGGY', 'ZOMATO'],
+    default: 'POS Terminal'
   },
+  externalOrderId: { type: String }, // For Swiggy/Zomato IDs
   isBilled: { type: Boolean, default: false },
   orderType: {
     type: String,
@@ -75,9 +76,10 @@ const orderSchema = new mongoose.Schema({
     type: String,
     default: 'Customer App'
   },
-  source: {
+  status: {
     type: String,
-    default: 'POS Terminal'
+    enum: ['pending', 'preparing', 'ready', 'completed', 'cancelled', 'paid', 'picked_up', 'delivered'],
+    default: 'pending'
   },
   
   // Payment & Splitting

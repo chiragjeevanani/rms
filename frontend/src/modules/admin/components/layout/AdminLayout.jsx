@@ -1,5 +1,5 @@
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../navigation/Sidebar';
@@ -7,6 +7,34 @@ import TopBar from '../navigation/TopBar';
 
 export default function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Sync Admin Info on Mount
+  useEffect(() => {
+    const syncProfile = async () => {
+      try {
+        const token = localStorage.getItem('admin_access');
+        if (!token) return;
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data && data._id) {
+          // Flatten/format data to match login response if needed
+          const updatedInfo = {
+            id: data._id,
+            name: data.name,
+            email: data.email,
+            thirdPartyApi: data.thirdPartyApi
+          };
+          localStorage.setItem('admin_info', JSON.stringify(updatedInfo));
+        }
+      } catch (err) {
+        console.error('Profile sync failed');
+      }
+    };
+    syncProfile();
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F0EBE3] text-stone-800 selection:bg-amber-50 admin-layout transition-colors duration-500">

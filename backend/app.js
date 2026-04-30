@@ -19,10 +19,12 @@ const tableRoutes = require('./Routers/tableRoutes');
 const reservationRoutes = require('./Routes/reservationRoutes');
 const superAdminRoutes = require('./Routers/superAdminRoutes');
 const branchRoutes = require('./Routers/branchRoutes');
+const swiggyRoutes = require('./Routers/swiggyRoutes');
 
 // Attach sub-routes to the main router
 router.use('/admin', adminRoutes);
 router.use('/superadmin', superAdminRoutes);
+router.use('/integrations/swiggy', swiggyRoutes);
 router.use('/category', categoryRoutes);
 router.use('/item', itemRoutes);
 router.use('/modifier', modifierRoutes);

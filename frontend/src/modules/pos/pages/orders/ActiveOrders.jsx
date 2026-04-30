@@ -146,6 +146,8 @@ export default function ActiveOrders() {
            {orderTypeFilter !== 'Takeaway' && <TabBtn active={activeTab === 'pending'} onClick={() => setActiveTab('pending')} label="Reserved" count={typeFilteredOrders.filter(o => o.status === 'pending').length} />}
            {orderTypeFilter !== 'Takeaway' && <TabBtn active={activeTab === 'preparing'} onClick={() => setActiveTab('preparing')} label="Preparing" count={typeFilteredOrders.filter(o => o.status === 'preparing').length} />}
            <TabBtn active={activeTab === 'ready'} onClick={() => setActiveTab('ready')} label="Billed" count={typeFilteredOrders.filter(o => o.status === 'ready').length} />
+           <TabBtn active={activeTab === 'picked_up'} onClick={() => setActiveTab('picked_up')} label="Picked Up" count={typeFilteredOrders.filter(o => o.status === 'picked_up').length} />
+           <TabBtn active={activeTab === 'delivered'} onClick={() => setActiveTab('delivered')} label="Delivered" count={typeFilteredOrders.filter(o => o.status === 'delivered').length} />
            <TabBtn active={activeTab === 'completed'} onClick={() => setActiveTab('completed')} label="Settled" count={typeFilteredOrders.filter(o => o.status === 'completed').length} />
            {orderTypeFilter !== 'Takeaway' && <TabBtn active={activeTab === 'cancelled'} onClick={() => setActiveTab('cancelled')} label="Cancelled" count={typeFilteredOrders.filter(o => o.status === 'cancelled').length} />}
         </div>
@@ -180,15 +182,31 @@ export default function ActiveOrders() {
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--primary-color)] opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                   {/* Table / Order */}
-                  <div className="col-span-2 flex items-center gap-4">
-                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${order.status?.toLowerCase() === 'ready' ? 'bg-emerald-500 shadow-emerald-500/20' : 'bg-[var(--primary-color)] shadow-[var(--primary-color)]/20'}`}>
-                        <Utensils size={18} />
-                     </div>
-                     <div className="flex flex-col">
-                        <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{order.tableName}</span>
-                        <span className="text-[10px] font-bold text-slate-400 tracking-wider">#{order.orderNumber.split('-').pop()}</span>
-                     </div>
-                  </div>
+                 <div className="col-span-2 flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${
+                      order.source === 'SWIGGY' ? 'bg-orange-500 shadow-orange-500/20' :
+                      order.source === 'ZOMATO' ? 'bg-red-500 shadow-red-500/20' :
+                      order.status?.toLowerCase() === 'ready' ? 'bg-emerald-500 shadow-emerald-500/20' : 
+                      'bg-[var(--primary-color)] shadow-[var(--primary-color)]/20'
+                    }`}>
+                       {order.source === 'SWIGGY' ? <ShoppingBag size={18} /> : 
+                        order.source === 'ZOMATO' ? <ShoppingBag size={18} /> :
+                        <Utensils size={18} />}
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{order.tableName}</span>
+                       <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-slate-400 tracking-wider">#{order.orderNumber.split('-').pop()}</span>
+                          {order.source !== 'POS Terminal' && (
+                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${
+                              order.source === 'SWIGGY' ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'
+                            }`}>
+                              {order.source}
+                            </span>
+                          )}
+                       </div>
+                    </div>
+                 </div>
 
                   {/* Total Amount (Swapped) */}
                   <div className="col-span-2">
