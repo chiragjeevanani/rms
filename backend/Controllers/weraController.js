@@ -282,6 +282,70 @@ exports.orderWebhook = async (req, res) => {
       const orderNumber = await generateOrderNumber();
       const orderSource = (body.order_from || 'SWIGGY').toUpperCase();
 
+      // Extract customer-facing financial details from the webhook payload (with robust fallbacks)
+      const billDetail = body.bill_detail || body.bill_details || {};
+      const billing = body.billing || {};
+
+      const deliveryCharge = Number(
+        body.customer_delivery_charge ||
+        billDetail.customer_delivery_charge ||
+        billDetail.delivery_charge ||
+        billing.delivery_charge ||
+        body.delivery_charge ||
+        0
+      );
+
+      const discountAmount = Number(
+        body.customer_discount ||
+        billDetail.customer_discount ||
+        billDetail.discount ||
+        billing.discount ||
+        body.discount ||
+        0
+      );
+
+      const tax = Number(
+        body.customer_tax ||
+        billDetail.customer_tax ||
+        billDetail.tax ||
+        billing.tax ||
+        (body.cgst || 0) + (body.sgst || 0)
+      );
+
+      const platformFee = Number(
+        body.platform_fee ||
+        body.customer_platform_fee ||
+        billDetail.platform_fee ||
+        billDetail.customer_platform_fee ||
+        billing.platform_fee ||
+        0
+      );
+
+      const welfareFee = Number(
+        body.gig_worker_welfare_fee ||
+        body.customer_welfare_fee ||
+        billDetail.gig_worker_welfare_fee ||
+        billDetail.customer_welfare_fee ||
+        billing.gig_worker_welfare_fee ||
+        0
+      );
+
+      const grandTotal = Number(
+        body.customer_payable ||
+        body.customer_grand_total ||
+        billDetail.customer_payable ||
+        billDetail.customer_grand_total ||
+        billing.total_customer_payable ||
+        body.gross_amount ||
+        0
+      );
+
+      const discountReason = 
+        body.discount_reason || 
+        billDetail.discount_reason || 
+        billing.discount_reason || 
+        (orderSource === 'SWIGGY' ? 'Swiggy Promo' : orderSource === 'ZOMATO' ? 'Zomato Promo' : 'Online Platform Campaign');
+
       const newOrder = new Order({
         orderNumber,
         tableName: `Delivery - ${body.order_from || 'Online'}`,
@@ -294,15 +358,18 @@ exports.orderWebhook = async (req, res) => {
         },
         items,
         subTotal: body.net_amount || 0,
-        tax: (body.cgst || 0) + (body.sgst || 0),
+        tax: tax,
         discount: {
-          amount: body.discount || 0,
+          amount: discountAmount,
           type: 'fixed',
-          reason: 'Online Platform Campaign'
+          reason: discountReason
         },
-        deliveryCharge: body.delivery_charge || 0,
+        deliveryCharge: deliveryCharge,
         containerCharge: body.order_packaging || 0,
-        grandTotal: body.gross_amount || 0,
+        platformFee: platformFee,
+        welfareFee: welfareFee,
+        weraPayload: body,
+        grandTotal: grandTotal,
         source: orderSource,
         weraOrderId: body.order_id.toString(),
         externalOrderId: body.external_order_id ? body.external_order_id.toString() : '',

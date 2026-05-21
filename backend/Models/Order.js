@@ -57,6 +57,9 @@ const orderSchema = new mongoose.Schema({
   serviceCharge: { type: Number, default: 0 },
   deliveryCharge: { type: Number, default: 0 },
   containerCharge: { type: Number, default: 0 },
+  platformFee: { type: Number, default: 0 },
+  welfareFee: { type: Number, default: 0 },
+  weraPayload: { type: mongoose.Schema.Types.Mixed },
   grandTotal: { type: Number, required: true },
   roundOff: { type: Number, default: 0 },
   

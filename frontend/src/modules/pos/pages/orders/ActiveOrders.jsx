@@ -931,6 +931,18 @@ export default function ActiveOrders() {
                           <span className="text-slate-800">₹{selectedOrder.containerCharge.toFixed(2)}</span>
                         </div>
                       )}
+                      {selectedOrder.platformFee > 0 && (
+                        <div className="flex justify-between">
+                          <span>Platform Fee</span>
+                          <span className="text-slate-800">₹{selectedOrder.platformFee.toFixed(2)}</span>
+                        </div>
+                      )}
+                      {selectedOrder.welfareFee > 0 && (
+                        <div className="flex justify-between">
+                          <span>Gig Worker's Welfare Fee</span>
+                          <span className="text-slate-800">₹{selectedOrder.welfareFee.toFixed(2)}</span>
+                        </div>
+                      )}
                       {selectedOrder.deliveryCharge > 0 && (
                         <div className="flex justify-between">
                           <span>Delivery Charges</span>
