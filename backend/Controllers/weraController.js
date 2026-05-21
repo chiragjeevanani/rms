@@ -130,11 +130,18 @@ exports.orderWebhook = async (req, res) => {
   const logFilePath = path.join(__dirname, '../webhook_payloads.log');
 
   try {
-    const body = req.body;
+    const body = req.body || {};
     console.log('Incoming Wera Webhook Payload:', JSON.stringify(body, null, 2));
     
     // Log payload to file
     fs.appendFileSync(logFilePath, JSON.stringify({ type: 'incoming', timestamp: new Date(), body }) + '\n');
+
+    if (!req.body || Object.keys(body).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Empty request body or invalid Content-Type. Please send JSON with Content-Type: application/json.' 
+      });
+    }
 
     // 1. Zomato Complaint Webhook
     if (body.event === 'order_complaint') {
