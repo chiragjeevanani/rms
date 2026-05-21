@@ -34,9 +34,12 @@ connectDB().then(() => {
 // Routes
 app.use('/api', routes);
 
-// Route for Wera webhook (configured by Wera integration team)
+// Routes for Wera webhooks (configured in Wera partner portal)
 const weraController = require('./Controllers/weraController');
 app.post('/ol/api/v1/getOrder', weraController.orderWebhook);
+app.post('/ol/api/v1/cancelOrder', weraController.orderWebhook);
+app.post('/ol/api/v1/getDeliveryAgentDet', weraController.orderWebhook);
+app.post('/ol/api/v1/autoAccept', weraController.orderWebhook);
 
 app.get('/', (req, res) => {
   res.send('API is running with Socket.IO support...');
