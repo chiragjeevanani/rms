@@ -19,12 +19,14 @@ export default function Integrations() {
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [pushingPlatform, setPushingPlatform] = useState(null);
   const [settings, setSettings] = useState({
     apiKey: '',
     merchantId: '',
     outletId: '',
-    baseUrl: 'https://pos.werafoods.com',
-    isConnected: false
+    baseUrl: 'https://api.werafoods.com',
+    isConnected: false,
+    lastMenuPushedAt: null
   });
 
   // Fetch branches on mount
@@ -67,15 +69,16 @@ export default function Integrations() {
             apiKey: result.data.apiKey || '',
             merchantId: result.data.merchantId || '',
             outletId: result.data.outletId || '',
-            baseUrl: result.data.baseUrl || 'https://pos.werafoods.com',
-            isConnected: result.data.isConnected || false
+            baseUrl: result.data.baseUrl || 'https://api.werafoods.com',
+            isConnected: result.data.isConnected || false,
+            lastMenuPushedAt: result.data.lastMenuPushedAt || null
           });
         } else {
           setSettings({
             apiKey: '',
             merchantId: '',
             outletId: '',
-            baseUrl: 'https://pos.werafoods.com',
+            baseUrl: 'https://api.werafoods.com',
             isConnected: false
           });
         }
@@ -133,7 +136,40 @@ export default function Integrations() {
     }
   };
 
-  const activeColor = '#6366f1'; // Premium Indigo theme for unified page
+  const handlePushMenu = async (platform) => {
+    if (!selectedBranchId) return toast.error('Please select a branch first');
+    setPushingPlatform(platform);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/integrations/wera/${platform}/${selectedBranchId}/menu/push`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`${platform.toUpperCase()} menu pushed successfully!`);
+        if (platform === 'swiggy') {
+          setSettings(prev => ({ ...prev, lastMenuPushedAt: new Date().toISOString() }));
+        }
+      } else {
+        toast.error(data.message || `Failed to push ${platform} menu`);
+      }
+    } catch (err) {
+      toast.error(`Error connecting to menu push service`);
+    } finally {
+      setPushingPlatform(null);
+    }
+  };
+
+  const activeColor = '#6366f1';
+
+  // Format last sync time relative to now
+  const formatSyncTime = (dateStr) => {
+    if (!dateStr) return null;
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-10">
@@ -247,7 +283,7 @@ export default function Integrations() {
                   value={settings.baseUrl}
                   onChange={(e) => setSettings({...settings, baseUrl: e.target.value})}
                   className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-xs font-bold focus:outline-none focus:ring-4 transition-all"
-                  placeholder="https://pos.werafoods.com"
+                  placeholder="https://api.werafoods.com"
                 />
               </div>
             </div>
@@ -296,26 +332,54 @@ export default function Integrations() {
                   <span className="text-base font-black italic tracking-tighter text-[#ff7a00]">swiggy</span>
                   <span className="text-[8px] font-black bg-orange-50 text-[#ff7a00] px-2.5 py-1 rounded-lg uppercase tracking-wider">Channel Active</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-medium leading-relaxed italic mb-6">
+
+                {/* Sync status message */}
+                {settings.lastMenuPushedAt ? (
+                  <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-emerald-50 rounded-xl">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></div>
+                    <div>
+                      <p className="text-[9px] font-black text-emerald-700 uppercase tracking-wider">Swiggy menu is up to date</p>
+                      <p className="text-[9px] text-emerald-500 font-medium">Last synced: {formatSyncTime(settings.lastMenuPushedAt)}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-amber-50 rounded-xl">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></div>
+                    <p className="text-[9px] font-black text-amber-700 uppercase tracking-wider">Menu not pushed yet</p>
+                  </div>
+                )}
+
+                <p className="text-[10px] text-slate-500 font-medium leading-relaxed italic mb-4">
                   Sync menu catalog, push inventory updates, or import menu directly from Swiggy.
                 </p>
                 <div className="flex gap-2">
-                 
-                  <button className="flex-1 py-2.5 bg-slate-50 hover:bg-[#ff7a00] hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer">Push Menu</button>
+                  <button 
+                    onClick={() => handlePushMenu('swiggy')}
+                    disabled={pushingPlatform !== null}
+                    className="flex-1 py-2.5 bg-slate-50 hover:bg-[#ff7a00] hover:text-white disabled:opacity-50 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer"
+                  >
+                    {pushingPlatform === 'swiggy' ? 'Pushing Menu...' : 'Push Menu'}
+                  </button>
                 </div>
               </div>
 
               {/* Zomato Sync Card */}
-              <div className="p-6 border border-slate-100 rounded-3xl hover:border-red-200 transition-all group">
+              <div className="p-6 border border-slate-100 rounded-3xl opacity-60 cursor-not-allowed">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-base font-black italic tracking-tighter text-[#cb202d]">zomato</span>
-                  <span className="text-[8px] font-black bg-red-50 text-[#cb202d] px-2.5 py-1 rounded-lg uppercase tracking-wider">Channel Active</span>
+                  <span className="text-[8px] font-black bg-slate-100 text-slate-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">Coming Soon</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-medium leading-relaxed italic mb-6">
-                  Sync menu catalog, push inventory updates, or import menu directly from Zomato.
+                <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic mb-6">
+                  Zomato menu sync is currently disabled. Swiggy integration is active.
                 </p>
                 <div className="flex gap-2">
-                  <button className="flex-1 py-2.5 bg-slate-50 hover:bg-[#cb202d] hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer">Push Menu</button>
+                  <button
+                    disabled
+                    title="Zomato integration coming soon"
+                    className="flex-1 py-2.5 bg-slate-100 text-slate-400 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-not-allowed"
+                  >
+                    Coming Soon
+                  </button>
                 </div>
               </div>
             </div>

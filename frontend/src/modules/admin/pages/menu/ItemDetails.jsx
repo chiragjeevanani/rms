@@ -6,7 +6,8 @@ import {
   CheckCircle2, AlertCircle, Trash2, Printer,
   Sparkles, Layers, Info, MessageSquare, ArrowUpRight,
   TrendingUp, ShieldCheck, Heart, Hash, Settings,
-  Eye, LayoutDashboard, Share2, ClipboardCheck
+  Eye, LayoutDashboard, Share2, ClipboardCheck,
+  Loader2, Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -17,10 +18,228 @@ export default function ItemDetails() {
   const navigate = useNavigate();
   const [item, setItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTogglingItem, setIsTogglingItem] = useState(false);
+  const [togglingSizes, setTogglingSizes] = useState({});
+  const [togglingAddons, setTogglingAddons] = useState({});
+  const [showSchedulePause, setShowSchedulePause] = useState(false);
+  const [pauseFromTime, setPauseFromTime] = useState('');
+  const [pauseToTime, setPauseToTime] = useState('');
 
   useEffect(() => {
     fetchItem();
   }, [id]);
+
+  const handleItemAvailabilityToggle = async (newStatus) => {
+    if (!item.branchId) {
+      toast.error('Branch ID not found on item');
+      return;
+    }
+    setIsTogglingItem(true);
+    const platforms = ['swiggy', 'zomato'];
+    
+    try {
+      const results = await Promise.allSettled(
+        platforms.map(async (platform) => {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/integrations/wera/${platform}/${item.branchId}/item/toggle`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+            },
+            body: JSON.stringify({
+              item_ids: [item._id],
+              status: newStatus
+            })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.message || `Failed on ${platform}`);
+          }
+          return { platform, message: data.message };
+        })
+      );
+
+      const errors = results.filter(r => r.status === 'rejected');
+      if (errors.length === platforms.length) {
+        toast.error('Failed to toggle item availability on all channels');
+      } else if (errors.length > 0) {
+        toast.success('Item status updated with partial channel warnings');
+        setItem(prev => ({ ...prev, isAvailable: newStatus }));
+      } else {
+        toast.success(`Item status toggled successfully to ${newStatus ? 'ON' : 'OFF'}`);
+        setItem(prev => ({ ...prev, isAvailable: newStatus }));
+      }
+    } catch (err) {
+      toast.error(err.message || 'Error updating item availability');
+    } finally {
+      setIsTogglingItem(false);
+    }
+  };
+
+  const handleSchedulePause = async () => {
+    if (!pauseFromTime || !pauseToTime) {
+      toast.error('Please specify both start and end times');
+      return;
+    }
+    
+    const fromTimeDate = new Date(pauseFromTime);
+    if (fromTimeDate < new Date()) {
+      toast.error('Pause start time cannot be in the past');
+      return;
+    }
+
+    if (new Date(pauseToTime) <= fromTimeDate) {
+      toast.error('Pause end time must be after the start time');
+      return;
+    }
+
+    setIsTogglingItem(true);
+    const platforms = ['swiggy', 'zomato'];
+    
+    try {
+      const results = await Promise.allSettled(
+        platforms.map(async (platform) => {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/integrations/wera/${platform}/${item.branchId}/item/toggle`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+            },
+            body: JSON.stringify({
+              item_ids: [item._id],
+              status: false,
+              from_time: pauseFromTime,
+              to_time: pauseToTime
+            })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.message || `Failed on ${platform}`);
+          }
+          return { platform, message: data.message };
+        })
+      );
+
+      const errors = results.filter(r => r.status === 'rejected');
+      if (errors.length === platforms.length) {
+        toast.error('Failed to schedule item pause on all channels');
+      } else {
+        toast.success(`Temporal pause scheduled successfully`);
+        setItem(prev => ({ ...prev, isAvailable: false }));
+        setShowSchedulePause(false);
+      }
+    } catch (err) {
+      toast.error(err.message || 'Error scheduling pause');
+    } finally {
+      setIsTogglingItem(false);
+    }
+  };
+
+  const handleSizeAvailabilityToggle = async (variantId, currentStatus) => {
+    if (!item.branchId) {
+      toast.error('Branch ID not found on item');
+      return;
+    }
+    const newStatus = !currentStatus;
+    
+    setTogglingSizes(prev => ({ ...prev, [variantId]: true }));
+    const platforms = ['swiggy', 'zomato'];
+
+    try {
+      const results = await Promise.allSettled(
+        platforms.map(async (platform) => {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/integrations/wera/${platform}/${item.branchId}/size/toggle`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+            },
+            body: JSON.stringify({
+              item_id: item._id,
+              size_id: variantId,
+              status: newStatus
+            })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.message || `Failed on ${platform}`);
+          }
+          return { platform, message: data.message };
+        })
+      );
+
+      const errors = results.filter(r => r.status === 'rejected');
+      if (errors.length === platforms.length) {
+        toast.error('Failed to toggle variant status on all channels');
+      } else {
+        toast.success(`Variant status updated successfully`);
+        setItem(prev => {
+          const updatedVariants = prev.variants.map(v => 
+            v._id === variantId ? { ...v, isAvailable: newStatus } : v
+          );
+          return { ...prev, variants: updatedVariants };
+        });
+      }
+    } catch (err) {
+      toast.error('Failed to toggle variant status');
+    } finally {
+      setTogglingSizes(prev => ({ ...prev, [variantId]: false }));
+    }
+  };
+
+  const handleAddonAvailabilityToggle = async (addonId, currentStatus) => {
+    if (!item.branchId) {
+      toast.error('Branch ID not found on item');
+      return;
+    }
+    const newStatus = !currentStatus;
+    
+    setTogglingAddons(prev => ({ ...prev, [addonId]: true }));
+    const platforms = ['swiggy', 'zomato'];
+
+    try {
+      const results = await Promise.allSettled(
+        platforms.map(async (platform) => {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/integrations/wera/${platform}/${item.branchId}/addon/toggle`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+            },
+            body: JSON.stringify({
+              addon_ids: [addonId],
+              status: newStatus
+            })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.message || `Failed on ${platform}`);
+          }
+          return { platform, message: data.message };
+        })
+      );
+
+      const errors = results.filter(r => r.status === 'rejected');
+      if (errors.length === platforms.length) {
+        toast.error('Failed to toggle addon status on all channels');
+      } else {
+        toast.success(`Addon status updated successfully`);
+        setItem(prev => {
+          const updatedModifiers = prev.modifiers.map(mod => {
+            const updatedOptions = mod.options.map(opt => 
+              opt._id === addonId ? { ...opt, isAvailable: newStatus } : opt
+            );
+            return { ...mod, options: updatedOptions };
+          });
+          return { ...prev, modifiers: updatedModifiers };
+        });
+      }
+    } catch (err) {
+      toast.error('Failed to toggle addon status');
+    } finally {
+      setTogglingAddons(prev => ({ ...prev, [addonId]: false }));
+    }
+  };
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
@@ -166,12 +385,113 @@ export default function ItemDetails() {
                   </div>
 
                   <div className="flex items-center justify-between text-slate-500">
-                     <div className="flex items-center gap-2">
+                     <div className="flex items-center justify-between text-slate-500">
                         <ShieldCheck size={16} />
                         <span className="text-[9px] font-black uppercase tracking-widest">Taxation {item.tax || 0}%</span>
                      </div>
                      <Info size={16} className="cursor-help hover:text-white transition-colors" />
                   </div>
+               </div>
+            </motion.div>
+
+            {/* Distribution Control Card */}
+            <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.15 }}
+               className="bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800 shadow-sm space-y-6"
+            >
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                        <Globe size={20} />
+                     </div>
+                     <div>
+                        <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider leading-none">Distribution Channel</h4>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Live storefront control</p>
+                     </div>
+                  </div>
+                  
+                  {/* Status Toggle Switch */}
+                  <button
+                    disabled={isTogglingItem}
+                    onClick={() => handleItemAvailabilityToggle(item.isAvailable !== false ? false : true)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none shadow-sm ${
+                      item.isAvailable !== false ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
+                    }`}
+                  >
+                    {isTogglingItem ? (
+                      <Loader2 size={12} className="animate-spin text-white mx-auto" />
+                    ) : (
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                          item.isAvailable !== false ? 'translate-x-[22px]' : 'translate-x-[3px]'
+                        }`}
+                      />
+                    )}
+                  </button>
+               </div>
+
+               {/* Channel specific badges */}
+               <div className="flex items-center gap-4 py-3 border-y border-slate-100 dark:border-slate-700 text-slate-500">
+                  <div className="flex items-center gap-1.5">
+                     <span className={`w-1.5 h-1.5 rounded-full ${item.isAvailable !== false ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                     <span className="text-[9px] font-black uppercase tracking-wider">Swiggy</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                     <span className={`w-1.5 h-1.5 rounded-full ${item.isAvailable !== false ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                     <span className="text-[9px] font-black uppercase tracking-wider">Zomato</span>
+                  </div>
+               </div>
+
+               {/* Temporal holiday pause settings */}
+               <div className="space-y-3">
+                  <button 
+                    onClick={() => setShowSchedulePause(!showSchedulePause)}
+                    className="w-full py-3 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-2 border border-slate-100 dark:border-slate-700/50 transition-all"
+                  >
+                     <Calendar size={12} />
+                     {showSchedulePause ? 'Cancel Temporal Pause' : 'Schedule Temporal Pause'}
+                  </button>
+
+                  <AnimatePresence>
+                     {showSchedulePause && (
+                        <motion.div
+                           initial={{ opacity: 0, height: 0 }}
+                           animate={{ opacity: 1, height: 'auto' }}
+                           exit={{ opacity: 0, height: 0 }}
+                           className="space-y-4 pt-2 overflow-hidden"
+                        >
+                           <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                 <label className="text-[8px] font-black uppercase tracking-widest text-slate-400">Pause From</label>
+                                 <input 
+                                    type="datetime-local" 
+                                    value={pauseFromTime}
+                                    onChange={(e) => setPauseFromTime(e.target.value)}
+                                    className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500"
+                                 />
+                              </div>
+                              <div className="space-y-1">
+                                 <label className="text-[8px] font-black uppercase tracking-widest text-slate-400">Pause To</label>
+                                 <input 
+                                    type="datetime-local" 
+                                    value={pauseToTime}
+                                    onChange={(e) => setPauseToTime(e.target.value)}
+                                    className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500"
+                                 />
+                              </div>
+                           </div>
+                           <button
+                              disabled={isTogglingItem || !pauseFromTime || !pauseToTime}
+                              onClick={handleSchedulePause}
+                              className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-rose-500/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                           >
+                              {isTogglingItem ? <Loader2 size={12} className="animate-spin" /> : 'Confirm Pause Slot'}
+                           </button>
+                        </motion.div>
+                     )}
+                  </AnimatePresence>
                </div>
             </motion.div>
 
@@ -284,9 +604,28 @@ export default function ItemDetails() {
                   </div>
                   <div className="space-y-3">
                     {item.variants?.length > 0 ? item.variants.map((v, i) => (
-                      <div key={i} className="flex justify-between items-center p-5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-transparent hover:border-blue-500/20 transition-all group">
+                      <div key={i} className={`flex justify-between items-center p-5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-transparent hover:border-blue-500/20 transition-all group ${v.isAvailable !== false ? '' : 'opacity-60 line-through'}`}>
                          <span className="text-xs font-black text-slate-900 dark:text-white uppercase group-hover:text-blue-500 transition-colors">{v.name}</span>
-                         <span className="text-sm font-black text-blue-600">₹{v.price}</span>
+                         <div className="flex items-center gap-4">
+                            <span className="text-sm font-black text-blue-600">₹{v.price}</span>
+                            <button
+                              disabled={togglingSizes[v._id]}
+                              onClick={() => handleSizeAvailabilityToggle(v._id, v.isAvailable !== false)}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 focus:outline-none shadow-sm ${
+                                v.isAvailable !== false ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
+                              }`}
+                            >
+                              {togglingSizes[v._id] ? (
+                                <Loader2 size={10} className="animate-spin text-white mx-auto" />
+                              ) : (
+                                <span
+                                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-300 ${
+                                    v.isAvailable !== false ? 'translate-x-[18px]' : 'translate-x-[2px]'
+                                  }`}
+                                />
+                              )}
+                            </button>
+                         </div>
                       </div>
                     )) : (
                       <div className="py-20 text-center opacity-20"><Archive size={40} className="mx-auto" /></div>
@@ -311,9 +650,24 @@ export default function ItemDetails() {
                          </div>
                          <div className="flex flex-wrap gap-2">
                             {mod.options?.map((opt, oi) => (
-                              <span key={oi} className="px-3 py-1 bg-white dark:bg-slate-800 text-[9px] font-black text-slate-500 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
-                                {opt.name} {opt.price > 0 && <span className="text-blue-500 ml-1">+₹{opt.price}</span>}
-                              </span>
+                               <button
+                                 key={oi}
+                                 disabled={togglingAddons[opt._id]}
+                                 onClick={() => handleAddonAvailabilityToggle(opt._id, opt.isAvailable !== false)}
+                                 className={`px-3 py-1 text-[9px] font-black rounded-lg shadow-sm border transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95 ${
+                                   opt.isAvailable !== false
+                                     ? 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-700 cursor-pointer'
+                                     : 'bg-slate-100 dark:bg-slate-900/50 text-slate-400 dark:text-slate-600 border-transparent line-through opacity-60 cursor-pointer'
+                                 }`}
+                                 title={opt.isAvailable !== false ? "Click to Pause Availability" : "Click to Resume Availability"}
+                               >
+                                 {togglingAddons[opt._id] ? (
+                                   <Loader2 size={10} className="animate-spin text-slate-400" />
+                                 ) : (
+                                   <span className={`w-1.5 h-1.5 rounded-full ${opt.isAvailable !== false ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                 )}
+                                 {opt.name} {opt.price > 0 && <span className="text-blue-500 ml-1">+₹{opt.price}</span>}
+                               </button>
                             ))}
                          </div>
                       </div>

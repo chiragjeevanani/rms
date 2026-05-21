@@ -6,6 +6,10 @@ const weraController = require('../Controllers/weraController');
 router.get('/:platform/:branchId/settings', weraController.getSettings);
 router.post('/:platform/:branchId/settings', weraController.saveSettings);
 router.post('/:platform/:branchId/test', weraController.testConnection);
+router.post('/:platform/:branchId/menu/push', weraController.pushMenu);
+router.post('/:platform/:branchId/item/toggle', weraController.toggleItemAvailability);
+router.post('/:platform/:branchId/addon/toggle', weraController.toggleAddonAvailability);
+router.post('/:platform/:branchId/size/toggle', weraController.toggleSizeAvailability);
 
 // Webhook
 router.post('/webhook', weraController.orderWebhook);

@@ -6,9 +6,11 @@ const IntegrationSchema = new mongoose.Schema({
   apiKey: { type: String },
   merchantId: { type: String },
   outletId: { type: String },
-  baseUrl: { type: String, default: 'https://pos.werafoods.com' },
+  baseUrl: { type: String, default: 'https://api.werafoods.com' },
   isConnected: { type: Boolean, default: false },
-  lastSyncAt: { type: Date }
+  lastSyncAt: { type: Date },
+  lastMenuPushedAt: { type: Date },
+  lastMenuHash: { type: String }
 }, { timestamps: true });
 
 // Ensure unique platform configuration per branch

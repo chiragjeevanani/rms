@@ -5,7 +5,8 @@ const variantSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   originalPrice: { type: Number },
   sku: { type: String },
-  isDefault: { type: Boolean, default: false }
+  isDefault: { type: Boolean, default: false },
+  isAvailable: { type: Boolean, default: true }
 });
 
 const itemSchema = new mongoose.Schema({

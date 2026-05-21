@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const modifierOptionSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, default: 0 },
-  isDefault: { type: Boolean, default: false }
+  isDefault: { type: Boolean, default: false },
+  isAvailable: { type: Boolean, default: true }
 });
 
 const modifierGroupSchema = new mongoose.Schema({
