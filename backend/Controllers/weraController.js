@@ -771,6 +771,7 @@ exports.pushMenu = async (req, res) => {
     }
 
     let result;
+    let pushedItemsCount = 0;
 
     if (isSwiggy) {
       // ================================================================
@@ -1001,6 +1002,7 @@ exports.pushMenu = async (req, res) => {
       console.log('Pushing Swiggy Menu payload to Wera:', JSON.stringify(swiggyPayload, null, 2));
 
       // Correct endpoint per Wera API docs v15 (was /directswiggymenu)
+      pushedItemsCount = menuItems.length;
       result = await callWeraApi('/pos/v2/menu/directmenu', 'SWIGGY', branchId, 'POST', swiggyPayload);
 
     } else {
@@ -1212,11 +1214,11 @@ exports.pushMenu = async (req, res) => {
 
       console.log('Pushing Zomato Menu payload to Wera:', JSON.stringify(zomatoPayload, null, 2));
 
+      pushedItemsCount = zomatoCatalogues.length;
       result = await callWeraApi('/pos/v2/menu/directzomatomenu', 'ZOMATO', branchId, 'POST', zomatoPayload);
     }
 
     if (isWeraSuccess(result)) {
-      const pushedItemsCount = isSwiggy ? (menuItems ? menuItems.length : 0) : (zomatoCatalogues ? zomatoCatalogues.length : 0);
       await Integration.findOneAndUpdate(
         { branchId, platform: platform.toUpperCase() },
         { 
