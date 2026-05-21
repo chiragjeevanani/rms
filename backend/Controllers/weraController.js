@@ -13,6 +13,14 @@ const parseOrderId = (id) => {
   return isNaN(num) ? id : num;
 };
 
+// Helper to check if a Wera API response is successful
+const isWeraSuccess = (result) => {
+  if (!result) return false;
+  if (result.code === 1 || result.status === 200 || result.success === true) return true;
+  if (result.code === 0 || result.status === 400 || result.status === 500 || result.error) return false;
+  return !result.error;
+};
+
 // Helper to generate a unique order number (same pattern as orderController.js)
 const generateOrderNumber = async () => {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -47,7 +55,9 @@ const callWeraApi = async (endpoint, platform, branchId, method, payload) => {
     throw new Error(`Wera API Request Failed: Status ${response.status} - ${errorText}`);
   }
 
-  return await response.json();
+  const result = await response.json();
+  console.log(`Wera API Response (${endpoint}):`, JSON.stringify(result, null, 2));
+  return result;
 };
 
 // Get credentials
@@ -327,7 +337,7 @@ exports.acceptOrder = async (req, res) => {
       }
     );
 
-    if (result.code === 1) {
+    if (isWeraSuccess(result)) {
       order.status = 'preparing';
       order.prepStartedAt = new Date();
       await order.save();
@@ -364,7 +374,7 @@ exports.rejectOrder = async (req, res) => {
       }
     );
 
-    if (result.code === 1) {
+    if (isWeraSuccess(result)) {
       order.status = 'cancelled';
       order.closedAt = new Date();
       await order.save();
@@ -398,7 +408,7 @@ exports.foodReady = async (req, res) => {
       }
     );
 
-    if (result.code === 1) {
+    if (isWeraSuccess(result)) {
       order.status = 'ready';
       order.readyAt = new Date();
       await order.save();
@@ -434,7 +444,7 @@ exports.orderPickedup = async (req, res) => {
       }
     );
 
-    if (result.code === 1) {
+    if (isWeraSuccess(result)) {
       order.status = 'picked_up';
       await order.save();
 
@@ -470,7 +480,7 @@ exports.callSupport = async (req, res) => {
       }
     );
 
-    res.json({ success: result.code === 1, message: result.msg, details: result.details });
+    res.json({ success: isWeraSuccess(result), message: result.msg, details: result.details });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -493,7 +503,7 @@ exports.getDeliveryAgent = async (req, res) => {
       }
     );
 
-    if (result.code === 1 && result.details) {
+    if (isWeraSuccess(result) && result.details) {
       order.riderDetails = {
         name: result.details.rider_name,
         phone: result.details.rider_number,
@@ -512,7 +522,7 @@ exports.getDeliveryAgent = async (req, res) => {
       if (io) io.emit('statusUpdated', order);
     }
 
-    res.json({ success: result.code === 1, message: result.msg, details: result.details || order.riderDetails });
+    res.json({ success: isWeraSuccess(result), message: result.msg, details: result.details || order.riderDetails });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -535,7 +545,7 @@ exports.getCustomerNumber = async (req, res) => {
       }
     );
 
-    res.json({ success: result.code === 1, message: result.msg, details: result.details });
+    res.json({ success: isWeraSuccess(result), message: result.msg, details: result.details });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -562,7 +572,7 @@ exports.acceptComplaint = async (req, res) => {
       }
     );
 
-    if (result.code === 1 || result.status === 200) {
+    if (isWeraSuccess(result)) {
       const complaint = order.complaints.find(c => c.id === complaintId);
       if (complaint) {
         complaint.status = 'accepted';
@@ -603,7 +613,7 @@ exports.rejectComplaint = async (req, res) => {
       }
     );
 
-    if (result.code === 1 || result.status === 200) {
+    if (isWeraSuccess(result)) {
       const complaint = order.complaints.find(c => c.id === complaintId);
       if (complaint) {
         complaint.status = 'rejected';
@@ -1184,7 +1194,7 @@ exports.pushMenu = async (req, res) => {
       result = await callWeraApi('/pos/v2/menu/directzomatomenu', 'ZOMATO', branchId, 'POST', zomatoPayload);
     }
 
-    if (result && (result.code === 1 || result.status === 200)) {
+    if (isWeraSuccess(result)) {
       await Integration.findOneAndUpdate(
         { branchId, platform: platform.toUpperCase() },
         { lastMenuPushedAt: new Date(), lastSyncAt: new Date() }
