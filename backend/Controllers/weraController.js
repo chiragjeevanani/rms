@@ -1216,14 +1216,20 @@ exports.pushMenu = async (req, res) => {
     }
 
     if (isWeraSuccess(result)) {
+      const pushedItemsCount = isSwiggy ? (menuItems ? menuItems.length : 0) : (zomatoCatalogues ? zomatoCatalogues.length : 0);
       await Integration.findOneAndUpdate(
         { branchId, platform: platform.toUpperCase() },
-        { lastMenuPushedAt: new Date(), lastSyncAt: new Date() }
+        { 
+          lastMenuPushedAt: new Date(), 
+          lastSyncAt: new Date(),
+          lastMenuPushedItemsCount: pushedItemsCount
+        }
       );
       return res.json({ 
         success: true, 
         message: `${platform.toUpperCase()} menu pushed successfully`, 
-        details: result.details || result.msg 
+        details: result.details || result.msg,
+        pushedItemsCount: pushedItemsCount
       });
     }
 

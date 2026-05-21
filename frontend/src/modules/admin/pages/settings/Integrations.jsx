@@ -26,7 +26,8 @@ export default function Integrations() {
     outletId: '',
     baseUrl: 'https://api.werafoods.com',
     isConnected: false,
-    lastMenuPushedAt: null
+    lastMenuPushedAt: null,
+    lastMenuPushedItemsCount: null
   });
 
   // Fetch branches on mount
@@ -71,7 +72,8 @@ export default function Integrations() {
             outletId: result.data.outletId || '',
             baseUrl: result.data.baseUrl || 'https://api.werafoods.com',
             isConnected: result.data.isConnected || false,
-            lastMenuPushedAt: result.data.lastMenuPushedAt || null
+            lastMenuPushedAt: result.data.lastMenuPushedAt || null,
+            lastMenuPushedItemsCount: result.data.lastMenuPushedItemsCount || null
           });
         } else {
           setSettings({
@@ -79,7 +81,9 @@ export default function Integrations() {
             merchantId: '',
             outletId: '',
             baseUrl: 'https://api.werafoods.com',
-            isConnected: false
+            isConnected: false,
+            lastMenuPushedAt: null,
+            lastMenuPushedItemsCount: null
           });
         }
       } catch (err) {
@@ -146,8 +150,82 @@ export default function Integrations() {
       const data = await res.json();
       if (data.success) {
         toast.success(`${platform.toUpperCase()} menu pushed successfully!`);
+        
+        let pushedCount = data.pushedItemsCount || 0;
+        let pushedItemsList = [];
+        
+        if (data.details) {
+          console.log(`%c--- ${platform.toUpperCase()} MENU PUSH DETAILS ---`, 'color: #ea580c; font-weight: bold; font-size: 14px;');
+          console.log('Request ID:', data.details.request_id);
+          console.log('Message:', data.details.message);
+          
+          // Try parsing swiggy_response
+          if (data.details.swiggy_response) {
+            try {
+              const swiggyRes = typeof data.details.swiggy_response === 'string'
+                ? JSON.parse(data.details.swiggy_response)
+                : data.details.swiggy_response;
+              
+              const outletId = Object.keys(swiggyRes)[0];
+              if (outletId && swiggyRes[outletId]) {
+                const outletData = swiggyRes[outletId];
+                const entity = outletData?.data?.[2]?.entity;
+                if (entity && Array.isArray(entity.items)) {
+                  pushedItemsList = entity.items;
+                  if (!pushedCount) {
+                    pushedCount = entity.items.length;
+                  }
+                }
+              }
+            } catch (err) {
+              console.error('Failed to parse swiggy_response:', err);
+            }
+          }
+          
+          // Try parsing Zomato response if it exists
+          if (data.details.zomato_response) {
+            try {
+              const zomatoRes = typeof data.details.zomato_response === 'string'
+                ? JSON.parse(data.details.zomato_response)
+                : data.details.zomato_response;
+              
+              const outletId = Object.keys(zomatoRes)[0];
+              if (outletId && zomatoRes[outletId]) {
+                const outletData = zomatoRes[outletId];
+                const menu = outletData?.data?.[2]?.menu;
+                if (menu && Array.isArray(menu.catalogues)) {
+                  pushedItemsList = menu.catalogues;
+                  if (!pushedCount) {
+                    pushedCount = menu.catalogues.length;
+                  }
+                }
+              }
+            } catch (err) {
+              console.error('Failed to parse zomato_response:', err);
+            }
+          }
+
+          if (pushedItemsList.length === 0) {
+            const possibleItems = data.details.items || data.details.entity?.items || data.details.menu?.items || data.details.menu?.catalogues;
+            if (Array.isArray(possibleItems)) {
+              pushedItemsList = possibleItems;
+              if (!pushedCount) {
+                pushedCount = possibleItems.length;
+              }
+            }
+          }
+
+          console.log(`Pushed Items Count (${platform.toUpperCase()}):`, pushedCount);
+          console.log('Pushed Items List:', pushedItemsList);
+          console.log('%c----------------------------------', 'color: #ea580c; font-weight: bold; font-size: 14px;');
+        }
+
         if (platform === 'swiggy') {
-          setSettings(prev => ({ ...prev, lastMenuPushedAt: new Date().toISOString() }));
+          setSettings(prev => ({ 
+            ...prev, 
+            lastMenuPushedAt: new Date().toISOString(),
+            lastMenuPushedItemsCount: pushedCount
+          }));
         }
       } else {
         toast.error(data.message || `Failed to push ${platform} menu`);
@@ -335,11 +413,18 @@ export default function Integrations() {
 
                 {/* Sync status message */}
                 {settings.lastMenuPushedAt ? (
-                  <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-emerald-50 rounded-xl">
+                  <div className="flex items-center gap-2.5 mb-4 px-3 py-2 bg-emerald-50 rounded-xl">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></div>
                     <div>
-                      <p className="text-[9px] font-black text-emerald-700 uppercase tracking-wider">Swiggy menu is up to date</p>
-                      <p className="text-[9px] text-emerald-500 font-medium">Last synced: {formatSyncTime(settings.lastMenuPushedAt)}</p>
+                      <p className="text-[9px] font-black text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
+                        Swiggy menu is up to date
+                        {settings.lastMenuPushedItemsCount !== null && settings.lastMenuPushedItemsCount !== undefined && (
+                          <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wide">
+                            {settings.lastMenuPushedItemsCount} Items
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-[9px] text-emerald-500 font-medium mt-0.5">Last synced: {formatSyncTime(settings.lastMenuPushedAt)}</p>
                     </div>
                   </div>
                 ) : (

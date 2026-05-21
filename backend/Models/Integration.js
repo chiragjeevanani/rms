@@ -10,6 +10,7 @@ const IntegrationSchema = new mongoose.Schema({
   isConnected: { type: Boolean, default: false },
   lastSyncAt: { type: Date },
   lastMenuPushedAt: { type: Date },
+  lastMenuPushedItemsCount: { type: Number },
   lastMenuHash: { type: String }
 }, { timestamps: true });
 
