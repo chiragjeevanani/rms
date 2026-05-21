@@ -578,6 +578,48 @@ export default function DeliveryOrders() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Extra details (OTP, Password, Ext ID, Rider, Instructions) on the card */}
+                    {(order.otp || order.password || order.instructions || order.riderDetails?.name || order.externalOrderId) && (
+                      <div className="mt-3 pt-3 border-t border-dashed border-slate-150 flex flex-wrap gap-2 text-[9px] font-bold text-slate-500 pl-2">
+                        {/* Ext ID */}
+                        {order.externalOrderId && (
+                          <span className="bg-slate-50 text-slate-600 px-1.5 py-0.5 rounded border border-slate-150 text-[8px] font-semibold">
+                            Ext ID: {order.externalOrderId}
+                          </span>
+                        )}
+                        {/* OTP */}
+                        {order.otp && (
+                          <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-150 text-[8px] flex items-center gap-0.5 font-bold">
+                            <Shield size={8} className="text-blue-500" /> OTP: {order.otp}
+                          </span>
+                        )}
+                        {/* Password */}
+                        {order.password && (
+                          <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-150 text-[8px] flex items-center gap-0.5 font-bold">
+                            <Lock size={8} className="text-indigo-500" /> PASS: {order.password}
+                          </span>
+                        )}
+                        {/* Rider name / ETA */}
+                        {order.riderDetails?.name && (
+                          <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-150 text-[8px] flex items-center gap-0.5 font-bold">
+                            <Truck size={8} className="text-emerald-500" /> Rider: {order.riderDetails.name} {order.riderDetails.timeToArrive ? `(${order.riderDetails.timeToArrive}m)` : ''}
+                          </span>
+                        )}
+                        {/* Customer Mobile */}
+                        {order.customer?.mobile && order.customer.mobile !== 'Swiggy' && order.customer.mobile !== 'Zomato' && (
+                          <span className="bg-slate-50 text-slate-600 px-1.5 py-0.5 rounded border border-slate-150 text-[8px] font-semibold">
+                            Phone: {order.customer.mobile}
+                          </span>
+                        )}
+                        {/* Instructions snippet */}
+                        {order.instructions && (
+                          <span className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded border border-amber-150 text-[8px] truncate max-w-full flex items-center gap-0.5 font-semibold" title={order.instructions}>
+                            <AlertCircle size={8} className="text-amber-600 shrink-0" /> Ins: {order.instructions}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </motion.div>
                 );
               })
@@ -849,6 +891,9 @@ export default function DeliveryOrders() {
                         <div>
                           <p className="text-xs font-black text-slate-900">{selectedOrder.customer?.name || 'Online Customer'}</p>
                           <p className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">{selectedOrder.customer?.locality || 'No local area code'}</p>
+                          {selectedOrder.customer?.mobile && (
+                            <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">Phone: {selectedOrder.customer.mobile}</p>
+                          )}
                           {selectedOrder.customer?.email && (
                             <p className="text-[10px] text-slate-400 mt-0.5 font-medium">{selectedOrder.customer.email}</p>
                           )}
@@ -1082,7 +1127,7 @@ export default function DeliveryOrders() {
 
                       {selectedOrder.discount?.amount > 0 && (
                         <div className="flex justify-between text-emerald-600">
-                          <span>Campaign discount</span>
+                          <span>Campaign discount ({selectedOrder.discount.reason || 'Offer'})</span>
                           <span>-₹{selectedOrder.discount.amount}</span>
                         </div>
                       )}

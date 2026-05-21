@@ -5,7 +5,7 @@ import {
   Timer, AlertCircle, Utensils, RefreshCcw,
   Zap, ArrowRight, User, Menu, X, Trash2, Printer, Globe,
   Plus, ShoppingBag, ShoppingCart, CreditCard, ChevronDown, Check,
-  Minus, Layout, Sparkles, Wand2, Phone, Shield, Train, Lock, Hash, MapPin, AlertTriangle, CheckSquare
+  Minus, Layout, Sparkles, Wand2, Phone, Shield, Train, Lock, Hash, MapPin, AlertTriangle, CheckSquare, Truck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -510,6 +510,79 @@ export default function ActiveOrders() {
                         </div>
                      )}
                   </div>
+
+                  {/* Extra Details Row for Delivery/Online Platform orders */}
+                  {(order.otp || order.password || order.instructions || order.customer?.name || order.riderDetails?.name || order.externalOrderId) && (
+                    <div className="col-span-12 mt-3 pt-3 border-t border-dashed border-slate-100 flex flex-wrap items-center gap-3 text-[10px] font-bold text-slate-500">
+                      {/* External Order ID */}
+                      {order.externalOrderId && (
+                        <div className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-sm">
+                          <Hash size={12} className="text-slate-400" />
+                          <span className="text-slate-400 uppercase tracking-wider text-[8px] font-extrabold">Channel ID:</span>
+                          <span className="font-extrabold text-slate-700">{order.externalOrderId}</span>
+                        </div>
+                      )}
+
+                      {/* Handover OTP */}
+                      {order.otp && (
+                        <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100 shadow-sm">
+                          <Shield size={12} className="text-blue-500" />
+                          <span className="text-[8px] uppercase tracking-wider font-extrabold text-blue-600">OTP:</span>
+                          <span className="font-black text-slate-900">{order.otp}</span>
+                        </div>
+                      )}
+
+                      {/* Delivery Password */}
+                      {order.password && (
+                        <div className="flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-100 shadow-sm">
+                          <Lock size={12} className="text-indigo-500" />
+                          <span className="text-[8px] uppercase tracking-wider font-extrabold text-indigo-600">PASS:</span>
+                          <span className="font-black text-slate-900">{order.password}</span>
+                        </div>
+                      )}
+
+                      {/* Customer Info */}
+                      {order.customer?.name && (
+                        <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-sm">
+                          <User size={12} className="text-slate-400" />
+                          <span className="text-slate-400 uppercase tracking-wider text-[8px] font-extrabold">Cust:</span>
+                          <span className="font-extrabold text-slate-800">{order.customer.name}</span>
+                          {order.customer.mobile && order.customer.mobile !== 'Swiggy' && order.customer.mobile !== 'Zomato' && (
+                            <span className="text-slate-500 font-semibold">({order.customer.mobile})</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Rider Agent */}
+                      {order.riderDetails?.name && (
+                        <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-100 shadow-sm">
+                          <Truck size={12} className="text-emerald-500" />
+                          <span className="text-emerald-700 uppercase tracking-wider text-[8px] font-extrabold">Rider:</span>
+                          <span className="font-black text-slate-900">{order.riderDetails.name}</span>
+                          {order.riderDetails.phone && <span className="text-slate-500 font-bold">({order.riderDetails.phone})</span>}
+                          {order.riderDetails.status && (
+                            <span className="ml-1 bg-emerald-100/80 text-emerald-800 px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider font-black">
+                              {order.riderDetails.status}
+                            </span>
+                          )}
+                          {order.riderDetails.timeToArrive && (
+                            <span className="text-[8px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                              ETA: {order.riderDetails.timeToArrive}m
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Instructions */}
+                      {order.instructions && (
+                        <div className="flex items-center gap-1.5 bg-amber-50 text-amber-800 px-2.5 py-1.5 rounded-lg border border-amber-200/60 max-w-full flex-1 min-w-[200px] shadow-sm">
+                          <AlertCircle size={12} className="text-amber-600 shrink-0" />
+                          <span className="text-[8px] font-black uppercase tracking-wider text-amber-700">Instructions:</span>
+                          <span className="font-bold italic text-slate-700 truncate">{order.instructions}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                </motion.div>
              ))}
           </div>
@@ -595,7 +668,7 @@ export default function ActiveOrders() {
 
               <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 no-scrollbar">
                 <div className="lg:col-span-7 space-y-6">
-                  {(selectedOrder.otp || selectedOrder.password || selectedOrder.isTrainOrder) && (
+                  {(selectedOrder.otp || selectedOrder.password || selectedOrder.isTrainOrder || selectedOrder.instructions) && (
                     <div className="grid grid-cols-2 gap-4">
                       {selectedOrder.otp && (
                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3">
@@ -634,6 +707,20 @@ export default function ActiveOrders() {
                           </div>
                         </div>
                       )}
+
+                      {!selectedOrder.isTrainOrder && selectedOrder.instructions && (
+                        <div className="col-span-2 p-4 bg-amber-50/60 rounded-2xl border border-amber-200/40 flex items-start gap-3">
+                          <div className="p-2.5 bg-amber-100 text-amber-700 rounded-xl">
+                            <AlertCircle size={18} />
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest">Kitchen / Delivery Instructions</p>
+                            <p className="text-xs font-bold text-amber-800 mt-1 italic leading-relaxed">
+                              "{selectedOrder.instructions}"
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -647,6 +734,9 @@ export default function ActiveOrders() {
                         <div>
                           <p className="text-xs font-black text-slate-900">{selectedOrder.customer?.name || 'Online Customer'}</p>
                           <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{selectedOrder.customer?.locality || 'No locality specified'}</p>
+                          {selectedOrder.customer?.mobile && (
+                            <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">Phone: {selectedOrder.customer.mobile}</p>
+                          )}
                         </div>
                         {selectedOrder.customer?.address && (
                           <div className="text-right max-w-[200px]">
@@ -855,7 +945,7 @@ export default function ActiveOrders() {
                       )}
                       {selectedOrder.discount?.amount > 0 && (
                         <div className="flex justify-between text-emerald-600 font-extrabold">
-                          <span>Discount Offer</span>
+                          <span>Discount ({selectedOrder.discount.reason || 'Offer'})</span>
                           <span>- ₹{selectedOrder.discount.amount.toFixed(2)}</span>
                         </div>
                       )}
