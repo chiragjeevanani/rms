@@ -770,6 +770,24 @@ exports.pushMenu = async (req, res) => {
       console.log(`Created new Recommended category in DB: ${recommendedCategory._id}`);
     }
 
+    // Map items' categories to current branch categories if there is a branch mismatch
+    for (const item of items) {
+      if (!item.category) continue;
+      const catIdStr = item.category.toString();
+      const matchedCategory = categories.find(c => c._id.toString() === catIdStr);
+      if (!matchedCategory) {
+        // Look up the category from the database to get its name
+        const externalCategory = await Category.findById(catIdStr);
+        if (externalCategory) {
+          const nameMatch = categories.find(c => c.name.toLowerCase() === externalCategory.name.toLowerCase());
+          if (nameMatch) {
+            console.log(`[CATEGORY MAP] Mapping item "${item.name}" from category ID ${catIdStr} to branch category ID ${nameMatch._id.toString()} (${nameMatch.name})`);
+            item.category = nameMatch._id;
+          }
+        }
+      }
+    }
+
     let result;
     let pushedItemsCount = 0;
 
