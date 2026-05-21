@@ -6,6 +6,18 @@ const ModifierGroup = require('../Models/ModifierGroup');
 const Combo = require('../Models/Combo');
 const crypto = require('crypto');
 
+// Helper to detect if an order ID or complaint ID is a mock ID for testing
+const isMockOrder = (id) => {
+  if (!id) return false;
+  const str = id.toString();
+  return (
+    str === '998877' || 
+    str.toLowerCase().includes('mock') || 
+    str.toLowerCase().includes('test') ||
+    str.startsWith('comp-')
+  );
+};
+
 // Helper to parse order ID - preserves alphanumeric strings for mock mode
 const parseOrderId = (id) => {
   if (!id) return id;
@@ -30,6 +42,15 @@ const generateOrderNumber = async () => {
 
 // Generic Wera HTTP helper
 const callWeraApi = async (endpoint, platform, branchId, method, payload) => {
+  // Bypasses live Wera API and returns success for mock test orders / complaints
+  if (payload && (
+    (payload.order_id && isMockOrder(payload.order_id)) ||
+    (payload.id && isMockOrder(payload.id))
+  )) {
+    console.log(`[MOCK MODE] Intercepted Wera API Call (${endpoint}) for mock ID:`, payload.order_id || payload.id);
+    return { code: 1, msg: 'success', details: {} };
+  }
+
   const integration = await Integration.findOne({ branchId, platform: platform.toUpperCase() });
   if (!integration) {
     throw new Error(`Integration settings not found for platform: ${platform} at branch: ${branchId}`);

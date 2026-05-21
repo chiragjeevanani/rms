@@ -37,7 +37,7 @@ const payload = {
 
 async function test() {
   try {
-    const response = await fetch('https://rms.cloudedata.in/api/integrations/wera/webhook', {
+    const response = await fetch('http://localhost:3000/ol/api/v1/getOrder', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
