@@ -66,6 +66,25 @@ const orderSchema = new mongoose.Schema({
     default: 'POS Terminal'
   },
   externalOrderId: { type: String }, // For Swiggy/Zomato IDs
+  weraOrderId: { type: String },
+  otp: { type: String },
+  password: { type: String },
+  isTrainOrder: { type: Boolean, default: false },
+  instructions: { type: String },
+  riderDetails: {
+    name: { type: String },
+    phone: { type: String },
+    status: { type: String },
+    timeToArrive: { type: Number }
+  },
+  complaints: [{
+    id: { type: String },
+    event: { type: String },
+    data: { type: mongoose.Schema.Types.Mixed },
+    status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+    refundAmount: { type: Number },
+    rejectionReason: { type: String }
+  }],
   isBilled: { type: Boolean, default: false },
   orderType: {
     type: String,

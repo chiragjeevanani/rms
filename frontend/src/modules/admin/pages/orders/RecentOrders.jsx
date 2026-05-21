@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import BranchSelector from '../../components/BranchSelector';
+import DeliveryOrders from './DeliveryOrders';
 
 export default function RecentOrders() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,31 +136,7 @@ export default function RecentOrders() {
   const deliveryCount = orders.filter(o => (o.orderType || '').toLowerCase() === 'delivery').length;
 
   if (orderTypeFilter === 'Delivery') {
-    return (
-      <div className="p-8 h-[80vh] flex flex-col items-center justify-center bg-white rounded-[3rem] border border-slate-100 shadow-sm mx-8">
-        <div className="flex flex-col items-center gap-6 text-center max-w-md">
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-24 h-24 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 shadow-inner"
-          >
-             <Truck size={48} strokeWidth={1.5} />
-          </motion.div>
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight italic mb-2">Delivery Logic Pending</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-relaxed">
-              We are currently engineering the logistics and routing modules. This feature is slated for the next production push.
-            </p>
-          </div>
-          <button 
-            onClick={() => setOrderTypeFilter('All')}
-            className="px-8 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-all active:scale-95"
-          >
-            Back to All Orders
-          </button>
-        </div>
-      </div>
-    );
+    return <DeliveryOrders />;
   }
 
   return (

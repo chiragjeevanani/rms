@@ -134,6 +134,11 @@ export default function PosLayout() {
                           onClick={() => navigate('/pos/orders/active?type=Takeaway')} 
                           active={window.location.pathname.includes('/pos/orders') && window.location.search.includes('type=Takeaway')} 
                         />
+                        <DrawerSubItem 
+                          label="Online Orders" 
+                          onClick={() => navigate('/pos/orders/active?type=Delivery')} 
+                          active={window.location.pathname.includes('/pos/orders') && window.location.search.includes('type=Delivery')} 
+                        />
                       </motion.div>
                     )}
                   </AnimatePresence>
