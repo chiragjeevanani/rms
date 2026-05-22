@@ -25,7 +25,7 @@ function RootRedirect() {
   const isUser = localStorage.getItem('user_token');
 
   if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
-  if (isStaff) return <Navigate to="/staff/dashboard" replace />;
+  if (isStaff) return <Navigate to="/staff/dummy-dashboard" replace />;
   if (isPos) return <Navigate to="/pos/dashboard" replace />;
   if (isKds) return <Navigate to="/kds/dashboard" replace />;
   if (isUser) return <Navigate to="/menu" replace />;

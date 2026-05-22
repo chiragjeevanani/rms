@@ -46,7 +46,7 @@ export default function StaffLogin() {
         localStorage.setItem('staff_access', data.token);
         localStorage.setItem('staff_info', JSON.stringify(data));
         toast.success(`Welcome back, ${data.name}`);
-        navigate('/staff/dashboard');
+        navigate('/staff/dummy-dashboard');
       } else {
         toast.error(data.message || 'Invalid Credentials');
       }

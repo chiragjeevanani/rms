@@ -18,7 +18,7 @@ export default function StaffRoutes() {
 
   // If already authenticated and trying to access login, redirect to dashboard
   if (isStaffAuthenticated && window.location.pathname === '/staff/login') {
-    return <Navigate to="/staff/dashboard" replace />;
+    return <Navigate to="/staff/dummy-dashboard" replace />;
   }
 
   return (
@@ -27,7 +27,7 @@ export default function StaffRoutes() {
 
       {/* Protected Staff Routes */}
       <Route element={<StaffProtectedWrapper />}>
-        <Route path="/" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/staff/dummy-dashboard" replace />} />
         <Route path="/dashboard" element={<StaffDashboard />} />
         <Route path="/tables" element={<MyTables />} />
 
@@ -46,7 +46,7 @@ export default function StaffRoutes() {
       </Route>
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/staff/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/staff/dummy-dashboard" replace />} />
     </Routes>
   );
 }
