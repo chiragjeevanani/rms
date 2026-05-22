@@ -28,21 +28,28 @@ import toast from 'react-hot-toast';
 export default function MyProfile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const [profile, setProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const staffInfo = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('staff_info') || '{}');
+    } catch {
+      return {};
+    }
+  })();
+  const staffId = staffInfo?._id;
+  const token = localStorage.getItem('staff_access');
+
+  const [profile, setProfile] = useState(Object.keys(staffInfo).length > 0 ? staffInfo : null);
+  const [isLoading, setIsLoading] = useState(!profile);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
-  
-  const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-  const staffId = staffInfo?._id;
-  const token = localStorage.getItem('staff_access');
 
   const [formData, setFormData] = useState({
-    name: '',
-    profileImage: ''
+    name: staffInfo?.name || '',
+    profileImage: staffInfo?.profileImage || ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -69,13 +76,19 @@ export default function MyProfile() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/${staffId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (res.status === 401 || res.status === 403) {
+        toast.error('Session expired. Please log in again.');
+        handleLogout();
+        return;
+      }
       const data = await res.json();
       if (res.ok) {
         setProfile(data);
+        localStorage.setItem('staff_info', JSON.stringify(data));
         setFormData({ name: data.name, profileImage: data.profileImage || '' });
       }
     } catch (err) {
-      toast.error('Failed to load profile');
+      console.error('Failed to load profile details:', err);
     } finally {
       setIsLoading(false);
     }
@@ -193,6 +206,7 @@ export default function MyProfile() {
       if (res.ok) {
         toast.success('Account deleted');
         localStorage.removeItem('staff_access');
+        localStorage.removeItem('staff_info');
         navigate('/staff/login');
       }
     } catch (err) {
@@ -202,6 +216,7 @@ export default function MyProfile() {
 
   const handleLogout = () => {
     localStorage.removeItem('staff_access');
+    localStorage.removeItem('staff_info');
     navigate('/staff/login');
   };
 
@@ -244,17 +259,21 @@ export default function MyProfile() {
           <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-1 uppercase">{formData.name}</h1>
           <p className="text-[10px] font-bold text-slate-400 italic mb-4 lowercase tracking-tight flex items-center gap-2 justify-center">
              <Mail size={10} className="text-slate-300" />
-             {profile.email}
+             {profile?.email}
           </p>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2.5 px-4 py-1.5 bg-slate-100 rounded-2xl border border-slate-200/50">
               <Shield size={12} className="text-slate-600" strokeWidth={3} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{profile.role?.name || 'Staff Member'}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">
+                {typeof profile?.role === 'object' ? profile?.role?.name : profile?.role || 'Staff Member'}
+              </span>
             </div>
-            {profile.branchId && (
+            {profile?.branchId && (
               <div className="flex items-center gap-2.5 px-4 py-1.5 bg-emerald-50 rounded-2xl border border-emerald-100">
                 <Building2 size={12} className="text-emerald-600" strokeWidth={3} />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">{profile.branchId?.branchName || 'Assigned Branch'}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
+                  {typeof profile.branchId === 'object' ? profile.branchId?.branchName : 'Assigned Branch'}
+                </span>
               </div>
             )}
           </div>
@@ -330,7 +349,7 @@ export default function MyProfile() {
            <div className="flex flex-col items-center gap-2 pt-6 opacity-20">
               <div className="w-12 h-[1px] bg-slate-900" />
               <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-900 text-center">
-                Endpoint Secured: {staffId?.slice(-8)}
+                Endpoint Secured: {staffId ? staffId.slice(-8) : ''}
               </p>
            </div>
         </section>

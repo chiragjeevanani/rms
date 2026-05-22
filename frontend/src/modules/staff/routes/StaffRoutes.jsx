@@ -26,7 +26,7 @@ export default function StaffRoutes() {
 
       {/* Protected Staff Routes */}
       <Route element={<StaffProtectedWrapper />}>
-        <Route path="/" element={<Navigate to="/staff/profile" replace />} />
+        <Route path="/" element={<Navigate to="/staff/dashboard" replace />} />
         <Route path="/dashboard" element={<StaffDashboard />} />
         <Route path="/tables" element={<MyTables />} />
 
@@ -44,7 +44,7 @@ export default function StaffRoutes() {
       </Route>
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/staff/profile" replace />} />
+      <Route path="*" element={<Navigate to="/staff/dashboard" replace />} />
     </Routes>
   );
 }
