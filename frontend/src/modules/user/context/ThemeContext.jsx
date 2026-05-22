@@ -3,28 +3,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check local storage for saved theme, default to true (dark mode)
-    const saved = localStorage.getItem('theme');
-    if (saved !== null) {
-      return saved === 'dark';
-    }
-    return true; // default
-  });
+  // Always default to false (disable dark mode)
+  const isDarkMode = false;
 
   useEffect(() => {
-    // Apply CSS class to document element
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode]);
+    // Forcefully remove dark class and cleanup storage
+    document.documentElement.classList.remove('dark');
+    localStorage.removeItem('theme');
+  }, []);
 
   const toggleTheme = () => {
-    setIsDarkMode(prev => !prev);
+    // No-op to prevent errors in components destructing toggleTheme
   };
 
   return (

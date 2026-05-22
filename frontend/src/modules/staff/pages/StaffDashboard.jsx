@@ -10,9 +10,7 @@ import {
   TrendingUp,
   PlusCircle,
   Coffee,
-  ChevronRight,
-  Terminal,
-  Bug
+  ChevronRight
 } from 'lucide-react';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { useNavigate } from 'react-router-dom';
@@ -153,14 +151,6 @@ export default function StaffDashboard() {
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Shift Hub</h1>
           </div>
           <div className="flex items-center gap-2">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => window.dispatchEvent(new CustomEvent('debug-toggle-panel'))}
-              className="w-12 h-12 rounded-2xl bg-slate-50 overflow-hidden flex items-center justify-center border-2 border-slate-100 shadow-sm text-slate-700 hover:text-cyan-600 transition-colors"
-              title="Open Debug Terminal"
-            >
-              <Terminal size={18} />
-            </motion.button>
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate('/staff/profile')}
@@ -323,16 +313,6 @@ export default function StaffDashboard() {
               <div className="flex flex-col">
                 <span className="text-xs font-black uppercase tracking-tight text-slate-900">Quick Serve Mode</span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Jump to active tables</span>
-              </div>
-            </button>
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('debug-toggle-panel'))}
-              className="flex items-center gap-3 p-6 rounded-3xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all text-left group cursor-pointer"
-            >
-              <Bug size={24} className="text-slate-900 group-hover:scale-110 transition-transform text-cyan-600" />
-              <div className="flex flex-col">
-                <span className="text-xs font-black uppercase tracking-tight text-slate-900">Developer Debug Terminal</span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Inspect Console Logs & Network Requests</span>
               </div>
             </button>
           </div>
