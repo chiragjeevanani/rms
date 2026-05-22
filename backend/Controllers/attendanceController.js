@@ -20,13 +20,17 @@ const createAttendance = async (req, res) => {
     // Normalize date to YYYY-MM-DD if not provided
     const targetDate = date || new Date().toISOString().split('T')[0];
 
+    const staffDoc = await Staff.findById(staffId);
+    if (!staffDoc) return res.status(404).json({ message: 'Staff identity not found' });
+
     const attendance = new Attendance({ 
       staff: staffId, 
       date: targetDate,
       terminal: terminal || 'MANUAL-OVERRIDE',
       checkIn,
       checkOut,
-      status: status || 'In'
+      status: status || 'In',
+      branchId: staffDoc.branchId
     });
     
     await attendance.save();
@@ -62,12 +66,16 @@ const markAttendance = async (req, res) => {
       }
       await attendance.save();
     } else {
+      const staffDoc = await Staff.findById(staffId);
+      if (!staffDoc) return res.status(404).json({ message: 'Staff identity not found' });
+
       attendance = new Attendance({
         staff: staffId,
         date: targetDate,
         status,
         checkIn: status === 'Present' ? new Date() : undefined,
-        terminal: 'ADMIN-PORTAL'
+        terminal: 'ADMIN-PORTAL',
+        branchId: staffDoc.branchId
       });
       await attendance.save();
     }
@@ -153,12 +161,22 @@ const punchAttendance = async (req, res) => {
       }
       await attendance.save();
     } else {
+      let branchId = req.staff.branchId;
+      if (!branchId) {
+        const staffDoc = await Staff.findById(staffIdFromToken);
+        branchId = staffDoc?.branchId;
+      }
+      if (!branchId) {
+        return res.status(400).json({ success: false, message: 'Branch ID not found for staff.' });
+      }
+
       attendance = new Attendance({
         staff: staffIdFromToken,
         date: todayStr,
         status,
         checkIn: (status === 'In' || status === 'Present') ? new Date() : undefined,
-        terminal: 'MOBILE-UI'
+        terminal: 'MOBILE-UI',
+        branchId: branchId
       });
       await attendance.save();
     }

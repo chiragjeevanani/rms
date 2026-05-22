@@ -10,7 +10,9 @@ import {
   TrendingUp,
   PlusCircle,
   Coffee,
-  ChevronRight
+  ChevronRight,
+  Terminal,
+  Bug
 } from 'lucide-react';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { useNavigate } from 'react-router-dom';
@@ -57,10 +59,16 @@ export default function StaffDashboard() {
   const fetchSnapshot = async () => {
     try {
       const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const bId = typeof staffInfo.branchId === 'object' ? staffInfo.branchId?._id : staffInfo.branchId;
+      const branchQuery = bId ? `?branchId=${bId}` : '';
       const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/stats/staff-snapshot${branchQuery}`);
       const result = await res.json();
-      if (result.success) setSnapshot(result.data);
+      if (result.success && result.data) {
+        setSnapshot(prev => ({
+          ...prev,
+          ...result.data
+        }));
+      }
     } catch (err) {
       console.error("Failed to fetch dashboard snapshot", err);
     }
@@ -69,10 +77,16 @@ export default function StaffDashboard() {
   const fetchShiftStats = async (name) => {
     try {
       const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const bId = typeof staffInfo.branchId === 'object' ? staffInfo.branchId?._id : staffInfo.branchId;
+      const branchQuery = bId ? `?branchId=${bId}` : '';
       const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/stats/staff/${name}${branchQuery}`);
       const result = await res.json();
-      if (result.success) setShiftStats(result.data);
+      if (result.success && result.data) {
+        setShiftStats(prev => ({
+          ...prev,
+          ...result.data
+        }));
+      }
     } catch (err) {
       console.error("Failed to fetch shift stats", err);
     }
@@ -138,19 +152,29 @@ export default function StaffDashboard() {
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{today}</span>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Shift Hub</h1>
           </div>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => navigate('/staff/profile')}
-            className="w-12 h-12 rounded-2xl bg-white overflow-hidden flex items-center justify-center border-2 border-slate-100 shadow-sm"
-          >
-            {staff?.profileImage ? (
-              <img src={staff.profileImage} className="w-full h-full object-cover" alt="profile" />
-            ) : (
-              <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-900 font-black text-sm uppercase">
-                {staff?.name?.charAt(0) || <Users size={18} />}
-              </div>
-            )}
-          </motion.button>
+          <div className="flex items-center gap-2">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => window.dispatchEvent(new CustomEvent('debug-toggle-panel'))}
+              className="w-12 h-12 rounded-2xl bg-slate-50 overflow-hidden flex items-center justify-center border-2 border-slate-100 shadow-sm text-slate-700 hover:text-cyan-600 transition-colors"
+              title="Open Debug Terminal"
+            >
+              <Terminal size={18} />
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/staff/profile')}
+              className="w-12 h-12 rounded-2xl bg-white overflow-hidden flex items-center justify-center border-2 border-slate-100 shadow-sm"
+            >
+              {staff?.profileImage ? (
+                <img src={staff.profileImage} className="w-full h-full object-cover" alt="profile" />
+              ) : (
+                <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-900 font-black text-sm uppercase">
+                  {staff?.name?.charAt(0) || <Users size={18} />}
+                </div>
+              )}
+            </motion.button>
+          </div>
         </div>
       </header>
 
@@ -175,7 +199,7 @@ export default function StaffDashboard() {
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Available</span>
-                    <span className="text-3xl font-black">{snapshot.availableTables.toString().padStart(2, '0')}</span>
+                    <span className="text-3xl font-black">{(snapshot?.availableTables ?? 0).toString().padStart(2, '0')}</span>
                   </div>
                 </motion.div>
 
@@ -189,7 +213,7 @@ export default function StaffDashboard() {
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Occupied</span>
-                    <span className="text-3xl font-black">{snapshot.occupiedTables.toString().padStart(2, '0')}</span>
+                    <span className="text-3xl font-black">{(snapshot?.occupiedTables ?? 0).toString().padStart(2, '0')}</span>
                   </div>
                   <div className="absolute top-4 right-4 text-emerald-400">
                     <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
@@ -207,7 +231,7 @@ export default function StaffDashboard() {
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Pending</span>
-                    <span className="text-3xl font-black">{snapshot.pendingOrders.toString().padStart(2, '0')}</span>
+                    <span className="text-3xl font-black">{(snapshot?.pendingOrders ?? 0).toString().padStart(2, '0')}</span>
                   </div>
                 </motion.div>
 
@@ -221,7 +245,7 @@ export default function StaffDashboard() {
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Ready</span>
-                    <span className="text-3xl font-black">{snapshot.readyPickups.toString().padStart(2, '0')}</span>
+                    <span className="text-3xl font-black">{(snapshot?.readyPickups ?? 0).toString().padStart(2, '0')}</span>
                   </div>
                 </motion.div>
 
@@ -236,7 +260,7 @@ export default function StaffDashboard() {
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">In Process</span>
-                    <span className="text-3xl font-black">{snapshot.activeOrders.toString().padStart(2, '0')}</span>
+                    <span className="text-3xl font-black">{(snapshot?.activeOrders ?? 0).toString().padStart(2, '0')}</span>
                   </div>
                 </motion.div>
 
@@ -250,7 +274,7 @@ export default function StaffDashboard() {
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Completed</span>
-                    <span className="text-3xl font-black">{snapshot.completedOrders.toString().padStart(2, '0')}</span>
+                    <span className="text-3xl font-black">{(snapshot?.completedOrders ?? 0).toString().padStart(2, '0')}</span>
                   </div>
                 </motion.div>
 
@@ -293,12 +317,22 @@ export default function StaffDashboard() {
           <div className="grid grid-cols-1 gap-3">
             <button
               onClick={() => navigate('/staff/table/69cf6f128c8e06df8f5944a3')}
-              className="flex items-center gap-3 p-6 rounded-3xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all text-left group"
+              className="flex items-center gap-3 p-6 rounded-3xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all text-left group cursor-pointer"
             >
               <PlusCircle size={24} className="text-slate-900 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col">
                 <span className="text-xs font-black uppercase tracking-tight text-slate-900">Quick Serve Mode</span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Jump to active tables</span>
+              </div>
+            </button>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('debug-toggle-panel'))}
+              className="flex items-center gap-3 p-6 rounded-3xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all text-left group cursor-pointer"
+            >
+              <Bug size={24} className="text-slate-900 group-hover:scale-110 transition-transform text-cyan-600" />
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-tight text-slate-900">Developer Debug Terminal</span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Inspect Console Logs & Network Requests</span>
               </div>
             </button>
           </div>
@@ -325,7 +359,7 @@ export default function StaffDashboard() {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">Orders Handled</span>
               <div className="flex items-end gap-2">
                 <span className="text-4xl font-black text-slate-900 tracking-tighter">
-                  {shiftStats.handled.toString().padStart(2, '0')}
+                  {(shiftStats?.handled ?? 0).toString().padStart(2, '0')}
                 </span>
                 <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2 italic">Today</span>
               </div>
@@ -335,7 +369,7 @@ export default function StaffDashboard() {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">Sales Focus</span>
               <div className="flex items-end gap-2">
                 <span className="text-4xl font-black text-slate-900 tracking-tighter">
-                  ₹{shiftStats.volume.toLocaleString()}
+                  ₹{(shiftStats?.volume ?? 0).toLocaleString()}
                 </span>
                 <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-2">Total</span>
               </div>

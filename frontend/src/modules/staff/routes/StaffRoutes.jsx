@@ -10,6 +10,7 @@ import Attendance from '../pages/Attendance';
 import TableOrderScreen from '../pages/TableOrderScreen';
 import AlertsPage from '../pages/AlertsPage';
 import StaffItemDetail from '../pages/StaffItemDetail';
+import DebugConsole from '../components/DebugConsole';
 
 export default function StaffRoutes() {
   const isStaffAuthenticated = !!localStorage.getItem('staff_access');
@@ -55,7 +56,12 @@ function StaffProtectedWrapper() {
     return <Navigate to="/staff/login" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <DebugConsole />
+    </>
+  );
 }
 
 

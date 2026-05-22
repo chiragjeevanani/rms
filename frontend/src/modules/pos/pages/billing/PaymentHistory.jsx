@@ -24,7 +24,8 @@ export default function PaymentHistory() {
     setLoading(true);
     try {
       const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+      const bId = typeof staffInfo.branchId === 'object' ? staffInfo.branchId?._id : staffInfo.branchId;
+      const branchQuery = bId ? `?branchId=${bId}` : '';
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/completed${branchQuery}`);
       const result = await response.json();
       if (result.success) {

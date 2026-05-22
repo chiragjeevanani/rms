@@ -594,8 +594,9 @@ const getStaffDashboardSnapshot = async (req, res) => {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const [availableCount, reservedCount, pendingCount, preparingCount, readyCount, completedCount, cancelledCount, todayOrders] = await Promise.all([
+    const [availableCount, occupiedCount, reservedCount, pendingCount, preparingCount, readyCount, completedCount, cancelledCount, todayOrders] = await Promise.all([
       Table.countDocuments({ ...filter, status: 'Available' }),
+      Table.countDocuments({ ...filter, status: 'Occupied' }),
       Table.countDocuments({ ...filter, status: 'Reserved' }),
       Order.countDocuments({ ...filter, status: { $in: ['pending', 'Pending'] } }),
       Order.countDocuments({ ...filter, status: { $in: ['preparing', 'Preparing'] } }),
@@ -653,12 +654,17 @@ const getStaffDashboardSnapshot = async (req, res) => {
       success: true,
       data: {
         availableTables: availableCount,
+        occupiedTables: occupiedCount,
         reservedTables: reservedCount,
         pendingOrders: pendingCount,
         preparingOrders: preparingCount,
+        activeOrders: preparingCount,
         readyOrders: readyCount,
+        readyPickups: readyCount,
         completedToday: completedCount,
+        completedOrders: completedCount,
         cancelledToday: cancelledCount,
+        cancelledOrders: cancelledCount,
         todayRevenue,
         hourlyTrends
       }

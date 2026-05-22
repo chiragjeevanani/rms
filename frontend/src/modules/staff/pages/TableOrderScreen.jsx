@@ -30,7 +30,8 @@ export default function TableOrderScreen() {
     const fetchData = async () => {
       try {
         const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-        const branchQuery = staffInfo.branchId ? `?branchId=${staffInfo.branchId}` : '';
+        const bId = typeof staffInfo.branchId === 'object' ? staffInfo.branchId?._id : staffInfo.branchId;
+        const branchQuery = bId ? `?branchId=${bId}` : '';
         const [catRes, itemRes, comboRes] = await Promise.all([
           fetch(`${import.meta.env.VITE_API_URL}/category${branchQuery}`),
           fetch(`${import.meta.env.VITE_API_URL}/item${branchQuery}`),
