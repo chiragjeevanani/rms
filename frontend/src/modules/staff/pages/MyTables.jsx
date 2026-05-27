@@ -53,7 +53,7 @@ export default function MyTables() {
       <StaffNotifications />
       
       <div className="flex-1 max-w-lg mx-auto w-full bg-white shadow-xl shadow-slate-200/50 min-h-screen relative pb-32">
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 py-6">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-safe pb-6">
           <div className="flex flex-col gap-6 mb-6">
              <div className="flex items-center justify-between">
                 <div className="flex flex-col">

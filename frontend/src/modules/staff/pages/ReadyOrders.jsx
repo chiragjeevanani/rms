@@ -11,7 +11,7 @@ export default function ReadyOrders() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 py-8">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-safe pb-8">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Pickups</h1>
         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ready to be served</p>
       </header>

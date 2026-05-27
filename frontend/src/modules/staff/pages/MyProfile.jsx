@@ -232,7 +232,7 @@ export default function MyProfile() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col pb-32">
-      <header className="bg-white px-8 pt-16 pb-12 border-b border-slate-100 relative overflow-hidden shadow-sm">
+      <header className="bg-white px-8 pt-safe-lg pb-12 border-b border-slate-100 relative overflow-hidden shadow-sm">
         <div className="absolute top-0 right-0 w-80 h-80 bg-slate-900/5 rounded-full -translate-y-1/2 translate-x-1/3" />
         <div className="relative z-10 flex flex-col items-center text-center">
           <div className="relative group">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Plus, Search, Filter, ArrowUpRight, ArrowDownLeft, AlertCircle, Edit2, Trash2, Save, Package, Truck, Database, ChevronRight, X, ChevronLeft, Building2 } from 'lucide-react';
+import { Box, Plus, Search, Filter, ArrowUpRight, ArrowDownLeft, AlertCircle, Edit2, Trash2, Save, Package, Truck, Database, ChevronRight, X, ChevronLeft, Building2, Upload, Download, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
@@ -8,6 +8,123 @@ import BranchSelector from '../../components/BranchSelector';
 export default function StockManagement() {
   const [stock, setStock] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // CSV Import States and Functions for Stock
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const parseCSV = (text) => {
+    const lines = text.split('\n');
+    if (lines.length <= 1) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+    const results = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = [];
+      let insideQuote = false;
+      let currentValue = '';
+
+      for (let charIndex = 0; charIndex < line.length; charIndex++) {
+        const char = line[charIndex];
+        if (char === '"' || char === "'") {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          values.push(currentValue.trim());
+          currentValue = '';
+        } else {
+          currentValue += char;
+        }
+      }
+      values.push(currentValue.trim());
+
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header] = values[index] ? values[index].replace(/^["']|["']$/g, '') : '';
+      });
+      results.push(row);
+    }
+    return results;
+  };
+
+  const downloadStockTemplate = () => {
+    const csvContent = "data:text/csv;charset=utf-8,Name,Category,Current Stock,Unit,Min Level,Price\nTruffle Oil,Dry Grocery,15,Ltrs,5,1200\nBasmati Rice,Dry Grocery,100,Kgs,20,95\nChicken Breast,Meat & Poultry,45,Kgs,10,250\nPaper Cups,Boxes,5,Boxes,2,550\n";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "stock_items_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCSVImport = async (e) => {
+    e.preventDefault();
+    if (!importFile) return toast.error('Please select a CSV file first');
+
+    setIsImporting(true);
+    const toastId = toast.loading('Reading CSV file...');
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target.result;
+        const parsedData = parseCSV(text);
+        if (parsedData.length === 0) {
+          toast.error('CSV file is empty or invalid', { id: toastId });
+          setIsImporting(false);
+          return;
+        }
+
+        const formattedStock = parsedData.map(row => ({
+          name: row.Name || row.name || '',
+          category: row.Category || row.category || 'Dry Grocery',
+          quantity: Number(row['Current Stock'] || row.quantity || 0),
+          unit: row.Unit || row.unit || 'Units',
+          minLevel: Number(row['Min Level'] || row.minLevel || 0),
+          price: Number(row.Price || row.price || 0),
+          branchId: selectedBranchFilter !== 'all' ? selectedBranchFilter : branches[0]?._id || ''
+        })).filter(s => s.name.trim().length > 0);
+
+        if (formattedStock.length === 0) {
+          toast.error('No valid stock items found in CSV', { id: toastId });
+          setIsImporting(false);
+          return;
+        }
+
+        toast.loading(`Syncing ${formattedStock.length} stock items to database...`, { id: toastId });
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/stock/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+          },
+          body: JSON.stringify({ stock: formattedStock })
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+          toast.success(result.message || 'Bulk stock items imported successfully!', { id: toastId });
+          fetchData();
+          setIsImportModalOpen(false);
+          setImportFile(null);
+        } else {
+          toast.error(result.message || 'Bulk stock import failed', { id: toastId });
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to parse or upload CSV', { id: toastId });
+      } finally {
+        setIsImporting(false);
+      }
+    };
+    reader.readAsText(importFile);
+  };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -176,6 +293,20 @@ export default function StockManagement() {
         </div>
         
         <div className="flex items-center gap-3">
+           <button 
+             onClick={downloadStockTemplate}
+             className="h-14 px-6 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-100 active:scale-95 transition-all outline-none"
+           >
+             <Download size={16} />
+             Download Sample
+           </button>
+           <button 
+             onClick={() => setIsImportModalOpen(true)}
+             className="h-14 px-6 bg-slate-100 text-slate-700 border border-slate-200 rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-200 active:scale-95 transition-all outline-none"
+           >
+             <Upload size={16} />
+             Import CSV
+           </button>
            <button 
              onClick={() => handleOpenModal()}
              className="h-14 px-8 bg-[#2C2C2C] text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all group"
@@ -483,6 +614,62 @@ export default function StockManagement() {
               >Confirm Delete</button>
            </div>
         </div>
+      </AdminModal>
+
+      {/* Import Modal */}
+      <AdminModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Stock Items via CSV"
+        subtitle="Bulk upload raw stock products into inventory"
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleCSVImport} className="space-y-6">
+          <div className="p-5 bg-slate-50 border border-slate-100 rounded-[2.5rem] space-y-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+              Guidelines: Save your spreadsheet as a <strong>CSV (Comma-Separated Values)</strong> file. Ensure headers match exactly:
+            </p>
+            <div className="p-3 bg-white border border-slate-100 rounded-2xl text-[9px] font-mono text-slate-600 leading-relaxed overflow-x-auto">
+              Name,Category,Current Stock,Unit,Min Level,Price
+            </div>
+            <button 
+              type="button"
+              onClick={downloadStockTemplate}
+              className="w-full h-12 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:border-slate-900 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <Download size={14} /> Download CSV Template
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select CSV File</label>
+            <input 
+              type="file"
+              accept=".csv"
+              required
+              className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-bold outline-none rounded-2xl cursor-pointer"
+              onChange={(e) => setImportFile(e.target.files[0])}
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button 
+              type="button" 
+              onClick={() => setIsImportModalOpen(false)}
+              className="flex-1 h-14 bg-slate-50 border border-slate-200 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all outline-none"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              disabled={isImporting}
+              className="flex-[2] h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all outline-none disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isImporting ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
+              Start Import
+            </button>
+          </div>
+        </form>
       </AdminModal>
     </div>
   );

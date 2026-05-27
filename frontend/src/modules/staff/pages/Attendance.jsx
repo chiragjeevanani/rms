@@ -67,7 +67,7 @@ export default function Attendance() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col pb-32">
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 py-8 shadow-sm">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-safe pb-8 shadow-sm">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-3 bg-slate-900 text-white rounded-2xl group shadow-lg active:scale-95 transition-all">
             <ArrowLeft size={18} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />

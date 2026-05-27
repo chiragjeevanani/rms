@@ -46,6 +46,17 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* ─── Mobile Safe Area Padding Utilities ─── */
+.pt-safe {
+  padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important;
+}
+.pt-safe-lg {
+  padding-top: calc(3rem + env(safe-area-inset-top, 0px)) !important;
+}
+.pb-safe {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+}
+
 body {
   @apply bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white transition-colors duration-300;
   font-family: var(--font-family-sans);

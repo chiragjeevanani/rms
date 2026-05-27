@@ -50,7 +50,7 @@ export default function ActiveOrders() {
       <div className="flex-1 max-w-lg mx-auto w-full bg-white shadow-2xl flex flex-col min-h-screen pb-32">
         
         {/* Dynamic Header Node */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-8 pb-6">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-safe pb-6">
           <div className="flex items-center justify-between mb-6">
              <div className="flex flex-col">
                 <div className="flex items-center gap-2 mb-1">

@@ -107,29 +107,27 @@ export const printBillReceipt = (orderData, tableInfo, billingDetails) => {
   const roundOff = (finalWhole - calculatedGrandTotal).toFixed(2);
 
   doc.text(`Total Qty: ${totalQty}`, 38, y, { align: 'right' });
-  doc.text(`Sub`, 60, y, { align: 'center' });
+  doc.text(`Sub Total:`, 58, y, { align: 'right' });
   doc.text(`${subTotal.toFixed(2)}`, 75, y, { align: 'right' });
-  y += 4;
-  doc.text(`Total`, 60, y, { align: 'center' });
   y += 4;
 
   if (discount > 0) {
-    doc.text('Disc:', 60, y, { align: 'right' });
+    doc.text('Disc:', 58, y, { align: 'right' });
     doc.text(`-${discount.toFixed(2)}`, 75, y, { align: 'right' });
     y += 4;
   }
 
-  doc.text('SGST  2.5%:', 60, y, { align: 'right' });
+  doc.text('SGST  2.5%:', 58, y, { align: 'right' });
   doc.text(`${gstEach}`, 75, y, { align: 'right' });
   y += 4;
-  doc.text('CGST  2.5%:', 60, y, { align: 'right' });
+  doc.text('CGST  2.5%:', 58, y, { align: 'right' });
   doc.text(`${gstEach}`, 75, y, { align: 'right' });
   y += 4;
   
   doc.line(5, y, 75, y);
   y += 5;
   
-  doc.text('Round off', 60, y, { align: 'right' });
+  doc.text('Round off', 58, y, { align: 'right' });
   doc.text(`${roundOff}`, 75, y, { align: 'right' });
   y += 6;
   

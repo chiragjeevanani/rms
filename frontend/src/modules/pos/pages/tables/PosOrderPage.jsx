@@ -53,8 +53,37 @@ export default function PosOrderPage() {
   const [selectedWaiter] = useState(MOCK_WAITERS[0]);
 
   // Reset cart when switching tables
+  const [tableHistory, setTableHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const fetchTableHistory = async () => {
+    if (!tableId || tableId === 'Takeaway' || tableId === 'Delivery') {
+      setTableHistory([]);
+      return;
+    }
+    setLoadingHistory(true);
+    try {
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      const bid = staffInfo.branchId?._id || staffInfo.branchId;
+      const branchQuery = bid ? `?branchId=${bid}` : '';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/completed${branchQuery}`);
+      const result = await response.json();
+      if (result.success && Array.isArray(result.data)) {
+        const filtered = result.data
+          .filter(o => o.tableName?.toLowerCase() === tableId.toLowerCase())
+          .slice(0, 5);
+        setTableHistory(filtered);
+      }
+    } catch (err) {
+      console.error('Failed to fetch table history:', err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
   useEffect(() => {
     setCart([]);
+    fetchTableHistory();
   }, [tableId]);
 
   // ── Billing state ──────────────────────────────────────────────────────────
@@ -593,9 +622,89 @@ export default function PosOrderPage() {
         {/* Items list */}
         <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }} className="no-scrollbar">
           {allItems.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#BDBDBD', gap: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#9E9E9E' }}>No Item Selected</div>
-              <div style={{ fontSize: 11, color: '#BDBDBD', textAlign: 'center' }}>Please Select Item from Left Menu Item</div>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: '20px', color: '#BDBDBD', gap: 8 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#9E9E9E' }}>No Item Selected</div>
+                <div style={{ fontSize: 11, color: '#BDBDBD', textAlign: 'center' }}>Please Select Item from Left Menu Item</div>
+              </div>
+              {tableHistory.length > 0 && (
+                <div style={{ borderTop: '1px dashed #E0E0E0', padding: '16px 20px', background: '#FAFBFD' }}>
+                  <h4 style={{ fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#888', letterSpacing: '0.08em', marginBottom: 12 }}>
+                    Recent Table History ({tableId})
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '240px', overflowY: 'auto' }} className="no-scrollbar">
+                    {tableHistory.map((item) => (
+                      <div 
+                        key={item._id} 
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between', 
+                          padding: '10px 12px', 
+                          background: '#FFF', 
+                          border: '1px solid #E5E7EB', 
+                          borderRadius: 8, 
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.03)' 
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 11, fontWeight: 800, color: '#1F2937' }}>
+                              #{item.orderNumber?.split('-').pop()}
+                            </span>
+                            <span style={{ 
+                              fontSize: 8, 
+                              fontWeight: 900, 
+                              padding: '1px 4px', 
+                              borderRadius: 3, 
+                              background: '#EAFDF5', 
+                              color: '#10B981', 
+                              textTransform: 'uppercase' 
+                            }}>
+                              {item.payments?.[0]?.method || 'Paid'}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: 9, color: '#9CA3AF', marginTop: 2, display: 'block' }}>
+                            {new Date(item.closedAt || item.updatedAt).toLocaleString('en-IN', { timeStyle: 'short', dateStyle: 'short' })}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 13, fontWeight: 900, color: '#111827', fontStyle: 'italic' }}>
+                            ₹{(item.grandTotal || item.totalAmount || 0).toFixed(2)}
+                          </span>
+                          <button 
+                            onClick={() => {
+                              const billingDetails = {
+                                subTotal: item.subTotal || 0,
+                                tax: item.tax || 0,
+                                discount: item.discount?.amount || 0,
+                                total: item.grandTotal || 0,
+                                orderType: item.orderType || 'Dine-In',
+                                billerName: 'Staff'
+                              };
+                              printBillReceipt({ items: item.items || [], waiter: { name: item.waiterName || 'Staff' } }, { name: item.tableName }, billingDetails);
+                              toast.success('Reprinting bill...');
+                            }} 
+                            style={{ 
+                              padding: '5px 8px', 
+                              background: '#F3F4F6', 
+                              border: '1px solid #D1D5DB', 
+                              borderRadius: 4, 
+                              fontSize: 8, 
+                              fontWeight: 900, 
+                              textTransform: 'uppercase', 
+                              color: '#374151', 
+                              cursor: 'pointer' 
+                            }}
+                          >
+                            Reprint
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             allItems.map((item, idx) => (

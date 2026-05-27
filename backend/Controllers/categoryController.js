@@ -76,9 +76,43 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+const bulkCreateCategories = async (req, res) => {
+  const { categories } = req.body;
+  if (!categories || !Array.isArray(categories)) {
+    return res.status(400).json({ success: false, message: 'Invalid categories payload' });
+  }
+
+  try {
+    const resolvedCategories = [];
+    for (let i = 0; i < categories.length; i++) {
+      const catData = categories[i];
+      if (!catData.name || !catData.name.trim()) continue;
+
+      resolvedCategories.push({
+        name: catData.name.trim(),
+        description: catData.description ? catData.description.trim() : '',
+        image: catData.image ? catData.image.trim() : '',
+        status: catData.status || 'Published',
+        branchId: catData.branchId || req.query.branchId || null
+      });
+    }
+
+    if (resolvedCategories.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid categories to import' });
+    }
+
+    const inserted = await Category.insertMany(resolvedCategories);
+    res.status(201).json({ success: true, message: `Successfully imported ${inserted.length} categories`, data: inserted });
+  } catch (error) {
+    console.error('Bulk import categories error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error during import' });
+  }
+};
+
 module.exports = {
   getCategories,
   createCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  bulkCreateCategories
 };

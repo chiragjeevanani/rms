@@ -5,8 +5,12 @@ const {
   getCombo,
   createCombo,
   updateCombo,
-  deleteCombo
+  deleteCombo,
+  bulkCreateCombos
 } = require('../Controllers/comboController');
+const { protectAdmin } = require('../Middleware/authMiddleware');
+
+router.post('/bulk', protectAdmin, bulkCreateCombos);
 
 router.route('/')
   .get(getCombos)

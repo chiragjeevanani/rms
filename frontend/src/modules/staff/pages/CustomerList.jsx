@@ -22,7 +22,7 @@ export default function CustomerList() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 py-8">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-safe pb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Guests</h1>

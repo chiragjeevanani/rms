@@ -105,23 +105,23 @@ export default function GenerateInvoice() {
 
     doc.line(5, y, 75, y);
     y += 5;
-    doc.text('Subtotal:', 45, y);
+    doc.text('Subtotal:', 58, y, { align: 'right' });
     doc.text(order.subTotal.toFixed(2), 75, y, { align: 'right' });
     y += 4;
     if (order.tax > 0) {
-      doc.text('GST (5%):', 45, y);
+      doc.text('GST (5%):', 58, y, { align: 'right' });
       doc.text(order.tax.toFixed(2), 75, y, { align: 'right' });
       y += 4;
     }
     if (order.discount?.amount > 0) {
-      doc.text('Discount:', 45, y);
+      doc.text('Discount:', 58, y, { align: 'right' });
       doc.text(`-${order.discount.amount.toFixed(2)}`, 75, y, { align: 'right' });
       y += 4;
     }
     
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text('GRAND TOTAL:', 40, y + 2, { align: 'right' });
+    doc.text('GRAND TOTAL:', 58, y + 2, { align: 'right' });
     doc.text(`Rs. ${order.grandTotal.toFixed(2)}`, 75, y + 2, { align: 'right' });
     
     y += 12;

@@ -5,12 +5,14 @@ const {
   createStock, 
   updateStock, 
   deleteStock,
-  getStockAnalytics
+  getStockAnalytics,
+  bulkCreateStock
 } = require('../Controllers/stockController');
 const { protectAdmin } = require('../Middleware/authMiddleware');
 
 router.get('/', getAllStock);
 router.get('/reports/inventory', protectAdmin, getStockAnalytics);
+router.post('/bulk', protectAdmin, bulkCreateStock);
 router.post('/', protectAdmin, createStock);
 router.put('/:id', protectAdmin, updateStock);
 router.delete('/:id', protectAdmin, deleteStock);

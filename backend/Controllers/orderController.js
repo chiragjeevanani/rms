@@ -171,7 +171,7 @@ const getActiveOrders = async (req, res) => {
 
 const getCompletedOrders = async (req, res) => {
   try {
-    const filter = { status: 'completed' };
+    const filter = { status: { $in: ['completed', 'Completed', 'paid', 'Paid'] } };
     if (req.query.branchId) filter.branchId = req.query.branchId;
     const orders = await Order.find(filter)
       .populate('items.itemId')

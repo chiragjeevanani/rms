@@ -23,7 +23,7 @@ export default function AddCustomer() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 py-8">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-safe pb-8">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-3 bg-slate-100 rounded-2xl text-slate-900 group">
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />

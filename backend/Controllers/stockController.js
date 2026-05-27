@@ -162,10 +162,59 @@ const getStockAnalytics = async (req, res) => {
   }
 };
 
+const bulkCreateStock = async (req, res) => {
+  try {
+    const { stock } = req.body;
+    if (!Array.isArray(stock)) {
+      return res.status(400).json({ success: false, message: 'Stock items must be an array' });
+    }
+
+    const resolvedStock = [];
+    const validUnits = ['Kgs', 'Ltrs', 'Units', 'Boxes'];
+
+    for (const s of stock) {
+      if (!s.name) continue;
+
+      let resolvedUnit = 'Units';
+      if (s.unit && validUnits.includes(s.unit)) {
+        resolvedUnit = s.unit;
+      } else if (s.unit) {
+        const unitLower = s.unit.toLowerCase().trim();
+        if (unitLower.startsWith('kg') || unitLower === 'kilogram' || unitLower === 'kilograms') resolvedUnit = 'Kgs';
+        else if (unitLower === 'l' || unitLower === 'ltr' || unitLower === 'ltrs' || unitLower === 'liter' || unitLower === 'liters' || unitLower === 'litre') resolvedUnit = 'Ltrs';
+        else if (unitLower === 'pc' || unitLower === 'pcs' || unitLower === 'pieces' || unitLower === 'piece') resolvedUnit = 'Units';
+        else if (unitLower === 'box' || unitLower === 'boxes') resolvedUnit = 'Boxes';
+      }
+
+      resolvedStock.push({
+        name: s.name.toUpperCase().trim(),
+        quantity: Number(s.quantity || 0),
+        unit: resolvedUnit,
+        minLevel: Number(s.minLevel || 0),
+        category: s.category || 'Dry Grocery',
+        price: Number(s.price || 0),
+        status: 'Published',
+        branchId: s.branchId || req.query.branchId || null
+      });
+    }
+
+    if (resolvedStock.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid stock items to import' });
+    }
+
+    const inserted = await Stock.insertMany(resolvedStock);
+    res.status(201).json({ success: true, message: `Successfully imported ${inserted.length} stock items`, data: inserted });
+  } catch (error) {
+    console.error('Bulk import stock error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error during import' });
+  }
+};
+
 module.exports = {
   getAllStock,
   createStock,
   updateStock,
   deleteStock,
-  getStockAnalytics
+  getStockAnalytics,
+  bulkCreateStock
 };

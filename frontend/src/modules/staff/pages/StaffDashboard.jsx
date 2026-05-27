@@ -144,7 +144,7 @@ export default function StaffDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* Top Header */}
-      <header className="bg-white px-6 pt-12 pb-6 border-b border-slate-100 sticky top-0 z-40">
+      <header className="bg-white px-6 pt-safe-lg pb-6 border-b border-slate-100 sticky top-0 z-40">
         <div className="flex items-center justify-between mb-2">
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{today}</span>

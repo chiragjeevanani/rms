@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Package, Plus, Search, Filter, Edit2, Trash2, 
   Layers, Save, Loader2, X, Camera, DollarSign,
-  Check, ChevronDown, LayoutGrid, List, Image as ImageIcon, Eye, Clock, Building2
+  Check, ChevronDown, LayoutGrid, List, Image as ImageIcon, Eye, Clock, Building2, Upload, Download
 } from 'lucide-react';
 import BranchSelector from '../../components/BranchSelector';
 import { Link, useLocation } from 'react-router-dom';
@@ -36,6 +36,125 @@ export default function ComboMeals() {
   const [combos, setCombos] = useState([]);
   const [availableItems, setAvailableItems] = useState([]);
   const fileInputRef = useRef(null);
+
+  // CSV Import States and Functions
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const parseCSV = (text) => {
+    const lines = text.split('\n');
+    if (lines.length <= 1) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+    const results = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = [];
+      let insideQuote = false;
+      let currentValue = '';
+
+      for (let charIndex = 0; charIndex < line.length; charIndex++) {
+        const char = line[charIndex];
+        if (char === '"' || char === "'") {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          values.push(currentValue.trim());
+          currentValue = '';
+        } else {
+          currentValue += char;
+        }
+      }
+      values.push(currentValue.trim());
+
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header] = values[index] ? values[index].replace(/^["']|["']$/g, '') : '';
+      });
+      results.push(row);
+    }
+    return results;
+  };
+
+  const downloadComboTemplate = () => {
+    const csvContent = "data:text/csv;charset=utf-8,Name,Description,Selling Price,Actual Price,Prep Time,SKU,Items\nSuper Saver Combo,Burger and Coke combo at discount,300,350,15,CMB-SAVER01,Dynamite Burger|1;Classic Chicken Franky|1\nFeast Combo,Perfect meal combo,599,750,20,CMB-FEAST02,Dynamite Burger|2;Basmati Rice|1\n";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "menu_combos_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCSVImport = async (e) => {
+    e.preventDefault();
+    if (!importFile) return toast.error('Please select a CSV file first');
+
+    setIsImporting(true);
+    const toastId = toast.loading('Reading CSV file...');
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target.result;
+        const parsedData = parseCSV(text);
+        if (parsedData.length === 0) {
+          toast.error('CSV file is empty or invalid', { id: toastId });
+          setIsImporting(false);
+          return;
+        }
+
+        const formattedCombos = parsedData.map(row => ({
+          name: row.Name || row.name || '',
+          description: row.Description || row.description || '',
+          price: Number(row['Selling Price'] || row.price || 0),
+          originalPrice: Number(row['Actual Price'] || row.originalPrice || 0),
+          preparationTime: Number(row['Prep Time'] || row.preparationTime || 20),
+          sku: row.SKU || row.sku || '',
+          itemsRaw: row.Items || row.items || '',
+          status: 'Published',
+          branchId: selectedBranchFilter !== 'all' ? selectedBranchFilter : branches[0]?._id || ''
+        })).filter(c => c.name.trim().length > 0);
+
+        if (formattedCombos.length === 0) {
+          toast.error('No valid combo meals found in CSV', { id: toastId });
+          setIsImporting(false);
+          return;
+        }
+
+        toast.loading(`Syncing ${formattedCombos.length} combos to database...`, { id: toastId });
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/combo/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+          },
+          body: JSON.stringify({ combos: formattedCombos })
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+          toast.success(result.message || 'Bulk combos imported successfully!', { id: toastId });
+          fetchData();
+          setIsImportModalOpen(false);
+          setImportFile(null);
+        } else {
+          toast.error(result.message || 'Bulk import failed', { id: toastId });
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to parse or upload CSV', { id: toastId });
+      } finally {
+        setIsImporting(false);
+      }
+    };
+    reader.readAsText(importFile);
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -296,13 +415,29 @@ export default function ComboMeals() {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Combo Matrix</h1>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Multi-Asset Assemblies & Value Bundles</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          className="h-12 px-8 bg-[#2C2C2C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black active:scale-95 transition-all outline-none"
-        >
-          <Plus size={16} />
-          Forge New Combo
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={downloadComboTemplate}
+            className="h-12 px-6 bg-amber-50 text-amber-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-amber-200 hover:bg-amber-100 active:scale-95 transition-all outline-none"
+          >
+            <Download size={16} />
+            Download Sample
+          </button>
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="h-12 px-6 bg-slate-100 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-slate-200 hover:bg-slate-200 active:scale-95 transition-all outline-none"
+          >
+            <Upload size={16} />
+            Import CSV
+          </button>
+          <button 
+            onClick={() => handleOpenModal()}
+            className="h-12 px-8 bg-[#2C2C2C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black active:scale-95 transition-all outline-none"
+          >
+            <Plus size={16} />
+            Forge New Combo
+          </button>
+        </div>
       </div>
 
       <div className="bg-white border border-slate-100 rounded-3xl p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm">
@@ -861,6 +996,62 @@ export default function ComboMeals() {
                type="submit"
                className="flex-1 py-5 bg-rose-500 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all outline-none"
              >Terminate</button>
+          </div>
+        </form>
+      </AdminModal>
+
+      {/* Import Modal */}
+      <AdminModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Combos via CSV"
+        subtitle="Upload your combo spreadsheet in bulk"
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleCSVImport} className="space-y-6">
+          <div className="p-5 bg-slate-50 border border-slate-100 rounded-3xl space-y-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+              Guidelines: Save your spreadsheet as a <strong>CSV</strong> file. Format items inside as <code>ItemName|Quantity</code> separated by semicolons (e.g. <code>Dynamite Burger|2;Basmati Rice|1</code>):
+            </p>
+            <div className="p-3 bg-white border border-slate-100 rounded-2xl text-[9px] font-mono text-slate-600 leading-relaxed overflow-x-auto">
+              Name,Description,Selling Price,Actual Price,Prep Time,SKU,Items
+            </div>
+            <button 
+              type="button"
+              onClick={downloadComboTemplate}
+              className="w-full h-12 bg-white border border-slate-200 text-slate-700 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:border-slate-900 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <Download size={14} /> Download CSV Template
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select CSV File</label>
+            <input 
+              type="file"
+              accept=".csv"
+              required
+              className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-bold outline-none rounded-2xl cursor-pointer"
+              onChange={(e) => setImportFile(e.target.files[0])}
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button 
+              type="button" 
+              onClick={() => setIsImportModalOpen(false)}
+              className="flex-1 h-14 bg-slate-50 border border-slate-200 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all outline-none"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              disabled={isImporting}
+              className="flex-[2] h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all outline-none disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isImporting ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
+              Start Import
+            </button>
           </div>
         </form>
       </AdminModal>

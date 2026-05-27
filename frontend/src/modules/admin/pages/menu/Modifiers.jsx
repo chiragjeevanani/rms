@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sliders, Plus, Search, Filter, Edit2, Trash2, 
   Save, Check, X, ChevronRight, Hash, DollarSign,
-  ToggleLeft, ToggleRight, List, Loader2, Building2
+  ToggleLeft, ToggleRight, List, Loader2, Building2, Upload, Download
 } from 'lucide-react';
 import BranchSelector from '../../components/BranchSelector';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +13,6 @@ import EmptyState from '../../components/ui/EmptyState';
 
 export default function Modifiers() {
   const [modifiers, setModifiers] = useState([]);
-// ...
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,6 +23,124 @@ export default function Modifiers() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [branches, setBranches] = useState([]);
   const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+
+  // CSV Import States and Functions
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const parseCSV = (text) => {
+    const lines = text.split('\n');
+    if (lines.length <= 1) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+    const results = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = [];
+      let insideQuote = false;
+      let currentValue = '';
+
+      for (let charIndex = 0; charIndex < line.length; charIndex++) {
+        const char = line[charIndex];
+        if (char === '"' || char === "'") {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          values.push(currentValue.trim());
+          currentValue = '';
+        } else {
+          currentValue += char;
+        }
+      }
+      values.push(currentValue.trim());
+
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header] = values[index] ? values[index].replace(/^["']|["']$/g, '') : '';
+      });
+      results.push(row);
+    }
+    return results;
+  };
+
+  const downloadModifierTemplate = () => {
+    const csvContent = "data:text/csv;charset=utf-8,Name,Selection Type,Is Required,Min Selection,Max Selection,Options\nExtra Cheese,Single,false,0,1,Cheese|30|default;No Cheese|0\nSpice Level,Single,true,1,1,Normal|0|default;Medium Spicy|0;Extra Spicy|10\nToppings,Multiple,false,0,5,Paneer|40;Chicken|60;Mushroom|30;Olives|20\n";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "menu_modifiers_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCSVImport = async (e) => {
+    e.preventDefault();
+    if (!importFile) return toast.error('Please select a CSV file first');
+
+    setIsImporting(true);
+    const toastId = toast.loading('Reading CSV file...');
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target.result;
+        const parsedData = parseCSV(text);
+        if (parsedData.length === 0) {
+          toast.error('CSV file is empty or invalid', { id: toastId });
+          setIsImporting(false);
+          return;
+        }
+
+        const formattedModifiers = parsedData.map(row => ({
+          name: row.Name || row.name || '',
+          selectionType: row['Selection Type'] || row.selectionType || 'Single',
+          isRequired: row['Is Required'] === 'true' || row['Is Required'] === 'yes',
+          minSelection: Number(row['Min Selection'] || 0),
+          maxSelection: Number(row['Max Selection'] || 1),
+          optionsRaw: row.Options || row.options || '',
+          status: 'Published',
+          branchId: selectedBranchFilter !== 'all' ? selectedBranchFilter : branches[0]?._id || ''
+        })).filter(m => m.name.trim().length > 0);
+
+        if (formattedModifiers.length === 0) {
+          toast.error('No valid modifiers found in CSV', { id: toastId });
+          setIsImporting(false);
+          return;
+        }
+
+        toast.loading(`Syncing ${formattedModifiers.length} modifier groups...`, { id: toastId });
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/modifier/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+          },
+          body: JSON.stringify({ modifiers: formattedModifiers })
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+          toast.success(result.message || 'Bulk modifiers imported successfully!', { id: toastId });
+          fetchData();
+          setIsImportModalOpen(false);
+          setImportFile(null);
+        } else {
+          toast.error(result.message || 'Bulk import failed', { id: toastId });
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to parse or upload CSV', { id: toastId });
+      } finally {
+        setIsImporting(false);
+      }
+    };
+    reader.readAsText(importFile);
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -197,13 +314,29 @@ export default function Modifiers() {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Modifier Groups</h1>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Configure sizes, add-ons, and special instructions</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          className="h-12 px-8 bg-[#2C2C2C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black active:scale-95 transition-all outline-none"
-        >
-          <Plus size={16} />
-          Create New Group
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={downloadModifierTemplate}
+            className="h-12 px-6 bg-amber-50 text-amber-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-amber-200 hover:bg-amber-100 active:scale-95 transition-all outline-none"
+          >
+            <Download size={16} />
+            Download Sample
+          </button>
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="h-12 px-6 bg-slate-100 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-slate-200 hover:bg-slate-200 active:scale-95 transition-all outline-none"
+          >
+            <Upload size={16} />
+            Import CSV
+          </button>
+          <button 
+            onClick={() => handleOpenModal()}
+            className="h-12 px-8 bg-[#2C2C2C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black active:scale-95 transition-all outline-none"
+          >
+            <Plus size={16} />
+            Create New Group
+          </button>
+        </div>
       </div>
 
       <div className="bg-white border border-slate-100 rounded-3xl p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm">
@@ -536,6 +669,62 @@ export default function Modifiers() {
              >Yes, Delete</button>
           </div>
         </div>
+      </AdminModal>
+
+      {/* Import Modal */}
+      <AdminModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Modifier Groups via CSV"
+        subtitle="Upload your modifier spreadsheets in bulk"
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleCSVImport} className="space-y-6">
+          <div className="p-5 bg-slate-50 border border-slate-100 rounded-3xl space-y-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+              Guidelines: Save your spreadsheet as a <strong>CSV</strong> file. Format options inside as <code>OptionName|Price|default</code> separated by semicolons (e.g. <code>Cheese|30|default;Mushrooms|40</code>):
+            </p>
+            <div className="p-3 bg-white border border-slate-100 rounded-2xl text-[9px] font-mono text-slate-600 leading-relaxed overflow-x-auto">
+              Name,Selection Type,Is Required,Min Selection,Max Selection,Options
+            </div>
+            <button 
+              type="button"
+              onClick={downloadModifierTemplate}
+              className="w-full h-12 bg-white border border-slate-200 text-slate-700 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:border-slate-900 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <Download size={14} /> Download CSV Template
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select CSV File</label>
+            <input 
+              type="file"
+              accept=".csv"
+              required
+              className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-bold outline-none rounded-2xl cursor-pointer"
+              onChange={(e) => setImportFile(e.target.files[0])}
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button 
+              type="button" 
+              onClick={() => setIsImportModalOpen(false)}
+              className="flex-1 h-14 bg-slate-50 border border-slate-200 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all outline-none"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              disabled={isImporting}
+              className="flex-[2] h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all outline-none disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isImporting ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
+              Start Import
+            </button>
+          </div>
+        </form>
       </AdminModal>
     </div>
   );

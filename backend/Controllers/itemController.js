@@ -1,4 +1,5 @@
 const Item = require('../Models/Item');
+const Category = require('../Models/Category');
 
 const getItems = async (req, res) => {
   try {
@@ -73,11 +74,70 @@ const addReview = async (req, res) => {
   }
 };
 
+const bulkCreateItems = async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ success: false, message: 'Items must be an array' });
+    }
+
+    const resolvedItems = [];
+    const categoriesMap = {};
+
+    // Load existing categories
+    const existingCategories = await Category.find({});
+    existingCategories.forEach(cat => {
+      categoriesMap[cat.name.toLowerCase().trim()] = cat._id;
+    });
+
+    for (const itemData of items) {
+      if (!itemData.name) continue;
+      
+      let categoryId = null;
+      const catName = (itemData.categoryName || 'General').trim();
+      const catKey = catName.toLowerCase();
+
+      if (categoriesMap[catKey]) {
+        categoryId = categoriesMap[catKey];
+      } else {
+        // Create new category
+        const newCat = new Category({ name: catName });
+        await newCat.save();
+        categoriesMap[catKey] = newCat._id;
+        categoryId = newCat._id;
+      }
+
+      resolvedItems.push({
+        name: itemData.name.toUpperCase().trim(),
+        category: categoryId,
+        basePrice: Number(itemData.price || 0),
+        originalPrice: Number(itemData.originalPrice || itemData.price || 0),
+        foodType: ['Veg', 'Non-Veg', 'Egg'].includes(itemData.foodType) ? itemData.foodType : 'Veg',
+        preparationTime: Number(itemData.preparationTime || 20),
+        sku: itemData.sku || `ITM-${Math.floor(100000 + Math.random() * 900000)}`,
+        status: 'Published',
+        branchId: itemData.branchId || req.query.branchId || null
+      });
+    }
+
+    if (resolvedItems.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid items to import' });
+    }
+
+    const inserted = await Item.insertMany(resolvedItems);
+    res.status(201).json({ success: true, message: `Successfully imported ${inserted.length} items`, data: inserted });
+  } catch (error) {
+    console.error('Bulk import menu items error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error during import' });
+  }
+};
+
 module.exports = {
   getItems,
   getItem,
   createItem,
   updateItem,
   deleteItem,
-  addReview
+  addReview,
+  bulkCreateItems
 };
