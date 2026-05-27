@@ -27,12 +27,6 @@ export default function CustomerList() {
       <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-5">
-            <button 
-              onClick={toggleSidebar}
-              className="p-3 bg-[#ff7a00] border border-[#ff7a00] rounded-xl hover:brightness-110 transition-all active:scale-95 shadow-xl shadow-[#ff7a00]/10"
-            >
-               <Menu size={20} className="text-white" />
-            </button>
             <div>
               <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none">Customer Directory</h1>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">

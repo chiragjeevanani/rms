@@ -14,6 +14,7 @@ const branchSchema = new mongoose.Schema({
   managerName: { type: String },
   openingTime: { type: String },
   closingTime: { type: String },
+  invoicePolicy: { type: String, default: '' },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   createdAt: { type: Date, default: Date.now }
 });

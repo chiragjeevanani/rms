@@ -4,7 +4,8 @@ import {
   Receipt, Search, Printer, FileText, 
   Table as TableIcon, RefreshCw, X, Menu,
   Zap, BadgeCheck, Download, ExternalLink,
-  MapPin, Phone, Hash, CreditCard, Banknote, Smartphone
+  MapPin, Phone, Hash, CreditCard, Banknote, Smartphone,
+  Plus, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -18,6 +19,38 @@ export default function GenerateInvoice() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [branchInfo, setBranchInfo] = useState(null);
+  const [isCustomMode, setIsCustomMode] = useState(false);
+  const [customInvoice, setCustomInvoice] = useState({
+    billNumber: '',
+    tableName: 'Table 1',
+    orderType: 'Dine-In',
+    createdAt: '',
+    customerName: '',
+    customerPhone: '',
+    items: [{ name: '', quantity: 1, price: 0 }],
+    taxRate: 5,
+    discountAmount: 0,
+    paymentMethod: 'Cash',
+  });
+
+  // Automatically generate custom invoice number and date when entering custom mode
+  useEffect(() => {
+    if (isCustomMode) {
+      setCustomInvoice(prev => ({
+        ...prev,
+        billNumber: `CUST-${Date.now().toString().slice(-6)}`,
+        createdAt: new Date().toISOString().slice(0, 16),
+        items: [{ name: '', quantity: 1, price: 0 }],
+        customerName: '',
+        customerPhone: '',
+        tableName: 'Table 1',
+        orderType: 'Dine-In',
+        taxRate: 5,
+        discountAmount: 0,
+        paymentMethod: 'Cash'
+      }));
+    }
+  }, [isCustomMode]);
 
   const fetchCompletedOrders = async () => {
     try {
@@ -60,10 +93,56 @@ export default function GenerateInvoice() {
     fetchBranchInfo();
   }, []);
 
+  const getMappedCustomOrder = () => {
+    const sub = customInvoice.items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+    const tx = sub * (Number(customInvoice.taxRate || 0) / 100);
+    const gt = sub + tx - Number(customInvoice.discountAmount || 0);
+
+    return {
+      orderNumber: customInvoice.billNumber || `CUST-${Date.now().toString().slice(-6)}`,
+      createdAt: customInvoice.createdAt ? new Date(customInvoice.createdAt).toISOString() : new Date().toISOString(),
+      tableName: customInvoice.tableName || 'Table 1',
+      orderType: customInvoice.orderType || 'Dine-In',
+      items: customInvoice.items.map(item => ({
+        name: item.name || 'Custom Item',
+        quantity: Number(item.quantity || 1),
+        price: Number(item.price || 0)
+      })),
+      subTotal: sub,
+      tax: tx,
+      taxRate: Number(customInvoice.taxRate || 0),
+      discount: { amount: Number(customInvoice.discountAmount || 0) },
+      grandTotal: gt,
+      payments: [{ method: customInvoice.paymentMethod }]
+    };
+  };
+
+  const handlePrintCustomInvoice = () => {
+    const mapped = getMappedCustomOrder();
+    setSelectedOrder(mapped);
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  };
+
+  const handlePDFCustomInvoice = () => {
+    const mapped = getMappedCustomOrder();
+    generatePDF(mapped);
+  };
+
   const generatePDF = (order) => {
+    // Format policy text dynamically
+    const policyText = branchInfo?.invoicePolicy || '';
+    const tempDoc = new jsPDF();
+    const splitPolicy = policyText ? tempDoc.splitTextToSize(policyText, 70) : [];
+    const policyHeight = splitPolicy.length * 3.5;
+
+    const baseHeight = 150 + (order.items.length * 5);
+    const pdfHeight = baseHeight + (policyHeight > 0 ? policyHeight + 12 : 0);
+
     const doc = new jsPDF({
       unit: 'mm',
-      format: [80, 150 + (order.items.length * 5)] // Dynamic height based on items
+      format: [80, pdfHeight] // Dynamic height based on items + policy text length
     });
 
     const centerX = 40;
@@ -82,7 +161,10 @@ export default function GenerateInvoice() {
     
     doc.setFontSize(8);
     doc.text(`Bill No: ${order.orderNumber}`, 5, 27);
-    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 5, 31);
+    
+    const parsedDate = new Date(order.createdAt);
+    const dateString = isNaN(parsedDate.getTime()) ? new Date().toLocaleDateString() : parsedDate.toLocaleDateString();
+    doc.text(`Date: ${dateString}`, 5, 31);
     doc.text(`Table: ${order.tableName}`, 5, 35);
     doc.text(`Type: ${order.orderType}`, 45, 35);
     
@@ -108,8 +190,10 @@ export default function GenerateInvoice() {
     doc.text('Subtotal:', 58, y, { align: 'right' });
     doc.text(order.subTotal.toFixed(2), 75, y, { align: 'right' });
     y += 4;
+    
+    const gstRate = order.taxRate !== undefined ? order.taxRate : 5;
     if (order.tax > 0) {
-      doc.text('GST (5%):', 58, y, { align: 'right' });
+      doc.text(`GST (${gstRate}%):`, 58, y, { align: 'right' });
       doc.text(order.tax.toFixed(2), 75, y, { align: 'right' });
       y += 4;
     }
@@ -124,7 +208,26 @@ export default function GenerateInvoice() {
     doc.text('GRAND TOTAL:', 58, y + 2, { align: 'right' });
     doc.text(`Rs. ${order.grandTotal.toFixed(2)}`, 75, y + 2, { align: 'right' });
     
-    y += 12;
+    y += 8;
+
+    // Draw policy terms if they exist
+    if (splitPolicy.length > 0) {
+      doc.setLineDashPattern([0.5, 0.5], 0);
+      doc.line(5, y, 75, y);
+      y += 4;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.text("TERMS & CONDITIONS:", 5, y);
+      y += 3.5;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(5.5);
+      splitPolicy.forEach(line => {
+        doc.text(line, 5, y);
+        y += 3;
+      });
+      y += 3;
+    }
+
     doc.setFont("helvetica", "italic");
     doc.setFontSize(7);
     doc.text('Thank you! Visit again.', centerX, y, { align: 'center' });
@@ -157,11 +260,11 @@ export default function GenerateInvoice() {
                </div>
                <div className="flex justify-between mb-1">
                   <span>Bill: {selectedOrder.orderNumber}</span>
-                  <span>{new Date(selectedOrder.createdAt).toLocaleDateString()}</span>
+                  <span>{isNaN(new Date(selectedOrder.createdAt).getTime()) ? new Date().toLocaleDateString() : new Date(selectedOrder.createdAt).toLocaleDateString()}</span>
                </div>
                <div className="flex justify-between mb-4">
                   <span>Table: {selectedOrder.tableName}</span>
-                  <span>{new Date(selectedOrder.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                  <span>{isNaN(new Date(selectedOrder.createdAt).getTime()) ? new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : new Date(selectedOrder.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                </div>
                <div className="border-y border-dashed py-2 mb-4">
                   <div className="flex font-bold mb-1">
@@ -179,9 +282,18 @@ export default function GenerateInvoice() {
                </div>
                <div className="space-y-1 text-right mb-6">
                   <div className="flex justify-between"><span>Subtotal:</span><span>₹{selectedOrder.subTotal.toFixed(2)}</span></div>
-                  {selectedOrder.tax > 0 && <div className="flex justify-between"><span>GST (5%):</span><span>₹{selectedOrder.tax.toFixed(2)}</span></div>}
+                  {selectedOrder.tax > 0 && <div className="flex justify-between"><span>GST ({selectedOrder.taxRate !== undefined ? selectedOrder.taxRate : 5}%):</span><span>₹{selectedOrder.tax.toFixed(2)}</span></div>}
+                  {selectedOrder.discount?.amount > 0 && <div className="flex justify-between text-rose-600"><span>Discount:</span><span>-₹{selectedOrder.discount.amount.toFixed(2)}</span></div>}
                   <div className="flex justify-between font-bold text-sm border-t border-slate-900 pt-1 mt-1 uppercase"><span>Total:</span><span>₹{selectedOrder.grandTotal.toFixed(2)}</span></div>
                </div>
+               
+               {branchInfo?.invoicePolicy && (
+                  <div className="border-t border-dashed pt-3 mt-4 text-[7px] text-left leading-normal whitespace-pre-line text-slate-700">
+                     <p className="font-bold mb-1 uppercase text-[8px] text-slate-900">Terms & Conditions:</p>
+                     {branchInfo.invoicePolicy}
+                  </div>
+               )}
+
                <p className="text-center italic opacity-60 text-[8px] tracking-widest mt-10 uppercase">Thank you! Visit again</p>
             </div>
          )}
@@ -193,109 +305,326 @@ export default function GenerateInvoice() {
              <Menu size={18} />
           </button>
           <div className="space-y-0.5">
-             <h1 className="text-xl font-black text-slate-900 tracking-tight">Settled Invoices</h1>
-             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">Review & Print Past Transactions</p>
+             <h1 className="text-xl font-black text-slate-900 tracking-tight">
+                {isCustomMode ? 'Create Your Own Invoice' : 'Settled Invoices'}
+             </h1>
+             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">
+                {isCustomMode ? 'Design and print custom bills manually' : 'Review & Print Past Transactions'}
+             </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-           <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center gap-2 shadow-sm">
-              <BadgeCheck size={14} className="fill-blue-600 stroke-none" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Completed: {orders.length}</span>
-           </div>
-           <button onClick={fetchCompletedOrders} className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-all">
-              <RefreshCw size={18} />
+           {!isCustomMode && (
+              <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center gap-2 shadow-sm">
+                 <BadgeCheck size={14} className="fill-blue-600 stroke-none" />
+                 <span className="text-[10px] font-black uppercase tracking-widest">Completed: {orders.length}</span>
+              </div>
+           )}
+           {!isCustomMode && (
+              <button onClick={fetchCompletedOrders} className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-all">
+                 <RefreshCw size={18} />
+              </button>
+           )}
+           <button 
+             onClick={() => setIsCustomMode(!isCustomMode)}
+             className="h-10 px-5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 hover:bg-[#ff7a00] active:scale-95 transition-all"
+           >
+             {isCustomMode ? 'Back to Settled' : 'Create Custom Invoice'}
            </button>
         </div>
       </header>
 
       <main className="flex-1 p-8 overflow-y-auto no-scrollbar print:hidden">
          <div className="max-w-6xl mx-auto space-y-8">
-            <div className="relative group">
-               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={18} />
-               <input 
-                 type="text" 
-                 placeholder="Search by table or bill number..."
-                 value={searchTerm}
-                 onChange={(e) => setSearchTerm(e.target.value)}
-                 className="w-full h-14 bg-white border border-slate-200 rounded-2xl pl-14 pr-6 text-sm font-bold outline-none focus:ring-2 focus:ring-[#ff7a00]/10 focus:border-[#ff7a00] transition-all shadow-sm"
-               />
-            </div>
+            {!isCustomMode ? (
+               <>
+                  <div className="relative group">
+                     <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={18} />
+                     <input 
+                       type="text" 
+                       placeholder="Search by table or bill number..."
+                       value={searchTerm}
+                       onChange={(e) => setSearchTerm(e.target.value)}
+                       className="w-full h-14 bg-white border border-slate-200 rounded-2xl pl-14 pr-6 text-sm font-bold outline-none focus:ring-2 focus:ring-[#ff7a00]/10 focus:border-[#ff7a00] transition-all shadow-sm"
+                     />
+                  </div>
 
-            <div className="bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden">
-               <table className="w-full text-left border-collapse">
-                  <thead>
-                     <tr className="bg-slate-50/50 border-b border-slate-100">
-                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Bill Details</th>
-                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Location</th>
-                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Payment</th>
-                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Amount</th>
-                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Actions</th>
-                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                     {loading ? (
-                        <tr>
-                           <td colSpan="5" className="px-8 py-20 text-center">
-                              <div className="w-10 h-10 border-4 border-[#ff7a00] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                              <span className="text-[10px] font-black uppercase text-slate-400">Loading history...</span>
-                           </td>
-                        </tr>
-                     ) : filteredOrders.length === 0 ? (
-                        <tr>
-                           <td colSpan="5" className="px-8 py-20 text-center opacity-30">
-                              <Receipt size={48} className="mx-auto mb-4 text-slate-300" />
-                              <p className="text-[10px] font-black uppercase text-slate-400">No settled bills found</p>
-                           </td>
-                        </tr>
-                     ) : (
-                        filteredOrders.map(order => (
-                          <tr key={order._id} className="group hover:bg-slate-50/80 transition-all">
-                             <td className="px-8 py-6">
-                                <span className="text-sm font-black text-slate-900">#{order.orderNumber.split('-').pop()}</span>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
-                             </td>
-                             <td className="px-8 py-6">
-                                <div className="flex items-center gap-3">
-                                   <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-[#ff7a00] group-hover:text-white group-hover:border-[#ff7a00] transition-all">
-                                      <TableIcon size={18} />
-                                   </div>
-                                   <span className="text-sm font-black text-slate-700 uppercase">{order.tableName}</span>
-                                </div>
-                             </td>
-                             <td className="px-8 py-6 text-center">
-                                <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-lg border ${
-                                   order.payments?.[0]?.method === 'UPI' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                   order.payments?.[0]?.method === 'Cash' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                   'bg-amber-50 text-amber-600 border-amber-100'
-                                }`}>
-                                   {order.payments?.[0]?.method || 'Paid'}
-                                </span>
-                             </td>
-                             <td className="px-8 py-6 text-right">
-                                <span className="text-xl font-black text-slate-950 italic">₹{order.grandTotal.toFixed(2)}</span>
-                             </td>
-                             <td className="px-8 py-6 text-center">
-                                <div className="flex items-center justify-center gap-2">
-                                   <button 
-                                     onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); setTimeout(handlePrint, 100); }}
-                                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 rounded-xl hover:bg-slate-950 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
-                                   >
-                                      <Printer size={14} /> Print
-                                   </button>
-                                   <button 
-                                     onClick={(e) => { e.stopPropagation(); generatePDF(order); }}
-                                     className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
-                                   >
-                                      <Download size={14} /> PDF
-                                   </button>
-                                </div>
-                             </td>
-                          </tr>
-                        ))
-                     )}
-                  </tbody>
-               </table>
-            </div>
+                  <div className="bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden">
+                     <table className="w-full text-left border-collapse">
+                        <thead>
+                           <tr className="bg-slate-50/50 border-b border-slate-100">
+                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Bill Details</th>
+                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Location</th>
+                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Payment</th>
+                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Amount</th>
+                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Actions</th>
+                           </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                           {loading ? (
+                              <tr>
+                                 <td colSpan="5" className="px-8 py-20 text-center">
+                                    <div className="w-10 h-10 border-4 border-[#ff7a00] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                                    <span className="text-[10px] font-black uppercase text-slate-400">Loading history...</span>
+                                 </td>
+                              </tr>
+                           ) : filteredOrders.length === 0 ? (
+                              <tr>
+                                 <td colSpan="5" className="px-8 py-20 text-center opacity-30">
+                                    <Receipt size={48} className="mx-auto mb-4 text-slate-300" />
+                                    <p className="text-[10px] font-black uppercase text-slate-400">No settled bills found</p>
+                                 </td>
+                              </tr>
+                           ) : (
+                              filteredOrders.map(order => (
+                                <tr key={order._id} className="group hover:bg-slate-50/80 transition-all">
+                                   <td className="px-8 py-6">
+                                      <span className="text-sm font-black text-slate-900">#{order.orderNumber.split('-').pop()}</span>
+                                      <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                   </td>
+                                   <td className="px-8 py-6">
+                                      <div className="flex items-center gap-3">
+                                         <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-[#ff7a00] group-hover:text-white group-hover:border-[#ff7a00] transition-all">
+                                            <TableIcon size={18} />
+                                         </div>
+                                         <span className="text-sm font-black text-slate-700 uppercase">{order.tableName}</span>
+                                      </div>
+                                   </td>
+                                   <td className="px-8 py-6 text-center">
+                                      <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-lg border ${
+                                         order.payments?.[0]?.method === 'UPI' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                         order.payments?.[0]?.method === 'Cash' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                         'bg-amber-50 text-amber-600 border-amber-100'
+                                      }`}>
+                                         {order.payments?.[0]?.method || 'Paid'}
+                                      </span>
+                                   </td>
+                                   <td className="px-8 py-6 text-right">
+                                      <span className="text-xl font-black text-slate-950 italic">₹{order.grandTotal.toFixed(2)}</span>
+                                   </td>
+                                   <td className="px-8 py-6 text-center">
+                                      <div className="flex items-center justify-center gap-2">
+                                         <button 
+                                           onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); setTimeout(handlePrint, 100); }}
+                                           className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 rounded-xl hover:bg-slate-950 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                         >
+                                            <Printer size={14} /> Print
+                                         </button>
+                                         <button 
+                                           onClick={(e) => { e.stopPropagation(); generatePDF(order); }}
+                                           className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                         >
+                                            <Download size={14} /> PDF
+                                         </button>
+                                      </div>
+                                   </td>
+                                </tr>
+                              ))
+                           )}
+                        </tbody>
+                     </table>
+                  </div>
+               </>
+            ) : (
+               /* Custom Invoice Builder panel */
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  {/* Left Column: Editor Form (Col Span 7) */}
+                  <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-6 space-y-6 shadow-sm">
+                     <div className="border-b border-slate-100 pb-4">
+                        <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">Invoice Setup</h2>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Define Customer Details & Bill Meta</p>
+                     </div>
+
+                     {/* Customer and Bill Details Grid */}
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Customer Name</label>
+                           <input type="text" className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.customerName} onChange={e => setCustomInvoice({...customInvoice, customerName: e.target.value})} placeholder="Walk-in Guest" />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Customer Phone</label>
+                           <input type="text" className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.customerPhone} onChange={e => setCustomInvoice({...customInvoice, customerPhone: e.target.value})} placeholder="Optional" />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Bill Number</label>
+                           <input type="text" className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.billNumber} onChange={e => setCustomInvoice({...customInvoice, billNumber: e.target.value})} />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Bill Date & Time</label>
+                           <input type="datetime-local" className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.createdAt} onChange={e => setCustomInvoice({...customInvoice, createdAt: e.target.value})} />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Table Name / ID</label>
+                           <input type="text" className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.tableName} onChange={e => setCustomInvoice({...customInvoice, tableName: e.target.value})} placeholder="e.g. Table 4" />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Order Type</label>
+                           <select className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.orderType} onChange={e => setCustomInvoice({...customInvoice, orderType: e.target.value})}>
+                              <option value="Dine-In">Dine-In</option>
+                              <option value="Takeaway">Takeaway</option>
+                              <option value="Delivery">Delivery</option>
+                           </select>
+                        </div>
+                     </div>
+
+                     {/* Items Section */}
+                     <div className="space-y-3">
+                        <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
+                           <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Invoice Items</h3>
+                           <button 
+                              type="button" 
+                              onClick={() => setCustomInvoice(prev => ({ ...prev, items: [...prev.items, { name: '', quantity: 1, price: 0 }] }))}
+                              className="px-3 py-1 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:bg-[#ff7a00] transition-colors"
+                           >
+                              <Plus size={10} /> Add Item
+                           </button>
+                        </div>
+                        <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 no-scrollbar">
+                           {customInvoice.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                 <div className="flex-1">
+                                    <input type="text" placeholder="Item name (e.g. Butter Chicken)" className="w-full bg-white border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={item.name} onChange={e => {
+                                       const newItems = [...customInvoice.items];
+                                       newItems[idx].name = e.target.value;
+                                       setCustomInvoice({ ...customInvoice, items: newItems });
+                                    }} />
+                                 </div>
+                                 <div className="w-20">
+                                    <input type="number" placeholder="Qty" min="1" className="w-full bg-white border border-slate-200 p-2 text-xs font-bold rounded-lg text-center outline-none focus:border-[#ff7a00]" value={item.quantity} onChange={e => {
+                                       const newItems = [...customInvoice.items];
+                                       newItems[idx].quantity = Math.max(1, parseInt(e.target.value) || 1);
+                                       setCustomInvoice({ ...customInvoice, items: newItems });
+                                    }} />
+                                 </div>
+                                 <div className="w-24">
+                                    <input type="number" placeholder="Price" min="0" className="w-full bg-white border border-slate-200 p-2 text-xs font-bold rounded-lg text-right outline-none focus:border-[#ff7a00]" value={item.price} onChange={e => {
+                                       const newItems = [...customInvoice.items];
+                                       newItems[idx].price = Math.max(0, parseFloat(e.target.value) || 0);
+                                       setCustomInvoice({ ...customInvoice, items: newItems });
+                                    }} />
+                                 </div>
+                                 {customInvoice.items.length > 1 && (
+                                    <button 
+                                       type="button" 
+                                       onClick={() => {
+                                          const newItems = customInvoice.items.filter((_, i) => i !== idx);
+                                          setCustomInvoice({ ...customInvoice, items: newItems });
+                                       }}
+                                       className="p-2 bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-100 transition-colors"
+                                    >
+                                       <Trash2 size={14} />
+                                    </button>
+                                 )}
+                              </div>
+                           ))}
+                        </div>
+                     </div>
+
+                     {/* Adjustments Section */}
+                     <div className="border-t border-slate-100 pt-4 grid grid-cols-3 gap-4">
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Tax (GST) %</label>
+                           <input type="number" min="0" className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.taxRate} onChange={e => setCustomInvoice({...customInvoice, taxRate: Math.max(0, parseFloat(e.target.value) || 0)})} />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Discount Amount (₹)</label>
+                           <input type="number" min="0" className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.discountAmount} onChange={e => setCustomInvoice({...customInvoice, discountAmount: Math.max(0, parseFloat(e.target.value) || 0)})} />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 tracking-widest">Payment Method</label>
+                           <select className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-bold rounded-lg outline-none focus:border-[#ff7a00]" value={customInvoice.paymentMethod} onChange={e => setCustomInvoice({...customInvoice, paymentMethod: e.target.value})}>
+                              <option value="Cash">Cash</option>
+                              <option value="Card">Card</option>
+                              <option value="UPI">UPI</option>
+                           </select>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Right Column: Thermal Preview (Col Span 5) */}
+                  <div className="lg:col-span-5 flex flex-col gap-6 sticky top-8">
+                     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xl relative border-t-4 border-t-[#ff7a00] font-mono text-[10px] text-slate-800">
+                        <div className="text-center mb-6 border-b border-dashed pb-4">
+                           <h3 className="text-sm font-black uppercase text-slate-900 tracking-tight">{branchInfo?.branchName || 'RESTAURANT'}</h3>
+                           <p className="text-[8px] mt-1 text-slate-500 uppercase">{branchInfo?.address || 'Branch Address'}</p>
+                           <p className="text-[8px] text-slate-500">Ph: {branchInfo?.phone}</p>
+                           {branchInfo?.gstNumber && <p className="text-[8px] font-black text-slate-900 uppercase mt-0.5">GST: {branchInfo.gstNumber}</p>}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 mb-4 text-[9px] font-bold text-slate-500 uppercase">
+                           <div>
+                              <p>Bill: <span className="text-slate-900 font-black">{customInvoice.billNumber}</span></p>
+                              <p>Table: <span className="text-slate-900 font-black">{customInvoice.tableName}</span></p>
+                           </div>
+                           <div className="text-right">
+                              <p>Date: <span className="text-slate-900 font-black">{customInvoice.createdAt ? new Date(customInvoice.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</span></p>
+                              <p>Type: <span className="text-slate-900 font-black">{customInvoice.orderType}</span></p>
+                           </div>
+                        </div>
+
+                        <div className="border-y border-dashed py-2 mb-4">
+                           <div className="flex font-black text-slate-400 mb-1 uppercase tracking-widest text-[8px]">
+                              <span className="flex-1">Item Description</span>
+                              <span className="w-8 text-center">Qty</span>
+                              <span className="w-16 text-right">Amt</span>
+                           </div>
+                           {customInvoice.items.map((item, idx) => {
+                              const qty = Number(item.quantity || 1);
+                              const price = Number(item.price || 0);
+                              return (
+                                 <div key={idx} className="flex py-0.5 font-bold text-slate-700 uppercase">
+                                    <span className="flex-1 truncate">{item.name || 'UNNAMED ITEM'}</span>
+                                    <span className="w-8 text-center">{qty}</span>
+                                    <span className="w-16 text-right">{(qty * price).toFixed(2)}</span>
+                                 </div>
+                              );
+                           })}
+                        </div>
+
+                        {/* Calculations block */}
+                        {(() => {
+                           const sub = customInvoice.items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+                           const tx = sub * (Number(customInvoice.taxRate || 0) / 100);
+                           const gt = sub + tx - Number(customInvoice.discountAmount || 0);
+                           return (
+                              <div className="space-y-1 text-right mb-6 font-bold text-slate-600">
+                                 <div className="flex justify-between"><span>Subtotal:</span><span>₹{sub.toFixed(2)}</span></div>
+                                 {tx > 0 && <div className="flex justify-between"><span>GST ({customInvoice.taxRate}%):</span><span>₹{tx.toFixed(2)}</span></div>}
+                                 {Number(customInvoice.discountAmount) > 0 && <div className="flex justify-between text-rose-600"><span>Discount:</span><span>-₹{Number(customInvoice.discountAmount).toFixed(2)}</span></div>}
+                                 <div className="flex justify-between font-black text-xs text-slate-900 border-t border-slate-900 pt-1.5 mt-1.5 uppercase"><span>Total Amount:</span><span>₹{gt.toFixed(2)}</span></div>
+                              </div>
+                           );
+                        })()}
+
+                        {/* Terms and Conditions inside receipt */}
+                        {branchInfo?.invoicePolicy && (
+                           <div className="border-t border-dashed pt-3 mt-4 text-[7px] text-slate-600 text-left leading-normal whitespace-pre-line uppercase">
+                              <p className="font-black mb-1 uppercase text-[8px] text-slate-900">Terms & Conditions:</p>
+                              {branchInfo.invoicePolicy}
+                           </div>
+                        )}
+
+                        <p className="text-center italic opacity-60 text-[8px] tracking-widest mt-8 uppercase">Thank you! Visit again</p>
+                     </div>
+
+                     {/* Action buttons below sticky preview */}
+                     <div className="grid grid-cols-2 gap-4">
+                        <button 
+                           onClick={handlePrintCustomInvoice}
+                           className="h-12 bg-white border border-slate-200 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-50 active:scale-95 transition-all shadow-sm"
+                        >
+                           <Printer size={16} /> Print Custom
+                        </button>
+                        <button 
+                           onClick={handlePDFCustomInvoice}
+                           className="h-12 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-95 transition-all shadow-xl shadow-blue-600/20"
+                        >
+                           <Download size={16} /> Download PDF
+                        </button>
+                     </div>
+                  </div>
+               </div>
+            )}
          </div>
       </main>
 

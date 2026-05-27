@@ -29,7 +29,8 @@ export default function BranchManagement() {
     managerName: '',
     openingTime: '09:00',
     closingTime: '23:00',
-    status: 'active'
+    status: 'active',
+    invoicePolicy: ''
   });
 
   useEffect(() => {
@@ -54,7 +55,8 @@ export default function BranchManagement() {
     if (branch) {
       setEditingBranch(branch);
       setFormData({
-        ...branch
+        ...branch,
+        invoicePolicy: branch.invoicePolicy || ''
       });
     } else {
       setEditingBranch(null);
@@ -71,7 +73,8 @@ export default function BranchManagement() {
         managerName: '',
         openingTime: '09:00',
         closingTime: '23:00',
-        status: 'active'
+        status: 'active',
+        invoicePolicy: ''
       });
     }
     setIsModalOpen(true);
@@ -260,6 +263,11 @@ export default function BranchManagement() {
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Address</label>
                     <textarea required rows="2" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all resize-none" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Store number, Building name, Street..." />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Policy (Terms & Conditions)</label>
+                    <textarea rows="3" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all resize-none" value={formData.invoicePolicy} onChange={e => setFormData({...formData, invoicePolicy: e.target.value})} placeholder="e.g. 1. Goods once sold cannot be returned. 2. Interest @18% will be charged if payment is not made on time." />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">

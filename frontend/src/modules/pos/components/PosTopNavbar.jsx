@@ -74,7 +74,7 @@ export default function PosTopNavbar() {
           </div>
           <div className="hidden xl:flex flex-col leading-none">
             <span className="text-[9px] font-bold text-white/70 uppercase tracking-widest">Call For Support</span>
-            <span className="text-sm font-black text-white">0769 223344</span>
+            <span className="text-sm font-black text-white">9311472355</span>
           </div>
         </div>
       </div>

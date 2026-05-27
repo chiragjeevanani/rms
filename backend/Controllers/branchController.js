@@ -2,7 +2,7 @@ const Branch = require('../Models/Branch');
 
 exports.createBranch = async (req, res) => {
   try {
-    const { restaurantId, branchName, branchEmail, phone, address, city, state, pincode, gstNumber, managerName, openingTime, closingTime } = req.body;
+    const { restaurantId, branchName, branchEmail, phone, address, city, state, pincode, gstNumber, managerName, openingTime, closingTime, invoicePolicy } = req.body;
     
     // Auto-generate Branch Code
     const count = await Branch.countDocuments();
@@ -21,7 +21,8 @@ exports.createBranch = async (req, res) => {
       gstNumber,
       managerName,
       openingTime,
-      closingTime
+      closingTime,
+      invoicePolicy
     });
 
     await newBranch.save();

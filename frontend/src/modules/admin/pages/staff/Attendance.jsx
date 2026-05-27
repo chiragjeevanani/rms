@@ -27,7 +27,8 @@ import {
   PlaneTakeoff,
   Coffee,
   Circle,
-  MoreVertical
+  MoreVertical,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
@@ -45,6 +46,14 @@ export default function Attendance() {
   const [roles, setRoles] = useState([]);
   const [branches, setBranches] = useState([]);
   const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportScope, setReportScope] = useState('all'); // 'all' | 'staff'
+  const [reportStaffId, setReportStaffId] = useState('');
+  const [reportBranchId, setReportBranchId] = useState('all');
+  const [reportTimeframe, setReportTimeframe] = useState('weekly'); // 'weekly' | 'monthly' | 'yearly' | 'all' | 'custom'
+  const [reportStartDate, setReportStartDate] = useState('');
+  const [reportEndDate, setReportEndDate] = useState('');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
   const isSelectedDateToday = selectedDate === todayStr;
@@ -136,6 +145,292 @@ export default function Attendance() {
     setSelectedDate(d.toISOString().split('T')[0]);
   };
 
+  const generatePDFDocument = async (records) => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+
+    // Clean White background
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+    // Accent top thin bar
+    doc.setFillColor(245, 158, 11);
+    doc.rect(0, 0, pageWidth, 3, 'F');
+
+    // Header Title (Slate-900 for light UI)
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('RMS STAFF ATTENDANCE PULSE', 15, 15);
+
+    // Accent Subtitle
+    doc.setTextColor(245, 158, 11);
+    doc.setFontSize(8);
+    doc.text('HIGH-FIDELITY ANALYTICAL REPORT', 15, 23);
+
+    // Generated Date
+    doc.setTextColor(100, 116, 139); // Slate-500
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(`GENERATED ON: ${new Date().toLocaleString()}`, 15, 31);
+    
+    let dateRangeLabel = '';
+    if (reportTimeframe === 'weekly') dateRangeLabel = 'LAST 7 DAYS';
+    else if (reportTimeframe === 'monthly') dateRangeLabel = 'LAST 30 DAYS';
+    else if (reportTimeframe === 'yearly') dateRangeLabel = 'LAST 365 DAYS';
+    else if (reportTimeframe === 'all') dateRangeLabel = 'ALL TIME';
+    else dateRangeLabel = `${reportStartDate} TO ${reportEndDate}`;
+
+    let branchLabel = 'ALL BRANCHES';
+    if (reportBranchId !== 'all') {
+      const selectedBranchObj = branches.find(b => b._id === reportBranchId);
+      branchLabel = selectedBranchObj ? selectedBranchObj.branchName.toUpperCase() : 'SPECIFIC BRANCH';
+    }
+    
+    doc.text(`TIMEFRAME: ${dateRangeLabel}`, 15, 37);
+
+    // Premium Top-Right Highlight Badge for Branch
+    const badgeWidth = 48;
+    const badgeHeight = 11;
+    const badgeX = pageWidth - 15 - badgeWidth;
+    const badgeY = 8;
+
+    // Light amber background fill and amber border
+    doc.setFillColor(254, 243, 199); // amber-100
+    doc.setDrawColor(251, 191, 36); // amber-400
+    doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD');
+
+    // Label inside badge (centered)
+    doc.setTextColor(180, 83, 9); // amber-800
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(5.5);
+    doc.text('REPORT BRANCH LOCATION', badgeX + badgeWidth / 2, badgeY + 4, { align: 'center' });
+
+    // Value inside badge (centered)
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text(branchLabel, badgeX + badgeWidth / 2, badgeY + 8.5, { align: 'center' });
+
+    // Calculate Summary Stats
+    const totalRecords = records.length;
+    const presentCount = records.filter(r => r.status === 'Present' || r.status === 'In').length;
+    const absentCount = records.filter(r => r.status === 'Absent').length;
+    const leaveCount = records.filter(r => r.status === 'Leave').length;
+    const attendanceRate = totalRecords > 0 ? ((presentCount / totalRecords) * 100).toFixed(1) : '0.0';
+
+    // Summary Cards container
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240); // slate-200 border
+    doc.roundedRect(15, 55, pageWidth - 30, 26, 4, 4, 'FD');
+
+    // Stats Labels (centered alignment to prevent right-edge overflow)
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TOTAL RECORDS', 33, 64, { align: 'center' });
+    doc.text('PRESENT COUNT', 69, 64, { align: 'center' });
+    doc.text('ABSENT COUNT', 105, 64, { align: 'center' });
+    doc.text('ON LEAVE', 141, 64, { align: 'center' });
+    doc.text('ATTENDANCE RATE', 177, 64, { align: 'center' });
+
+    // Stats Values (centered alignment)
+    doc.setTextColor(15, 23, 42); // Slate-900
+    doc.setFontSize(14);
+    doc.text(totalRecords.toString(), 33, 73, { align: 'center' });
+    
+    doc.setTextColor(16, 185, 129); // Emerald-500
+    doc.text(presentCount.toString(), 69, 73, { align: 'center' });
+    
+    doc.setTextColor(239, 68, 68); // Red-500
+    doc.text(absentCount.toString(), 105, 73, { align: 'center' });
+    
+    doc.setTextColor(59, 130, 246); // Blue-500
+    doc.text(leaveCount.toString(), 141, 73, { align: 'center' });
+    
+    doc.setTextColor(245, 158, 11); // Amber-500
+    doc.text(`${attendanceRate}%`, 177, 73, { align: 'center' });
+
+    let startYForTable = 90;
+    if (reportScope === 'staff' && records.length > 0) {
+      const sample = records[0].staff;
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(15, 85, pageWidth - 30, 14, 3, 3, 'FD');
+      
+      doc.setTextColor(71, 85, 105); // slate-600
+      doc.setFontSize(7);
+      doc.text('PERSONNEL DISCOVERY IDENT', 23, 90);
+      doc.text('ROLE CATEGORY', 93, 90);
+      doc.text('ASSIGNED BRANCH', 143, 90);
+
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text((sample?.name || 'N/A').toUpperCase(), 23, 95);
+      doc.text((sample?.role?.name || 'OPERATIVE').toUpperCase(), 93, 95);
+      
+      const branchName = sample?.branchId?.branchName || records[0]?.branchId?.branchName || 'GLOBAL';
+      doc.text(branchName.toUpperCase(), 143, 95);
+
+      startYForTable = 105;
+    }
+
+    const tableHeaders = [
+      'Date',
+      'Name',
+      'Role',
+      'Branch',
+      'Status',
+      'Check-In',
+      'Check-Out',
+      'Hours Worked'
+    ];
+
+    const tableData = records.map(rec => {
+      let checkInStr = '-';
+      if (rec.checkIn) {
+        checkInStr = new Date(rec.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      let checkOutStr = '-';
+      if (rec.checkOut) {
+        checkOutStr = new Date(rec.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      let hoursStr = '-';
+      if (rec.checkIn && rec.checkOut) {
+        const ms = new Date(rec.checkOut) - new Date(rec.checkIn);
+        const hours = Math.floor(ms / (1000 * 60 * 60));
+        const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+        hoursStr = `${hours}h ${minutes}m`;
+      }
+
+      let statusText = rec.status || 'PENDING';
+      if (statusText === 'In') statusText = 'PRESENT';
+      else statusText = statusText.toUpperCase();
+
+      const branch = rec.staff?.branchId?.branchName || rec.branchId?.branchName || 'Global';
+
+      return [
+        rec.date,
+        rec.staff?.name || 'N/A',
+        rec.staff?.role?.name || 'N/A',
+        branch,
+        statusText,
+        checkInStr,
+        checkOutStr,
+        hoursStr
+      ];
+    });
+
+    autoTable(doc, {
+      startY: startYForTable,
+      head: [tableHeaders],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [15, 23, 42],
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 8,
+        halign: 'left'
+      },
+      styles: {
+        fontSize: 8,
+        cellPadding: 3
+      },
+      columnStyles: {
+        4: { fontStyle: 'bold' }
+      },
+      didParseCell: function(cellData) {
+        if (cellData.column.index === 4 && cellData.cell.section === 'body') {
+          const val = cellData.cell.raw;
+          if (val === 'PRESENT') {
+            cellData.cell.styles.textColor = [16, 185, 129];
+          } else if (val === 'ABSENT') {
+            cellData.cell.styles.textColor = [239, 68, 68];
+          } else if (val === 'LEAVE') {
+            cellData.cell.styles.textColor = [59, 130, 246];
+          } else if (val === 'OUT') {
+            cellData.cell.styles.textColor = [100, 116, 139];
+          }
+        }
+      },
+      margin: { left: 15, right: 15 }
+    });
+
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, pageHeight - 10);
+      doc.text('CONFIDENTIAL - FOR INTERNAL ADMINISTRATION ONLY', 15, pageHeight - 10);
+    }
+
+    const filename = reportScope === 'staff' && records.length > 0 
+      ? `attendance_report_${records[0].staff.name.replace(/\s+/g, '_').toLowerCase()}_${reportTimeframe}.pdf`
+      : `attendance_report_all_staff_${reportTimeframe}.pdf`;
+    doc.save(filename);
+  };
+
+  const handleGeneratePDF = async () => {
+    setIsGeneratingReport(true);
+    try {
+      let url = `${import.meta.env.VITE_API_URL}/attendance/report?rangeType=${reportTimeframe}`;
+      if (reportScope === 'staff') {
+        if (!reportStaffId) {
+          toast.error('Please select a staff member');
+          setIsGeneratingReport(false);
+          return;
+        }
+        url += `&staffId=${reportStaffId}`;
+      }
+      if (reportBranchId !== 'all') {
+        url += `&branchId=${reportBranchId}`;
+      }
+      if (reportTimeframe === 'custom') {
+        if (!reportStartDate || !reportEndDate) {
+          toast.error('Please select both start and end dates');
+          setIsGeneratingReport(false);
+          return;
+        }
+        url += `&startDate=${reportStartDate}&endDate=${reportEndDate}`;
+      }
+
+      const res = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to retrieve report data');
+      }
+
+      const data = await res.json();
+      if (!data || data.length === 0) {
+        toast.error('No attendance records found for this selection');
+        setIsGeneratingReport(false);
+        return;
+      }
+
+      await generatePDFDocument(data);
+      setReportModalOpen(false);
+      toast.success('Report exported successfully');
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || 'Report generation failed');
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   const filteredStaff = staff.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === 'All' || (s.role && s.role.name === filterRole);
@@ -183,13 +478,28 @@ export default function Attendance() {
               onSelect={setSelectedBranchFilter}
             />
 
-           <div className="flex items-center gap-3 bg-white p-1 rounded-xl shadow-sm border border-slate-100 min-w-[240px] justify-between">
-              <button onClick={() => changeDate(-1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronLeft size={16} strokeWidth={3} /></button>
-              <span className={`text-[11px] font-black uppercase tracking-widest tabular-nums ${isSelectedDateToday ? 'text-slate-900' : 'text-rose-500'}`}>
-                {new Date(selectedDate).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
-              </span>
-              <button onClick={() => changeDate(1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronRight size={16} strokeWidth={3} /></button>
-           </div>
+            <button 
+               onClick={() => {
+                 setReportModalOpen(true);
+                 setReportBranchId('all');
+                 setReportScope('all');
+                 if (staff.length > 0 && !reportStaffId) {
+                   setReportStaffId(staff[0]._id);
+                 }
+               }} 
+               className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 hover:scale-[1.02] active:scale-95 transition-all outline-none shrink-0"
+            >
+               <FileText size={14} className="text-amber-400" />
+               Export Report
+            </button>
+
+            <div className="flex items-center gap-3 bg-white p-1 rounded-xl shadow-sm border border-slate-100 min-w-[240px] justify-between">
+               <button onClick={() => changeDate(-1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronLeft size={16} strokeWidth={3} /></button>
+               <span className={`text-[11px] font-black uppercase tracking-widest tabular-nums ${isSelectedDateToday ? 'text-slate-900' : 'text-rose-500'}`}>
+                 {new Date(selectedDate).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+               </span>
+               <button onClick={() => changeDate(1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronRight size={16} strokeWidth={3} /></button>
+            </div>
         </div>
       </div>
 
@@ -385,6 +695,178 @@ export default function Attendance() {
            </table>
         </div>
       )}
+
+      {/* Report Generation Modal */}
+      <AdminModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        title="Attendance Reporting Engine"
+        subtitle="Export high-fidelity analytical attendance documentation"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-6 p-1 text-left">
+          {/* Scope selection */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Report Scope</label>
+            <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <button
+                type="button"
+                onClick={() => setReportScope('all')}
+                className={`py-2 px-4 rounded-lg text-[9px] font-black uppercase transition-all ${
+                  reportScope === 'all' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                All Staff
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setReportScope('staff');
+                  const filtered = staff.filter(s => reportBranchId === 'all' || (s.branchId?._id || s.branchId) === reportBranchId);
+                  if (filtered.length > 0) {
+                    setReportStaffId(filtered[0]._id);
+                  } else {
+                    setReportStaffId('');
+                  }
+                }}
+                className={`py-2 px-4 rounded-lg text-[9px] font-black uppercase transition-all ${
+                  reportScope === 'staff' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                Particular Staff
+              </button>
+            </div>
+          </div>
+
+          {/* Branch selection */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Select Branch</label>
+            <select
+              value={reportBranchId}
+              onChange={(e) => {
+                setReportBranchId(e.target.value);
+                if (reportScope === 'staff') {
+                  const filtered = staff.filter(s => e.target.value === 'all' || (s.branchId?._id || s.branchId) === e.target.value);
+                  if (filtered.length > 0) {
+                    setReportStaffId(filtered[0]._id);
+                  } else {
+                    setReportStaffId('');
+                  }
+                }
+              }}
+              className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-[10px] font-black uppercase tracking-widest focus:border-slate-900 outline-none transition-all"
+            >
+              <option value="all">All Branches</option>
+              {branches.map((b) => (
+                <option key={b._id} value={b._id}>
+                  {b.branchName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Staff selection */}
+          {reportScope === 'staff' && (
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Select Staff Member</label>
+              <select
+                value={reportStaffId}
+                onChange={(e) => setReportStaffId(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-[10px] font-black uppercase tracking-widest focus:border-slate-900 outline-none transition-all"
+              >
+                <option value="" disabled>Choose personnel...</option>
+                {staff
+                  .filter(s => reportBranchId === 'all' || (s.branchId?._id || s.branchId) === reportBranchId)
+                  .map((s) => (
+                    <option key={s._id} value={s._id}>
+                      {s.name} ({s.role?.name || 'Operative'})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          {/* Timeframe selection */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Select Timeframe</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: 'weekly', label: 'Weekly' },
+                { id: 'monthly', label: 'Monthly' },
+                { id: 'yearly', label: 'Yearly' },
+                { id: 'all', label: 'All Time' },
+                { id: 'custom', label: 'Custom Range' }
+              ].map((timeframe) => (
+                <button
+                  key={timeframe.id}
+                  type="button"
+                  onClick={() => setReportTimeframe(timeframe.id)}
+                  className={`py-2.5 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all ${
+                    reportTimeframe === timeframe.id
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-[1.02]'
+                      : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50'
+                  } ${timeframe.id === 'custom' ? 'col-span-2' : ''}`}
+                >
+                  {timeframe.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom Date inputs */}
+          {reportTimeframe === 'custom' && (
+            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="space-y-1.5">
+                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block ml-1">Start Date</label>
+                <input
+                  type="date"
+                  value={reportStartDate}
+                  onChange={(e) => setReportStartDate(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-[10px] font-bold text-slate-900 outline-none focus:border-slate-900 transition-all"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block ml-1">End Date</label>
+                <input
+                  type="date"
+                  value={reportEndDate}
+                  onChange={(e) => setReportEndDate(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-[10px] font-bold text-slate-900 outline-none focus:border-slate-900 transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setReportModalOpen(false)}
+              className="flex-1 py-3.5 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 active:scale-95 transition-all text-slate-600 font-bold"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isGeneratingReport}
+              onClick={handleGeneratePDF}
+              className="flex-1 py-3.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isGeneratingReport ? (
+                <>
+                  <Clock className="animate-spin" size={12} />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FileText size={12} className="text-amber-400" />
+                  Download PDF
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </AdminModal>
     </div>
   );
 }

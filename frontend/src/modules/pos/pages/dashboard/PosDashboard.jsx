@@ -65,12 +65,6 @@ export default function PosDashboard() {
       {/* ── CUSTOM HEADER ── */}
       <div className="bg-white px-8 py-5 border-b border-slate-200 flex items-center justify-between shrink-0 shadow-sm">
         <div className="flex items-center gap-5">
-            <button 
-              onClick={toggleSidebar}
-              className="p-3 bg-[var(--primary-color)] rounded-xl hover:opacity-90 transition-all shadow-lg shadow-[var(--primary-color)]/20"
-            >
-              <Menu size={20} className="text-white" />
-            </button>
             <div className="flex flex-col">
               <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase">{branchName}</h1>
               <div className="flex items-center gap-2 mt-1">

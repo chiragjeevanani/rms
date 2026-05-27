@@ -263,6 +263,13 @@ export default function GenerateBill() {
                         </div>
                      </div>
 
+                      {branchInfo?.invoicePolicy && (
+                         <div className="border-t border-dashed pt-4 mt-4 text-[7px] text-slate-500 text-left leading-normal whitespace-pre-line uppercase font-mono mb-4">
+                            <p className="font-black mb-1 uppercase text-[8px] text-slate-900">Terms & Conditions:</p>
+                            {branchInfo.invoicePolicy}
+                         </div>
+                      )}
+
                      <div className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] pt-4 border-t border-slate-50">
                         Thank you for dining with us!
                      </div>

@@ -8,28 +8,28 @@ import { printKOTReceipt } from '../../utils/printKOT';
 
 // ── Business logic status colors ───────────────────────────────────────────
 const S = {
-  // Grey → Available / Settled
-  blank:    { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
-  available:{ bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
-  paid:     { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
-  settled:  { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' },
+  // Green → Available / Settled
+  blank:    { bg: '#DCFCE7', border: '#86EFAC', text: '#15803D' },
+  available:{ bg: '#DCFCE7', border: '#86EFAC', text: '#15803D' },
+  paid:     { bg: '#DCFCE7', border: '#86EFAC', text: '#15803D' },
+  settled:  { bg: '#DCFCE7', border: '#86EFAC', text: '#15803D' },
 
-  // Blue → Order Started (Pending KOT)
-  pending:  { bg: '#3B82F6', border: '#2563EB', text: '#FFFFFF' },
-  occupied: { bg: '#3B82F6', border: '#2563EB', text: '#FFFFFF' },
+  // Blue → Order Started (Pending KOT) / Running
+  pending:  { bg: '#DBEAFE', border: '#93C5FD', text: '#1E40AF' },
+  occupied: { bg: '#DBEAFE', border: '#93C5FD', text: '#1E40AF' },
 
-  // Yellow → KOT Sent (Running) - Vibrant Amber/Orange with White text
-  running:     { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
-  'running-kot': { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
-  preparing:   { bg: '#F59E0B', border: '#D97706', text: '#FFFFFF' },
+  // Blue → KOT Sent (Running)
+  running:     { bg: '#DBEAFE', border: '#93C5FD', text: '#1E40AF' },
+  'running-kot': { bg: '#DBEAFE', border: '#93C5FD', text: '#1E40AF' },
+  preparing:   { bg: '#DBEAFE', border: '#93C5FD', text: '#1E40AF' },
 
-  // Green → Bill Generated - Vibrant Lime Green with White text
-  printed:  { bg: '#84CC16', border: '#65A30D', text: '#FFFFFF' },
-  billed:   { bg: '#84CC16', border: '#65A30D', text: '#FFFFFF' },
-  ready:    { bg: '#84CC16', border: '#65A30D', text: '#FFFFFF' },
+  // Red/Grey → Bill Generated / Billed
+  printed:  { bg: '#FEE2E2', border: '#FCA5A5', text: '#991B1B' },
+  billed:   { bg: '#FEE2E2', border: '#FCA5A5', text: '#991B1B' },
+  ready:    { bg: '#FEE2E2', border: '#FCA5A5', text: '#991B1B' },
 
-  // Blue-Light → Reserved (Legacy/Optional)
-  reserved: { bg: '#60A5FA', border: '#2563EB', text: '#FFFFFF' },
+  // Yellow/Orange → Reserved
+  reserved: { bg: '#FEF3C7', border: '#FCD34D', text: '#B45309' },
 };
 
 const getS = (order, table) => {
@@ -129,10 +129,10 @@ export default function TableView() {
 
         {/* Legend dots */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <LegendDot color="#F3F4F6" border="#D1D5DB" label="AVAILABLE" />
-          <LegendDot color="#3B82F6" label="RESERVED" />
-          <LegendDot color="#FEF9C3" border="#EAB308" label="RUNNING" />
-          <LegendDot color="#DCFCE7" border="#22C55E" label="BILLED" />
+          <LegendDot color="#DCFCE7" border="#86EFAC" label="AVAILABLE" />
+          <LegendDot color="#FEF3C7" border="#FCD34D" label="RESERVED" />
+          <LegendDot color="#DBEAFE" border="#93C5FD" label="RUNNING" />
+          <LegendDot color="#FEE2E2" border="#FCA5A5" label="BILLED" />
         </div>
       </div>
 
@@ -269,9 +269,9 @@ export default function TableView() {
 
 function LegendDot({ color, border, label }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, border: border ? `1px solid ${border}` : 'none' }} />
-      <span style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', color: '#6B7280', letterSpacing: '0.04em' }}>{label}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ width: 13, height: 13, borderRadius: '50%', background: color, border: border ? `1.5px solid ${border}` : 'none' }} />
+      <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: '#1F2937', letterSpacing: '0.05em' }}>{label}</span>
     </div>
   );
 }

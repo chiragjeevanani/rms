@@ -8,11 +8,13 @@ const {
   markAttendance,
   updateAttendance, 
   deleteAttendance,
-  punchAttendance 
+  punchAttendance,
+  getAttendanceReport
 } = require('../Controllers/attendanceController');
 const { protectAdmin, protectStaff } = require('../Middleware/authMiddleware');
 
 router.get('/', getAllAttendance);
+router.get('/report', protectAdmin, getAttendanceReport);
 router.get('/date/:date', getAttendanceByDate);
 router.get('/staff/:staffId', getStaffHistory);
 router.post('/', protectAdmin, createAttendance);

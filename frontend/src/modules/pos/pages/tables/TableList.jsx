@@ -102,12 +102,21 @@ export default function TableList() {
            
            {/* Status Legend */}
            <div className="flex items-center gap-4 border-l border-gray-200 pl-6">
-              {Object.entries(TABLE_STATUS_COLORS).filter(([k]) => ['blank', 'running-kot', 'printed', 'paid'].includes(k)).map(([key, cfg]) => (
-                <div key={key} className="flex items-center gap-2">
-                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cfg.dot || cfg.color }} />
-                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">{key.replace('-', ' ')}</span>
-                </div>
-              ))}
+              {Object.entries(TABLE_STATUS_COLORS)
+                .filter(([k]) => ['blank', 'Reserved', 'running-kot', 'printed'].includes(k))
+                .map(([key, cfg]) => {
+                  let displayLabel = key;
+                  if (key === 'blank') displayLabel = 'Available';
+                  else if (key === 'running-kot') displayLabel = 'Running';
+                  else if (key === 'printed') displayLabel = 'Billed';
+                  
+                  return (
+                    <div key={key} className="flex items-center gap-2">
+                       <div className="w-3.5 h-3.5 rounded-full border" style={{ backgroundColor: cfg.color, borderColor: cfg.borderColor }} />
+                       <span className="text-[11px] font-black uppercase text-slate-800 tracking-widest">{displayLabel}</span>
+                    </div>
+                  );
+                })}
            </div>
         </div>
 
@@ -169,11 +178,23 @@ export default function TableList() {
           </button>
         ))}
         <div className="ml-auto flex items-center gap-4">
-           <div className="flex items-center gap-3 border-r border-gray-200 pr-4">
-             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-gray-200" /> <span className="text-[9px] font-black uppercase text-gray-400">Available</span></div>
-             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-500" /> <span className="text-[9px] font-black uppercase text-gray-400">Reserved</span></div>
-             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-yellow-300" /> <span className="text-[9px] font-black uppercase text-gray-400">Running</span></div>
-             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-green-400" /> <span className="text-[9px] font-black uppercase text-gray-400">Billed</span></div>
+           <div className="flex items-center gap-4 border-r border-gray-200 pr-6">
+             <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 rounded-full border border-gray-300 bg-[#F3F4F6]" /> 
+                <span className="text-[11px] font-black uppercase text-slate-800 tracking-widest">Available</span>
+             </div>
+             <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 rounded-full border border-blue-600 bg-[#60A5FA]" /> 
+                <span className="text-[11px] font-black uppercase text-slate-800 tracking-widest">Reserved</span>
+             </div>
+             <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 rounded-full border border-amber-600 bg-[#F59E0B]" /> 
+                <span className="text-[11px] font-black uppercase text-slate-800 tracking-widest">Running</span>
+             </div>
+             <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 rounded-full border border-lime-600 bg-[#84CC16]" /> 
+                <span className="text-[11px] font-black uppercase text-slate-800 tracking-widest">Billed</span>
+             </div>
            </div>
            <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400">
               <span>Total: {tables.length}</span>
