@@ -87,6 +87,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
             subItems: [
               { label: 'All Tables', path: '/admin/tables/all' },
               { label: 'Occupied Tables', path: '/admin/tables/occupied' },
+              { label: 'Orders History', path: '/admin/tables/history' },
             ]
           },
         ]

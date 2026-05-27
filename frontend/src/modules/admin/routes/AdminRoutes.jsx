@@ -16,6 +16,7 @@ import CustomerManagement from '../pages/CustomerManagement';
 import AdminLoginPage from '../pages/AdminLoginPage';
 import TableManagement from '../pages/TableManagement';
 import OccupiedTables from '../pages/OccupiedTables';
+import TableHistory from '../pages/TableHistory';
 import BranchManagement from '../pages/BranchManagement';
 import BranchDetails from '../pages/BranchDetails';
 
@@ -78,6 +79,7 @@ export default function AdminRoutes() {
           <Route path="tables" element={<TableManagement />} />
           <Route path="tables/all" element={<TableManagement />} />
           <Route path="tables/occupied" element={<OccupiedTables />} />
+          <Route path="tables/history" element={<TableHistory />} />
 
           {/* Menu Management */}
           <Route path="menu" element={<MenuManagement />} />
