@@ -30,12 +30,18 @@ export default function CustomerList() {
             <div>
               <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none">Customer Directory</h1>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                 <span className="w-1.5 h-1.5 rounded-full bg-[#ff7a00] animate-pulse" />
+                 <span 
+                   style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+                   className="w-1.5 h-1.5 rounded-full animate-pulse" 
+                 />
                  Guest Profiles & Loyalty Rewards Tracking
               </p>
             </div>
           </div>
-          <button className="h-10 px-6 bg-[#F57C00] text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2 outline-none">
+          <button 
+            style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+            className="h-10 px-6 text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2 outline-none"
+          >
             <Plus size={14} />
             Add New Customer
           </button>
@@ -47,7 +53,15 @@ export default function CustomerList() {
             <input 
               type="text" 
               placeholder="SEARCH BY CUSTOMER NAME, PHONE, OR ID..."
-              className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-[#ff7a00] focus:bg-white transition-all underline decoration-transparent"
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                e.target.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '';
+                e.target.style.boxShadow = '';
+              }}
+              className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none transition-all underline decoration-transparent"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -80,11 +94,14 @@ export default function CustomerList() {
                   <div>
                     <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-tight mb-1">{cust.name}</h3>
                     <div className="flex items-center gap-2">
-                      <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${
-                        cust.tier === 'PLATINUM' ? 'bg-[#ff7a00] text-white border-[#ff7a00]' :
-                        cust.tier === 'GOLD' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                        'bg-amber-50 text-[#ff7a00] border-amber-100'
-                      }`}>
+                      <span 
+                        style={
+                          cust.tier === 'PLATINUM' 
+                            ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))', borderColor: 'var(--pos-sidebar-color, var(--primary-color))', color: '#FFF' }
+                            : { backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)', borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 15%, transparent)', color: 'var(--pos-sidebar-color, var(--primary-color))' }
+                        }
+                        className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border"
+                      >
                         {cust.tier} Tier
                       </span>
                     </div>
@@ -114,14 +131,22 @@ export default function CustomerList() {
                  <div className="text-right">
                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Available Points</p>
                     <div className="flex items-center justify-end gap-1 px-1.5 py-0.5 bg-amber-50 rounded-sm border border-amber-100 inline-flex">
-                       <Star size={10} className="text-[#ff7a00] fill-[#ff7a00]/20" />
-                       <span className="text-[10px] font-black text-[#ff7a00]">{cust.points}</span>
+                       <Star size={10} style={{ color: 'var(--pos-sidebar-color, var(--primary-color))', fill: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)' }} />
+                       <span 
+                         style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }}
+                         className="text-[10px] font-black"
+                       >
+                         {cust.points}
+                       </span>
                     </div>
                  </div>
               </div>
 
               <div className="mt-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                <button className="flex-1 py-2 bg-[#ff7a00] text-white rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md flex items-center justify-center gap-2">
+                <button 
+                  style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+                  className="flex-1 py-2 text-white rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md flex items-center justify-center gap-2"
+                >
                   <CreditCard size={12} />
                   POS Link
                 </button>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Lock, Eye, EyeOff, Key, Save, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Shield, Lock, Eye, EyeOff, Key, Save, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function PosSecurityPage() {
@@ -8,6 +8,10 @@ export default function PosSecurityPage() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   
+  const [isCurrentFocused, setIsCurrentFocused] = useState(false);
+  const [isNewFocused, setIsNewFocused] = useState(false);
+  const [isConfirmFocused, setIsConfirmFocused] = useState(false);
+
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -56,7 +60,13 @@ export default function PosSecurityPage() {
       <div className="max-w-2xl mx-auto">
         <header className="mb-10">
           <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-indigo-500 rounded-2xl text-white shadow-lg shadow-indigo-500/20">
+            <div 
+              style={{ 
+                backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))', 
+                boxShadow: '0 10px 15px -3px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)' 
+              }} 
+              className="p-3 rounded-2xl text-white shadow-lg"
+            >
               <Shield size={24} />
             </div>
             <div>
@@ -73,7 +83,7 @@ export default function PosSecurityPage() {
         >
           <div className="p-8 border-b border-slate-100 bg-slate-50/50">
             <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-              <Lock size={16} className="text-indigo-500" /> Change Password
+              <Lock size={16} style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }} /> Change Password
             </h2>
           </div>
 
@@ -82,7 +92,10 @@ export default function PosSecurityPage() {
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Current Password</label>
               <div className="relative group">
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors">
+                <div 
+                  style={isCurrentFocused ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+                  className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 transition-colors"
+                >
                   <Key size={18} />
                 </div>
                 <input 
@@ -90,7 +103,17 @@ export default function PosSecurityPage() {
                   required
                   value={formData.currentPassword}
                   onChange={(e) => setFormData({...formData, currentPassword: e.target.value})}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all font-bold text-slate-900"
+                  onFocus={(e) => {
+                    setIsCurrentFocused(true);
+                    e.target.style.borderColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                    e.target.style.boxShadow = '0 0 0 4px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)';
+                  }}
+                  onBlur={(e) => {
+                    setIsCurrentFocused(false);
+                    e.target.style.borderColor = '';
+                    e.target.style.boxShadow = '';
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900"
                   placeholder="Enter current password"
                 />
                 <button 
@@ -108,7 +131,10 @@ export default function PosSecurityPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">New Password</label>
                 <div className="relative group">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors">
+                  <div 
+                    style={isNewFocused ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+                    className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 transition-colors"
+                  >
                     <Lock size={18} />
                   </div>
                   <input 
@@ -116,7 +142,17 @@ export default function PosSecurityPage() {
                     required
                     value={formData.newPassword}
                     onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all font-bold text-slate-900"
+                    onFocus={(e) => {
+                      setIsNewFocused(true);
+                      e.target.style.borderColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                      e.target.style.boxShadow = '0 0 0 4px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)';
+                    }}
+                    onBlur={(e) => {
+                      setIsNewFocused(false);
+                      e.target.style.borderColor = '';
+                      e.target.style.boxShadow = '';
+                    }}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900"
                     placeholder="Min. 8 characters"
                   />
                   <button 
@@ -132,7 +168,10 @@ export default function PosSecurityPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Confirm New Password</label>
                 <div className="relative group">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors">
+                  <div 
+                    style={isConfirmFocused ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+                    className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 transition-colors"
+                  >
                     <CheckCircle2 size={18} />
                   </div>
                   <input 
@@ -140,7 +179,17 @@ export default function PosSecurityPage() {
                     required
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all font-bold text-slate-900"
+                    onFocus={(e) => {
+                      setIsConfirmFocused(true);
+                      e.target.style.borderColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                      e.target.style.boxShadow = '0 0 0 4px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)';
+                    }}
+                    onBlur={(e) => {
+                      setIsConfirmFocused(false);
+                      e.target.style.borderColor = '';
+                      e.target.style.boxShadow = '';
+                    }}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900"
                     placeholder="Repeat new password"
                   />
                   <button 
@@ -163,7 +212,13 @@ export default function PosSecurityPage() {
 
             <button
               disabled={isLoading}
-              className="w-full bg-indigo-500 text-white py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20 hover:bg-indigo-600 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+              style={{ 
+                backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))', 
+                boxShadow: '0 10px 15px -3px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)' 
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.9)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.filter = ''; }}
+              className="w-full text-white py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {isLoading ? <RefreshCw size={18} className="animate-spin" /> : <><Save size={18} /> Update Password</>}
             </button>

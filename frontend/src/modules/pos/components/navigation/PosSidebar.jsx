@@ -109,11 +109,20 @@ export default function PosSidebar({ isOpen }) {
   };
 
   return (
-    <aside className={`fixed left-0 top-0 h-full bg-[#161820] text-slate-300 z-[100] transition-all duration-300 shadow-2xl flex flex-col w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside 
+      style={{ backgroundColor: 'var(--pos-sidebar-color, #161820)' }}
+      className={`fixed left-0 top-0 h-full text-slate-300 z-[100] transition-all duration-300 shadow-2xl flex flex-col w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+    >
       {/* POS Brand Header */}
-      <div className="h-14 flex items-center justify-between px-5 border-b border-white/8 shrink-0 bg-[#0F1012]">
+      <div 
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+        className="h-14 flex items-center justify-between px-5 border-b border-white/8 shrink-0"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+          <div 
+            style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-lg"
+          >
             <Monitor size={16} />
           </div>
           <div className="flex flex-col">
@@ -144,19 +153,22 @@ export default function PosSidebar({ isOpen }) {
                         navigate(item.path);
                       }
                     }}
+                    style={{
+                      backgroundColor: isActive ? 'var(--pos-sidebar-color, var(--primary-color))' : 'transparent',
+                    }}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all relative group h-12 ${
                       isActive 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
+                      ? 'text-white shadow-lg shadow-black/10' 
                       : 'text-slate-300 hover:bg-white/6 hover:text-white'
                     }`}
                   >
-                    <item.icon size={17} className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-blue-400 transition-colors'} />
+                    <item.icon size={17} className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors'} />
                     <span className={`text-[11px] font-bold uppercase tracking-wider flex-1 text-left ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
                       {item.label}
                     </span>
                     {item.subItems && (
                       <motion.div
-                        animate={{ rotate: isExpanded ? 90 : 0 }}
+                      animate={{ rotate: isExpanded ? 90 : 0 }}
                       >
                         <ChevronRight size={12} className={isActive ? 'text-white/70' : 'text-slate-500'} />
                       </motion.div>
@@ -178,14 +190,19 @@ export default function PosSidebar({ isOpen }) {
                             <button
                               key={subItem.label}
                               onClick={() => navigate(subItem.path)}
+                              style={isSubActive ? {
+                                color: 'var(--pos-sidebar-color, var(--primary-color))',
+                                borderLeft: '2px solid var(--pos-sidebar-color, var(--primary-color))',
+                                backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)'
+                              } : {}}
                               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group ${
                                 isSubActive 
-                                ? 'text-blue-300 bg-blue-500/12 border-l-2 border-blue-400' 
+                                ? '' 
                                 : 'text-slate-400 hover:text-white hover:bg-white/5'
                               }`}
                             >
-                              {subItem.icon && <subItem.icon size={13} className={isSubActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-300'} />}
-                              <span className={`text-[10px] font-bold uppercase tracking-widest leading-none ${isSubActive ? 'text-blue-300' : ''}`}>
+                              {subItem.icon && <subItem.icon size={13} style={isSubActive ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}} className={isSubActive ? '' : 'text-slate-500 group-hover:text-slate-300'} />}
+                              <span style={isSubActive ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}} className="text-[10px] font-bold uppercase tracking-widest leading-none">
                                 {subItem.label}
                               </span>
                             </button>
@@ -202,7 +219,10 @@ export default function PosSidebar({ isOpen }) {
       </nav>
 
       {/* Logout Footer */}
-      <div className="p-2 border-t border-white/8 bg-[#0F1012]">
+      <div 
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+        className="p-2 border-t border-white/8"
+      >
         <button 
           onClick={() => {
             localStorage.removeItem('pos_access');

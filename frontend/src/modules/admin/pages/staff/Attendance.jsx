@@ -28,7 +28,8 @@ import {
   Coffee,
   Circle,
   MoreVertical,
-  FileText
+  FileText,
+  FileSpreadsheet
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
@@ -54,6 +55,7 @@ export default function Attendance() {
   const [reportStartDate, setReportStartDate] = useState('');
   const [reportEndDate, setReportEndDate] = useState('');
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [exportFormat, setExportFormat] = useState('pdf'); // 'pdf' | 'excel'
 
   const todayStr = new Date().toISOString().split('T')[0];
   const isSelectedDateToday = selectedDate === todayStr;
@@ -379,7 +381,129 @@ export default function Attendance() {
     doc.save(filename);
   };
 
-  const handleGeneratePDF = async () => {
+  const generateExcelDocument = async (records) => {
+    const { utils, writeFile } = await import('xlsx');
+
+    let dateRangeLabel = '';
+    if (reportTimeframe === 'weekly') dateRangeLabel = 'LAST 7 DAYS';
+    else if (reportTimeframe === 'monthly') dateRangeLabel = 'LAST 30 DAYS';
+    else if (reportTimeframe === 'yearly') dateRangeLabel = 'LAST 365 DAYS';
+    else if (reportTimeframe === 'all') dateRangeLabel = 'ALL TIME';
+    else dateRangeLabel = `${reportStartDate} TO ${reportEndDate}`;
+
+    let branchLabel = 'ALL BRANCHES';
+    if (reportBranchId !== 'all') {
+      const selectedBranchObj = branches.find(b => b._id === reportBranchId);
+      branchLabel = selectedBranchObj ? selectedBranchObj.branchName.toUpperCase() : 'SPECIFIC BRANCH';
+    }
+
+    const totalRecords = records.length;
+    const presentCount = records.filter(r => r.status === 'Present' || r.status === 'In').length;
+    const absentCount = records.filter(r => r.status === 'Absent').length;
+    const leaveCount = records.filter(r => r.status === 'Leave').length;
+    const attendanceRate = totalRecords > 0 ? ((presentCount / totalRecords) * 100).toFixed(1) : '0.0';
+
+    const headerInfo = [
+      ['RMS STAFF ATTENDANCE PULSE'],
+      ['HIGH-FIDELITY ANALYTICAL REPORT'],
+      [],
+      ['REPORT METADATA'],
+      ['GENERATED ON', new Date().toLocaleString()],
+      ['TIMEFRAME', dateRangeLabel],
+      ['BRANCH', branchLabel],
+      [],
+      ['SUMMARY STATISTICS'],
+      ['TOTAL RECORDS', totalRecords],
+      ['PRESENT COUNT', presentCount],
+      ['ABSENT COUNT', absentCount],
+      ['ON LEAVE', leaveCount],
+      ['ATTENDANCE RATE', `${attendanceRate}%`],
+      [],
+    ];
+
+    if (reportScope === 'staff' && records.length > 0) {
+      const sample = records[0].staff;
+      const branchName = sample?.branchId?.branchName || records[0]?.branchId?.branchName || 'GLOBAL';
+      headerInfo.push(
+        ['PERSONNEL INFORMATION'],
+        ['NAME', (sample?.name || 'N/A').toUpperCase()],
+        ['ROLE', (sample?.role?.name || 'OPERATIVE').toUpperCase()],
+        ['ASSIGNED BRANCH', branchName.toUpperCase()],
+        []
+      );
+    }
+
+    const formattedData = records.map(rec => {
+      let checkInStr = '-';
+      if (rec.checkIn) {
+        checkInStr = new Date(rec.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      let checkOutStr = '-';
+      if (rec.checkOut) {
+        checkOutStr = new Date(rec.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      let hoursStr = '-';
+      if (rec.checkIn && rec.checkOut) {
+        const ms = new Date(rec.checkOut) - new Date(rec.checkIn);
+        const hours = Math.floor(ms / (1000 * 60 * 60));
+        const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+        hoursStr = `${hours}h ${minutes}m`;
+      }
+
+      let statusText = rec.status || 'PENDING';
+      if (statusText === 'In') statusText = 'PRESENT';
+      else statusText = statusText.toUpperCase();
+
+      const branch = rec.staff?.branchId?.branchName || rec.branchId?.branchName || 'Global';
+
+      return {
+        'Date': rec.date,
+        'Staff Name': rec.staff?.name || 'N/A',
+        'Role': rec.staff?.role?.name || 'N/A',
+        'Branch': branch,
+        'Status': statusText,
+        'Check-In': checkInStr,
+        'Check-Out': checkOutStr,
+        'Hours Worked': hoursStr
+      };
+    });
+
+    const worksheet = utils.aoa_to_sheet(headerInfo);
+    const dataStartRow = headerInfo.length + 1;
+    utils.sheet_add_json(worksheet, formattedData, { origin: `A${dataStartRow}` });
+
+    const range = utils.decode_range(worksheet['!ref']);
+    const maxLens = [];
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      let maxLen = 10;
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        const cell_address = { c: C, r: R };
+        const cell_ref = utils.encode_cell(cell_address);
+        const cell = worksheet[cell_ref];
+        if (cell && cell.v) {
+          const valStr = String(cell.v);
+          if (valStr.length > maxLen) {
+            maxLen = valStr.length;
+          }
+        }
+      }
+      maxLens.push({ wch: Math.min(maxLen + 3, 40) });
+    }
+    worksheet['!cols'] = maxLens;
+
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Attendance Report");
+
+    const filename = reportScope === 'staff' && records.length > 0 
+      ? `attendance_report_${records[0].staff.name.replace(/\s+/g, '_').toLowerCase()}_${reportTimeframe}.xlsx`
+      : `attendance_report_all_staff_${reportTimeframe}.xlsx`;
+    
+    writeFile(workbook, filename);
+  };
+
+  const handleExportReport = async () => {
     setIsGeneratingReport(true);
     try {
       let url = `${import.meta.env.VITE_API_URL}/attendance/report?rangeType=${reportTimeframe}`;
@@ -420,7 +544,11 @@ export default function Attendance() {
         return;
       }
 
-      await generatePDFDocument(data);
+      if (exportFormat === 'excel') {
+        await generateExcelDocument(data);
+      } else {
+        await generatePDFDocument(data);
+      }
       setReportModalOpen(false);
       toast.success('Report exported successfully');
     } catch (error) {
@@ -837,6 +965,31 @@ export default function Attendance() {
             </div>
           )}
 
+          {/* Export Format selection */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Export Format</label>
+            <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <button
+                type="button"
+                onClick={() => setExportFormat('pdf')}
+                className={`py-2 px-4 rounded-lg text-[9px] font-black uppercase transition-all ${
+                  exportFormat === 'pdf' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                PDF Document
+              </button>
+              <button
+                type="button"
+                onClick={() => setExportFormat('excel')}
+                className={`py-2 px-4 rounded-lg text-[9px] font-black uppercase transition-all ${
+                  exportFormat === 'excel' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                Excel Sheet
+              </button>
+            </div>
+          </div>
+
           {/* Action buttons */}
           <div className="flex gap-3 pt-4 border-t border-slate-100">
             <button
@@ -849,13 +1002,18 @@ export default function Attendance() {
             <button
               type="button"
               disabled={isGeneratingReport}
-              onClick={handleGeneratePDF}
+              onClick={handleExportReport}
               className="flex-1 py-3.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isGeneratingReport ? (
                 <>
                   <Clock className="animate-spin" size={12} />
                   Generating...
+                </>
+              ) : exportFormat === 'excel' ? (
+                <>
+                  <FileSpreadsheet size={12} className="text-emerald-400" />
+                  Download Excel
                 </>
               ) : (
                 <>

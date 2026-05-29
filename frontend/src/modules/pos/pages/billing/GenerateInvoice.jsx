@@ -14,6 +14,7 @@ import { jsPDF } from "jspdf";
 
 export default function GenerateInvoice() {
   const { toggleSidebar } = usePos();
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -301,7 +302,7 @@ export default function GenerateInvoice() {
 
       <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between print:hidden">
         <div className="flex items-center gap-5">
-          <button onClick={toggleSidebar} className="p-2.5 bg-[#ff7a00] text-white rounded-xl shadow-lg shadow-[#ff7a00]/20 hover:bg-slate-800 transition-all">
+          <button onClick={toggleSidebar} style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }} className="p-2.5 text-white rounded-xl shadow-lg transition-all hover:opacity-90">
              <Menu size={18} />
           </button>
           <div className="space-y-0.5">
@@ -327,7 +328,8 @@ export default function GenerateInvoice() {
            )}
            <button 
              onClick={() => setIsCustomMode(!isCustomMode)}
-             className="h-10 px-5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 hover:bg-[#ff7a00] active:scale-95 transition-all"
+             style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+             className="h-10 px-5 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg active:scale-95 transition-all hover:opacity-90"
            >
              {isCustomMode ? 'Back to Settled' : 'Create Custom Invoice'}
            </button>
@@ -339,92 +341,109 @@ export default function GenerateInvoice() {
             {!isCustomMode ? (
                <>
                   <div className="relative group">
-                     <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ff7a00] transition-colors" size={18} />
-                     <input 
-                       type="text" 
-                       placeholder="Search by table or bill number..."
-                       value={searchTerm}
-                       onChange={(e) => setSearchTerm(e.target.value)}
-                       className="w-full h-14 bg-white border border-slate-200 rounded-2xl pl-14 pr-6 text-sm font-bold outline-none focus:ring-2 focus:ring-[#ff7a00]/10 focus:border-[#ff7a00] transition-all shadow-sm"
-                     />
-                  </div>
+                      <Search 
+                        className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 transition-colors" 
+                        size={18} 
+                        style={isSearchFocused ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Search by table or bill number..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onFocus={() => setIsSearchFocused(true)}
+                        onBlur={() => setIsSearchFocused(false)}
+                        style={isSearchFocused ? { borderColor: 'var(--pos-sidebar-color, var(--primary-color))', boxShadow: '0 0 0 2px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 10%, transparent)' } : {}}
+                        className="w-full h-14 bg-white border border-slate-200 rounded-2xl pl-14 pr-6 text-sm font-bold outline-none transition-all shadow-sm"
+                      />
+                   </div>
 
-                  <div className="bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden">
-                     <table className="w-full text-left border-collapse">
-                        <thead>
-                           <tr className="bg-slate-50/50 border-b border-slate-100">
-                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Bill Details</th>
-                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Location</th>
-                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Payment</th>
-                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Amount</th>
-                              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Actions</th>
-                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                           {loading ? (
-                              <tr>
-                                 <td colSpan="5" className="px-8 py-20 text-center">
-                                    <div className="w-10 h-10 border-4 border-[#ff7a00] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                                    <span className="text-[10px] font-black uppercase text-slate-400">Loading history...</span>
-                                 </td>
-                              </tr>
-                           ) : filteredOrders.length === 0 ? (
-                              <tr>
-                                 <td colSpan="5" className="px-8 py-20 text-center opacity-30">
-                                    <Receipt size={48} className="mx-auto mb-4 text-slate-300" />
-                                    <p className="text-[10px] font-black uppercase text-slate-400">No settled bills found</p>
-                                 </td>
-                              </tr>
-                           ) : (
-                              filteredOrders.map(order => (
-                                <tr key={order._id} className="group hover:bg-slate-50/80 transition-all">
-                                   <td className="px-8 py-6">
-                                      <span className="text-sm font-black text-slate-900">#{order.orderNumber.split('-').pop()}</span>
-                                      <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
-                                   </td>
-                                   <td className="px-8 py-6">
-                                      <div className="flex items-center gap-3">
-                                         <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-[#ff7a00] group-hover:text-white group-hover:border-[#ff7a00] transition-all">
-                                            <TableIcon size={18} />
-                                         </div>
-                                         <span className="text-sm font-black text-slate-700 uppercase">{order.tableName}</span>
-                                      </div>
-                                   </td>
-                                   <td className="px-8 py-6 text-center">
-                                      <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-lg border ${
-                                         order.payments?.[0]?.method === 'UPI' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                         order.payments?.[0]?.method === 'Cash' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                         'bg-amber-50 text-amber-600 border-amber-100'
-                                      }`}>
-                                         {order.payments?.[0]?.method || 'Paid'}
-                                      </span>
-                                   </td>
-                                   <td className="px-8 py-6 text-right">
-                                      <span className="text-xl font-black text-slate-950 italic">₹{order.grandTotal.toFixed(2)}</span>
-                                   </td>
-                                   <td className="px-8 py-6 text-center">
-                                      <div className="flex items-center justify-center gap-2">
-                                         <button 
-                                           onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); setTimeout(handlePrint, 100); }}
-                                           className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 rounded-xl hover:bg-slate-950 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
-                                         >
-                                            <Printer size={14} /> Print
-                                         </button>
-                                         <button 
-                                           onClick={(e) => { e.stopPropagation(); generatePDF(order); }}
-                                           className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
-                                         >
-                                            <Download size={14} /> PDF
-                                         </button>
-                                      </div>
-                                   </td>
-                                </tr>
-                              ))
-                           )}
-                        </tbody>
-                     </table>
-                  </div>
-               </>
+                   <div className="bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden">
+                      <table className="w-full text-left border-collapse">
+                         <thead>
+                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                               <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Bill Details</th>
+                               <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Location</th>
+                               <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Payment</th>
+                               <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Amount</th>
+                               <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Actions</th>
+                            </tr>
+                         </thead>
+                         <tbody className="divide-y divide-slate-50">
+                            {loading ? (
+                               <tr>
+                                  <td colSpan="5" className="px-8 py-20 text-center">
+                                     <div 
+                                       className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" 
+                                       style={{ borderColor: 'var(--pos-sidebar-color, var(--primary-color))', borderTopColor: 'transparent' }}
+                                     />
+                                     <span className="text-[10px] font-black uppercase text-slate-400">Loading history...</span>
+                                  </td>
+                               </tr>
+                            ) : filteredOrders.length === 0 ? (
+                               <tr>
+                                  <td colSpan="5" className="px-8 py-20 text-center opacity-30">
+                                     <Receipt size={48} className="mx-auto mb-4 text-slate-300" />
+                                     <p className="text-[10px] font-black uppercase text-slate-400">No settled bills found</p>
+                                  </td>
+                               </tr>
+                            ) : (
+                               filteredOrders.map(order => (
+                                 <tr key={order._id} className="group hover:bg-slate-50/80 transition-all">
+                                    <td className="px-8 py-6">
+                                       <span className="text-sm font-black text-slate-900">#{order.orderNumber.split('-').pop()}</span>
+                                       <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                       <div className="flex items-center gap-3">
+                                          <div 
+                                             style={{
+                                               backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)',
+                                               borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 15%, transparent)',
+                                               color: 'var(--pos-sidebar-color, var(--primary-color))'
+                                             }}
+                                             className="w-10 h-10 rounded-xl border flex items-center justify-center transition-all"
+                                          >
+                                             <TableIcon size={18} />
+                                          </div>
+                                          <span className="text-sm font-black text-slate-700 uppercase">{order.tableName}</span>
+                                       </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-center">
+                                       <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-lg border ${
+                                          order.payments?.[0]?.method === 'UPI' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                          order.payments?.[0]?.method === 'Cash' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                          'bg-amber-50 text-amber-600 border-amber-100'
+                                       }`}>
+                                          {order.payments?.[0]?.method || 'Paid'}
+                                       </span>
+                                    </td>
+                                    <td className="px-8 py-6 text-right">
+                                       <span className="text-xl font-black text-slate-950 italic">₹{order.grandTotal.toFixed(2)}</span>
+                                    </td>
+                                    <td className="px-8 py-6 text-center">
+                                       <div className="flex items-center justify-center gap-2">
+                                          <button 
+                                            onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); setTimeout(handlePrint, 100); }}
+                                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 rounded-xl hover:bg-slate-950 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                          >
+                                             <Printer size={14} /> Print
+                                          </button>
+                                          <button 
+                                            onClick={(e) => { e.stopPropagation(); generatePDF(order); }}
+                                            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                          >
+                                             <Download size={14} /> PDF
+                                          </button>
+                                       </div>
+                                    </td>
+                                 </tr>
+                               ))
+                            )}
+                         </tbody>
+                      </table>
+                   </div>
+                </>
             ) : (
                /* Custom Invoice Builder panel */
                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -647,7 +666,7 @@ export default function GenerateInvoice() {
                 >
                    <div className="px-10 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
                       <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 bg-[#ff7a00] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#ff7a00]/20">
+                         <div style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }} className="w-12 h-12 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-black/10">
                             <FileText size={24} />
                          </div>
                          <div>
@@ -688,7 +707,7 @@ export default function GenerateInvoice() {
                                      <p className="text-[11px] font-black text-slate-900 uppercase">{item.name}</p>
                                      <p className="text-[9px] font-bold text-slate-400">{item.quantity} x ₹{item.price}</p>
                                   </div>
-                                  <span className="text-sm font-black text-[#ff7a00]">₹{item.price * item.quantity}</span>
+                                   <span style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }} className="text-sm font-black">₹{item.price * item.quantity}</span>
                                </div>
                             ))}
                          </div>

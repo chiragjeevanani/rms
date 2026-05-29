@@ -164,7 +164,8 @@ export default function Roles() {
   const filteredRoles = roles.filter(role => {
     const matchesSearch = role.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'All' || role.status === filterStatus;
-    const branchMatch = selectedBranchFilter === 'all' || role.branchId === selectedBranchFilter;
+    const roleBranchId = role.branchId?._id || role.branchId;
+    const branchMatch = selectedBranchFilter === 'all' || roleBranchId === selectedBranchFilter;
     return matchesSearch && matchesStatus && branchMatch;
   });
 

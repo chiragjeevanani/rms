@@ -324,13 +324,6 @@ export default function Categories() {
             Download Sample
           </button>
           <button 
-            onClick={() => setIsImportModalOpen(true)}
-            className="h-12 px-6 bg-slate-100 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-slate-200 hover:bg-slate-200 active:scale-95 transition-all outline-none"
-          >
-            <Upload size={16} />
-            Import CSV
-          </button>
-          <button 
             onClick={() => handleOpenModal()}
             className="h-12 px-8 bg-[#2C2C2C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black active:scale-95 transition-all outline-none"
           >
@@ -375,6 +368,21 @@ export default function Categories() {
             selectedBranch={selectedBranchFilter}
             onSelect={setSelectedBranchFilter}
           />
+
+          <button
+            type="button"
+            onClick={() => {
+              if (selectedBranchFilter === 'all') {
+                toast.error('Please select a specific branch first to upload menu');
+              } else {
+                setIsImportModalOpen(true);
+              }
+            }}
+            className="h-12 px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-black active:scale-95 transition-all outline-none shrink-0"
+          >
+            <Upload size={14} className="text-amber-400" />
+            Upload Menu
+          </button>
 
           <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
 
@@ -763,7 +771,7 @@ export default function Categories() {
       <AdminModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        title="Import Categories via CSV"
+        title={selectedBranchFilter !== 'all' ? `Upload Menu for ${branches.find(b => b._id === selectedBranchFilter)?.branchName || 'Branch'}` : 'Upload Menu'}
         subtitle="Upload your category spreadsheet in bulk"
         maxWidth="max-w-md"
       >

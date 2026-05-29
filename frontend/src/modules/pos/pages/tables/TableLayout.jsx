@@ -36,7 +36,8 @@ export default function TableLayout() {
                 <button 
                   key={zone}
                   onClick={() => setSelectedZone(zone)}
-                  className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${selectedZone === zone ? 'bg-[#ff7a00] text-white shadow-md shadow-slate-900/10' : 'text-slate-400 hover:text-slate-900'}`}
+                  style={selectedZone === zone ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+                  className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${selectedZone === zone ? 'text-white shadow-md shadow-slate-900/10' : 'text-slate-400 hover:text-slate-900'}`}
                 >
                   {zone}
                 </button>
@@ -102,14 +103,21 @@ export default function TableLayout() {
                   </span>
                   <div className="flex items-center gap-0.5 mt-0.5">
                     {[...Array(table.capacity)].map((_, i) => (
-                      <div key={i} className={`w-1 h-1 rounded-full ${table.status !== 'available' ? 'bg-[#ff7a00]/20' : 'bg-slate-300'}`} />
+                      <div 
+                        key={i} 
+                        style={table.status !== 'available' ? { backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)' } : {}}
+                        className={`w-1 h-1 rounded-full ${table.status !== 'available' ? '' : 'bg-slate-300'}`} 
+                      />
                     ))}
                   </div>
                 </div>
               </div>
 
               {/* Tooltip Label */}
-              <div className="px-2 py-0.5 bg-[#ff7a00] rounded-full opacity-0 group-hover:opacity-100 transition-all -translate-y-2 group-hover:translate-y-0 absolute -bottom-8 whitespace-nowrap z-10 shadow-lg">
+              <div 
+                style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+                className="px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-all -translate-y-2 group-hover:translate-y-0 absolute -bottom-8 whitespace-nowrap z-10 shadow-lg"
+              >
                 <span className="text-[8px] font-black text-white uppercase tracking-widest">{table.capacity} PAX • {table.type}</span>
               </div>
             </motion.div>
@@ -121,7 +129,10 @@ export default function TableLayout() {
             <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Kitchen</span>
           </div>
 
-          <div className="absolute left-[10%] top-[85%] w-32 h-12 bg-[#ff7a00] text-white rounded flex items-center justify-center gap-2 shadow-xl shadow-slate-900/20">
+          <div 
+            style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+            className="absolute left-[10%] top-[85%] w-32 h-12 text-white rounded flex items-center justify-center gap-2 shadow-xl shadow-slate-900/20"
+          >
             <LayoutGrid size={16} />
             <span className="text-[9px] font-black uppercase tracking-widest">Reception</span>
           </div>
@@ -159,7 +170,10 @@ export default function TableLayout() {
               ))}
            </div>
         </div>
-        <button className="h-10 px-6 bg-stone-50 text-[#ff7a00] border border-stone-100 p-2.5 py-1.2 rounded-md text-[10px] font-black hover:bg-stone-100 transition-colors flex items-center gap-1.5 uppercase tracking-wider shadow-sm">
+        <button 
+          style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }}
+          className="h-10 px-6 bg-stone-50 border border-stone-100 p-2.5 py-1.2 rounded-md text-[10px] font-black hover:bg-stone-100 transition-colors flex items-center gap-1.5 uppercase tracking-wider shadow-sm"
+        >
           <Layers size={14} />
           Edit Layout
         </button>

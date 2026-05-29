@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Building2, MapPin, Mail, Phone, 
   Clock, ShieldCheck, User, Hash, Calendar,
-  Edit3, Trash2, TrendingUp, Users, ShoppingBag
+  Edit3, Trash2, TrendingUp, Users, ShoppingBag,
+  FileText, X, Save
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function BranchDetails() {
@@ -14,6 +15,70 @@ export default function BranchDetails() {
   const [branch, setBranch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ categories: 0, items: 0, combos: 0, modifiers: 0 });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    branchName: '',
+    branchEmail: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    gstNumber: '',
+    managerName: '',
+    openingTime: '09:00',
+    closingTime: '23:00',
+    status: 'active',
+    invoicePolicy: ''
+  });
+
+  const handleOpenModal = () => {
+    if (branch) {
+      setFormData({
+        branchName: branch.branchName || '',
+        branchEmail: branch.branchEmail || '',
+        phone: branch.phone || '',
+        address: branch.address || '',
+        city: branch.city || '',
+        state: branch.state || '',
+        pincode: branch.pincode || '',
+        gstNumber: branch.gstNumber || '',
+        managerName: branch.managerName || '',
+        openingTime: branch.openingTime || '09:00',
+        closingTime: branch.closingTime || '23:00',
+        status: branch.status || 'active',
+        invoicePolicy: branch.invoicePolicy || ''
+      });
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    const url = `${import.meta.env.VITE_API_URL}/branches/${id}`;
+    const payload = {
+      ...formData,
+      restaurantId: branch.restaurantId?._id || branch.restaurantId || '662b9f3e1c9d440000000001'
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('Branch details updated successfully');
+        setIsModalOpen(false);
+        fetchBranchDetails();
+      } else {
+        toast.error(result.message || 'Update failed');
+      }
+    } catch (error) {
+      toast.error('An error occurred during update');
+    }
+  };
 
   useEffect(() => {
     fetchBranchDetails();
@@ -84,7 +149,10 @@ export default function BranchDetails() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="h-10 px-6 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-200 transition-all">
+          <button 
+            onClick={handleOpenModal}
+            className="h-10 px-6 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-200 transition-all"
+          >
             <Edit3 size={16} />
             Edit Profile
           </button>
@@ -134,6 +202,23 @@ export default function BranchDetails() {
             </div>
           </div>
 
+          {/* Invoice Policy Section */}
+          <div className="pt-8 border-t border-slate-50">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-slate-50 rounded-xl text-slate-400">
+                <FileText size={24} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Invoice Policy (Terms & Conditions)</p>
+                {branch.invoicePolicy ? (
+                  <p className="text-sm font-bold text-slate-700 leading-relaxed whitespace-pre-line">{branch.invoicePolicy}</p>
+                ) : (
+                  <p className="text-sm font-bold text-slate-400 italic">No policy added yet. Click Edit Profile to add one.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Performance Stats inside the same card */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 pt-8 border-t border-slate-50">
             <StatsCard icon={<TrendingUp />} label="Categories" value={stats.categories} color="indigo" />
@@ -145,6 +230,102 @@ export default function BranchDetails() {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                  <h3 className="text-[14px] font-black uppercase tracking-tight text-slate-900">
+                    Update Branch Details
+                  </h3>
+                  <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={20} /></button>
+               </div>
+
+               <form onSubmit={handleSave} className="p-8 overflow-y-auto no-scrollbar space-y-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Branch Name</label>
+                    <input type="text" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.branchName} onChange={e => setFormData({...formData, branchName: e.target.value})} placeholder="e.g. Downtown Outlet" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Address</label>
+                      <input type="email" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.branchEmail} onChange={e => setFormData({...formData, branchEmail: e.target.value})} placeholder="branch@restaurant.com" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number</label>
+                      <input type="text" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+91 98765 43210" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Address</label>
+                    <textarea required rows="2" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all resize-none" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Store number, Building name, Street..." />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Policy (Terms & Conditions)</label>
+                    <textarea rows="3" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all resize-none" value={formData.invoicePolicy} onChange={e => setFormData({...formData, invoicePolicy: e.target.value})} placeholder="e.g. 1. Goods once sold cannot be returned. 2. Interest @18% will be charged if payment is not made on time." />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">City</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">State</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pincode</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">GST Number</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.gstNumber} onChange={e => setFormData({...formData, gstNumber: e.target.value.toUpperCase()})} placeholder="Optional" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Branch Manager</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.managerName} onChange={e => setFormData({...formData, managerName: e.target.value})} />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Open Time</label>
+                      <input type="time" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.openingTime} onChange={e => setFormData({...formData, openingTime: e.target.value})} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Close Time</label>
+                      <input type="time" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.closingTime} onChange={e => setFormData({...formData, closingTime: e.target.value})} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</label>
+                      <select className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
+                        <option value="active">ACTIVE</option>
+                        <option value="inactive">INACTIVE</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 flex gap-4">
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-slate-400 text-[11px] font-black uppercase tracking-[0.1em]">Cancel</button>
+                    <button type="submit" className="flex-1 py-3 bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl shadow-lg shadow-slate-900/20 active:scale-95 transition-all">
+                      Update Branch
+                    </button>
+                  </div>
+               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

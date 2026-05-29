@@ -16,6 +16,8 @@ const branchSchema = new mongoose.Schema({
   closingTime: { type: String },
   invoicePolicy: { type: String, default: '' },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  posNavbarColor: { type: String, default: '' },
+  posSidebarColor: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 

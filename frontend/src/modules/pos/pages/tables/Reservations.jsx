@@ -60,7 +60,10 @@ export default function Reservations() {
             <div>
               <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none">Restaurant Reservations</h1>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                 <span className="w-1.5 h-1.5 rounded-full bg-[#ff7a00] animate-pulse" />
+                 <span 
+                   style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+                   className="w-1.5 h-1.5 rounded-full animate-pulse" 
+                 />
                  Guest Bookings & Table Assignments
               </p>
             </div>
@@ -68,13 +71,15 @@ export default function Reservations() {
           <div className="flex bg-slate-50 p-1 border border-slate-100 rounded">
             <button 
               onClick={() => setActiveView('upcoming')}
-              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${activeView === 'upcoming' ? 'bg-[#ff7a00] text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
+              style={activeView === 'upcoming' ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${activeView === 'upcoming' ? 'text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
             >
               List View
             </button>
             <button 
               onClick={() => setActiveView('calendar')}
-              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${activeView === 'calendar' ? 'bg-[#ff7a00] text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
+              style={activeView === 'calendar' ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${activeView === 'calendar' ? 'text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
             >
               Calendar View
             </button>
@@ -89,12 +94,21 @@ export default function Reservations() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="SEARCH RESERVATIONS BY NAME OR CONTACT ID..."
-              className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-[#ff7a00] focus:bg-white transition-all underline decoration-transparent"
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                e.target.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '';
+                e.target.style.boxShadow = '';
+              }}
+              className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none transition-all underline decoration-transparent"
             />
           </div>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="h-10 px-6 bg-[#F57C00] text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2 outline-none"
+            style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+            className="h-10 px-6 text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2 outline-none"
           >
             <Plus size={14} />
             Register Booking
@@ -121,7 +135,17 @@ export default function Reservations() {
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[#ff7a00] group-hover:text-white transition-all">
+                          <div 
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                              e.currentTarget.style.color = '#FFF';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '';
+                              e.currentTarget.style.color = '';
+                            }}
+                            className="w-10 h-10 rounded bg-slate-50 flex items-center justify-center text-slate-300 transition-all duration-200"
+                          >
                             <User size={18} />
                           </div>
                           <div>
@@ -159,7 +183,12 @@ export default function Reservations() {
                             <div className="flex items-center justify-end gap-1.5 text-slate-400">
                                <span className="text-[8px] font-black uppercase tracking-widest leading-none">Table</span>
                             </div>
-                            <span className="text-[11px] font-black text-[#ff7a00] leading-none">{res.tableName || 'TBD'}</span>
+                            <span 
+                              style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }}
+                              className="text-[11px] font-black leading-none"
+                            >
+                              {res.tableName || 'TBD'}
+                            </span>
                          </div>
                       </div>
 
@@ -180,7 +209,8 @@ export default function Reservations() {
                          {res.status === 'Confirmed' && (
                             <button 
                               onClick={() => updateReservationStatus(res._id, 'Seated')}
-                              className="flex-1 py-1.5 bg-[#ff7a00] text-white rounded text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                              style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+                              className="flex-1 py-1.5 text-white rounded text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
                             >
                                <CheckCircle2 size={10} /> Check-In (Seated)
                             </button>
@@ -220,12 +250,40 @@ export default function Reservations() {
               <form onSubmit={handleCreate} className="space-y-4">
                  <div className="space-y-1">
                     <label className="text-[9px] font-black text-slate-400 uppercase">Customer Name</label>
-                    <input required type="text" value={formData.customerName} onChange={e => setFormData({...formData, customerName: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-lg p-3 text-xs font-bold outline-none focus:ring-1 focus:ring-[#ff7a00]" />
+                    <input 
+                      required 
+                      type="text" 
+                      value={formData.customerName} 
+                      onChange={e => setFormData({...formData, customerName: e.target.value})} 
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                        e.target.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '';
+                        e.target.style.boxShadow = '';
+                      }}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-lg p-3 text-xs font-bold outline-none transition-all" 
+                    />
                  </div>
                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                        <label className="text-[9px] font-black text-slate-400 uppercase">Mobile</label>
-                       <input required type="text" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-lg p-3 text-xs font-bold outline-none" />
+                       <input 
+                         required 
+                         type="text" 
+                         value={formData.mobile} 
+                         onChange={e => setFormData({...formData, mobile: e.target.value})} 
+                         onFocus={(e) => {
+                           e.target.style.borderColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                           e.target.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)';
+                         }}
+                         onBlur={(e) => {
+                           e.target.style.borderColor = '';
+                           e.target.style.boxShadow = '';
+                         }}
+                         className="w-full bg-slate-50 border border-slate-100 rounded-lg p-3 text-xs font-bold outline-none transition-all" 
+                       />
                     </div>
                     <div className="space-y-1">
                        <label className="text-[9px] font-black text-slate-400 uppercase">Guests</label>
@@ -245,7 +303,12 @@ export default function Reservations() {
                        ))}
                     </select>
                  </div>
-                 <button type="submit" className="w-full py-4 bg-[#ff7a00] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-[#ff7a00]/20 mt-4">Confirm Booking</button>
+                 <button type="submit"
+                    style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+                    className="w-full py-4 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg mt-4"
+                  >
+                    Confirm Booking
+                  </button>
               </form>
            </motion.div>
         </div>

@@ -75,12 +75,13 @@ export default function PosDashboard() {
         </div>
         
         <div className="flex items-center gap-4">
-           <button 
-             onClick={() => navigate('/pos/tables')}
-             className="bg-[var(--primary-color)] text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[var(--primary-color)]/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-           >
-             <Plus size={14} strokeWidth={3} /> New Order
-           </button>
+            <button 
+              onClick={() => navigate('/pos/tables')}
+              style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+              className="text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-black/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <Plus size={14} strokeWidth={3} /> New Order
+            </button>
            <button onClick={fetchStats} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 hover:text-slate-900 transition-all">
              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
            </button>
@@ -144,9 +145,9 @@ export default function PosDashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={stats?.hourlyTrends || []}>
                       <defs>
-                        <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--primary-color, #ff7a00)" stopOpacity={0.1}/>
-                          <stop offset="95%" stopColor="var(--primary-color, #ff7a00)" stopOpacity={0}/>
+                         <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--pos-sidebar-color, var(--primary-color, #ff7a00))" stopOpacity={0.1}/>
+                          <stop offset="95%" stopColor="var(--pos-sidebar-color, var(--primary-color, #ff7a00))" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
@@ -155,7 +156,7 @@ export default function PosDashboard() {
                       <Tooltip 
                         contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold'}}
                       />
-                      <Area type="monotone" dataKey="sales" stroke="var(--primary-color, #ff7a00)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
+                       <Area type="monotone" dataKey="sales" stroke="var(--pos-sidebar-color, var(--primary-color, #ff7a00))" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>

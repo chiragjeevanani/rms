@@ -192,7 +192,8 @@ export default function PaymentHistory() {
         <div className="flex items-center gap-4">
            <button 
              onClick={handlePrintPDF}
-             className="h-11 px-6 bg-[#F57C00] text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-sm flex items-center gap-2"
+             style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+             className="h-11 px-6 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-sm flex items-center gap-2"
            >
               <Printer size={16} />
               Save Audit Report
@@ -202,7 +203,7 @@ export default function PaymentHistory() {
            </button>
         </div>
       </header>
-
+ 
       <main className="flex-1 p-8 overflow-y-auto no-scrollbar scroll-smooth">
          <div className="max-w-6xl mx-auto space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -222,7 +223,7 @@ export default function PaymentHistory() {
                  </div>
                ))}
             </div>
-
+ 
             <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
                <div className="relative flex-1 w-full max-w-sm group">
                   <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={18} />
@@ -239,8 +240,9 @@ export default function PaymentHistory() {
                      <button 
                        key={m}
                        onClick={() => setFilterMethod(m)}
+                       style={filterMethod === m ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
                        className={`px-5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all ${
-                         filterMethod === m ? 'bg-[#ff7a00] text-white shadow-lg' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
+                         filterMethod === m ? 'text-white shadow-lg' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
                        }`}
                      >
                         {m}

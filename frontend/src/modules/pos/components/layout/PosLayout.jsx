@@ -81,7 +81,8 @@ export default function PosLayout() {
             animate={{ width: 240, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="h-full bg-[var(--primary-color)] flex flex-col border-r border-white/10 z-[101] overflow-hidden shrink-0 relative shadow-2xl text-white"
+            style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+            className="h-full flex flex-col border-r border-white/10 z-[101] overflow-hidden shrink-0 relative shadow-2xl text-white"
           >
             <div className="px-5 py-5 flex items-center justify-between border-b border-black/10 shrink-0 relative z-10">
               <div className="flex items-center gap-3">

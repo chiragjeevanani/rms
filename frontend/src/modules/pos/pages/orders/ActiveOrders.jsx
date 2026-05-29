@@ -318,6 +318,34 @@ export default function ActiveOrders() {
     return (order.orderType || '').toLowerCase() === orderTypeFilter.toLowerCase();
   });
 
+  const rejectOrderWera = async (orderId, rejectionId, otherReason) => {
+    setActionLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/integrations/wera/order/${orderId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rejectionId: Number(rejectionId), otherReason })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Order rejected successfully');
+        setShowRejectModal(false);
+        setSelectedOrder(null); // Close main modal
+        fetchAllOrders();
+      } else {
+        toast.error(data.message || 'Failed to reject order');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error rejecting order');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+
+
+
   const filteredOrders = typeFilteredOrders.filter(order => {
     if (activeTab === 'all') return true;
     return (order.status || '').toLowerCase() === activeTab.toLowerCase();
@@ -329,7 +357,7 @@ export default function ActiveOrders() {
       <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl font-extrabold uppercase tracking-tight text-[var(--primary-color)]">
+            <h1 style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }} className="text-xl font-extrabold uppercase tracking-tight">
               {orderTypeFilter === 'Takeaway' ? 'Quick Service Dashboard' : 
                orderTypeFilter === 'Dine-In' ? 'Dine-In Command Center' : 
                'Unified Order Command Center'}
@@ -339,9 +367,9 @@ export default function ActiveOrders() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="h-10 px-4 bg-amber-50 text-[var(--primary-color)] rounded flex items-center gap-2 border border-amber-100 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[var(--primary-color)] animate-pulse" />
-              <span className="text-[10px] font-extrabold uppercase tracking-widest font-black text-[var(--primary-color)]">{orders.length} Total Orders</span>
+            <div style={{ color: 'var(--pos-sidebar-color, var(--primary-color))', borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)' }} className="h-10 px-4 bg-amber-50 rounded flex items-center gap-2 border shadow-sm">
+              <span style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }} className="w-2 h-2 rounded-full animate-pulse" />
+              <span style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }} className="text-[10px] font-extrabold uppercase tracking-widest font-black">{orders.length} Total Orders</span>
             </div>
            
             <button 
@@ -396,15 +424,16 @@ export default function ActiveOrders() {
                   }}
                  className="grid grid-cols-12 gap-4 items-center px-8 py-5 bg-white rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/10 transition-all group cursor-pointer relative overflow-hidden"
                >
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--primary-color)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }} className="absolute left-0 top-0 bottom-0 w-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                  <div className="col-span-2 flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${
-                      order.source === 'SWIGGY' ? 'bg-[#ff7a00] shadow-orange-500/20' :
-                      order.source === 'ZOMATO' ? 'bg-[#cb202d] shadow-red-500/20' :
-                      order.status?.toLowerCase() === 'ready' ? 'bg-emerald-500 shadow-emerald-500/20' : 
-                      'bg-[var(--primary-color)] shadow-[var(--primary-color)]/20'
-                    }`}>
+                    <div 
+                      style={!(order.source === 'SWIGGY' || order.source === 'ZOMATO' || order.status?.toLowerCase() === 'ready') ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${
+                        order.source === 'SWIGGY' ? 'bg-[#ff7a00] shadow-orange-500/20' :
+                        order.source === 'ZOMATO' ? 'bg-[#cb202d] shadow-red-500/20' :
+                        order.status?.toLowerCase() === 'ready' ? 'bg-emerald-500 shadow-emerald-500/20' : ''
+                      }`}>
                        {order.source === 'SWIGGY' ? <ShoppingBag size={18} /> : 
                         order.source === 'ZOMATO' ? <ShoppingBag size={18} /> :
                         <Utensils size={18} />}
@@ -435,7 +464,7 @@ export default function ActiveOrders() {
                      <div className="flex flex-wrap gap-2">
                         {order.items.map((item, idx) => (
                           <span key={idx} className="text-[10px] font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 whitespace-nowrap hover:bg-white hover:border-slate-300 transition-colors">
-                             {item.name} <span className="text-[var(--primary-color)] font-black ml-1">x{item.quantity}</span>
+                             {item.name} <span style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }} className="font-black ml-1">x{item.quantity}</span>
                           </span>
                         ))}
                      </div>
@@ -453,9 +482,14 @@ export default function ActiveOrders() {
                        <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-lg border shadow-sm inline-flex items-center gap-1.5 ${
                          order.status?.toLowerCase() === 'preparing' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                          order.status?.toLowerCase() === 'cancelled' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                         'bg-amber-50 text-[var(--primary-color)] border-amber-100'
-                       }`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${order.status?.toLowerCase() === 'cancelled' ? 'bg-rose-500' : 'bg-[var(--primary-color)] animate-pulse'}`} />
+                         'bg-amber-50 border-amber-100'
+                       }`}
+                       style={order.status?.toLowerCase() !== 'preparing' && order.status?.toLowerCase() !== 'cancelled' ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+                       >
+                          <div 
+                            style={order.status?.toLowerCase() !== 'cancelled' ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+                            className={`w-1.5 h-1.5 rounded-full ${order.status?.toLowerCase() === 'cancelled' ? 'bg-rose-500' : 'animate-pulse'}`} 
+                          />
                           {order.status}
                        </span>
                      )}
@@ -1308,11 +1342,25 @@ function TabBtn({ active, onClick, label, count }) {
   return (
     <button 
       onClick={onClick}
-      className={`pb-3 text-[10px] font-black uppercase tracking-[0.2em] relative transition-all flex items-center gap-2 ${active ? 'text-[var(--primary-color)]' : 'text-slate-400 hover:text-slate-600'}`}
+      style={active ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+      className={`pb-3 text-[10px] font-black uppercase tracking-[0.2em] relative transition-all flex items-center gap-2 ${active ? '' : 'text-slate-400 hover:text-slate-600'}`}
     >
       {label}
-      {count > 0 && <span className={`px-1.5 py-0.5 rounded text-[8px] ${active ? 'bg-[var(--primary-color)] text-white' : 'bg-slate-100 text-slate-400'}`}>{count}</span>}
-      {active && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary-color)]" />}
+      {count > 0 && (
+        <span 
+          style={active ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
+          className={`px-1.5 py-0.5 rounded text-[8px] ${active ? 'text-white' : 'bg-slate-100 text-slate-400'}`}
+        >
+          {count}
+        </span>
+      )}
+      {active && (
+        <motion.div 
+          layoutId="activeTab" 
+          style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
+          className="absolute bottom-0 left-0 right-0 h-0.5" 
+        />
+      )}
     </button>
   );
 }

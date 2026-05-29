@@ -142,6 +142,71 @@ export function PosProvider({ children }) {
     };
   }, []);
 
+  // Sync branch-specific POS colors to CSS variables (Optimistic UI + DB Background Sync)
+  useEffect(() => {
+    const branchId = user?.branchId?._id || user?.branchId || 'default';
+    
+    // 1. Instantly apply cached colors to prevent UI flickering/lag
+    const cachedNavbarColor = localStorage.getItem(`pos_navbar_color_${branchId}`) || 'var(--primary-color)';
+    const cachedMenuBarColor = localStorage.getItem(`pos_sidebar_color_${branchId}`) || 'var(--primary-color)';
+    document.documentElement.style.setProperty('--pos-navbar-color', cachedNavbarColor);
+    document.documentElement.style.setProperty('--pos-sidebar-color', cachedMenuBarColor);
+
+    // 2. Fetch the latest up-to-date colors from the Database via API
+    if (branchId !== 'default') {
+      const syncDBColors = async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+          const result = await response.json();
+          if (result.success && Array.isArray(result.data)) {
+            const currentBranch = result.data.find(b => b._id === branchId);
+            if (currentBranch) {
+              const dbNavbarColor = currentBranch.posNavbarColor || 'var(--primary-color)';
+              const dbSidebarColor = currentBranch.posSidebarColor || 'var(--primary-color)';
+              
+              // Apply DB colors
+              document.documentElement.style.setProperty('--pos-navbar-color', dbNavbarColor);
+              document.documentElement.style.setProperty('--pos-sidebar-color', dbSidebarColor);
+              
+              // Update local cache
+              localStorage.setItem(`pos_navbar_color_${branchId}`, dbNavbarColor);
+              localStorage.setItem(`pos_sidebar_color_${branchId}`, dbSidebarColor);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to sync colors from branch DB:", e);
+        }
+      };
+      syncDBColors();
+    }
+  }, [user]);
+
+  const updateBranchColors = async (navbarColor, sidebarColor) => {
+    const branchId = user?.branchId?._id || user?.branchId || 'default';
+    
+    // Instantly update local UI & cache (Optimistic UI)
+    document.documentElement.style.setProperty('--pos-navbar-color', navbarColor);
+    document.documentElement.style.setProperty('--pos-sidebar-color', sidebarColor);
+    localStorage.setItem(`pos_navbar_color_${branchId}`, navbarColor);
+    localStorage.setItem(`pos_sidebar_color_${branchId}`, sidebarColor);
+
+    // Persist colors to Database via API
+    if (branchId !== 'default') {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/branches/${branchId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            posNavbarColor: navbarColor,
+            posSidebarColor: sidebarColor
+          })
+        });
+      } catch (err) {
+        console.error("Failed to save customized POS colors to DB:", err);
+      }
+    }
+  };
+
   // ── Backend Actions ──
   const placeKOT = async (tableName, cart, financials, waiter) => {
     try {
@@ -434,6 +499,7 @@ export function PosProvider({ children }) {
       isQuickOrderModalOpen, setIsQuickOrderModalOpen,
       user, setUser,
       handleStartQuickOrder,
+      updateBranchColors,
 
       // Backend-synced data
       orders, tables, reservations, loading,

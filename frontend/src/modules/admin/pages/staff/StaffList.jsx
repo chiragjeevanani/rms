@@ -339,11 +339,11 @@ export default function StaffList() {
                disabled={!formData.branchId}
              >
                <option value="">{formData.branchId ? 'SELECT DESIGNATION' : 'SELECT BRANCH FIRST'}</option>
-               {roles
-                 .filter(r => !r.branchId || r.branchId === formData.branchId)
-                 .map(role => (
-                 <option key={role._id} value={role._id}>{role.name}</option>
-               ))}
+                {roles
+                  .filter(r => !r.branchId || (r.branchId?._id || r.branchId) === formData.branchId)
+                  .map(role => (
+                  <option key={role._id} value={role._id}>{role.name}</option>
+                ))}
              </select>
            </div>
 

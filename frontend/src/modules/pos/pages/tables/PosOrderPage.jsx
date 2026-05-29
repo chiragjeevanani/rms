@@ -15,14 +15,14 @@ import { jsPDF } from "jspdf";
 
 // ── Color tokens (Now Dynamic) ────────────────────────────────────────────────
 const C = {
-  sidebarBg:  'var(--primary-color, #ff7a00)',
-  sidebarHover: 'color-mix(in srgb, var(--primary-color, #ff7a00), black 10%)',
-  sidebarActive: 'color-mix(in srgb, var(--primary-color, #ff7a00), black 20%)',
-  tabActive:  'var(--primary-color, #ff7a00)',
+  sidebarBg:  'var(--pos-sidebar-color, var(--primary-color, #ff7a00))',
+  sidebarHover: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color, #ff7a00)), black 10%)',
+  sidebarActive: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color, #ff7a00)), black 20%)',
+  tabActive:  'var(--pos-sidebar-color, var(--primary-color, #ff7a00))',
   tabInactive:'#EEEEEE',
-  billingBg:  'color-mix(in srgb, var(--primary-color, #ff7a00), black 15%)',
+  billingBg:  'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color, #ff7a00)), black 15%)',
   accentTeal: '#00ACC1',
-  orange:     'var(--primary-color, #ff7a00)',
+  orange:     'var(--pos-sidebar-color, var(--primary-color, #ff7a00))',
   amber:      '#FFC107',
 };
 
@@ -50,6 +50,7 @@ export default function PosOrderPage() {
 
   // ── Cart ───────────────────────────────────────────────────────────────────
   const [cart, setCart] = useState([]);
+  const [variantModalItem, setVariantModalItem] = useState(null);
   const [selectedWaiter] = useState(MOCK_WAITERS[0]);
 
   // Reset cart when switching tables
@@ -136,7 +137,9 @@ export default function PosOrderPage() {
             shortcut: i.shortcut || '',
             alphaShortCode: i.alphaShortCode || '',
             numericShortCode: i.numericShortCode || '',
-            isFeatured: i.isFeatured
+            isFeatured: i.isFeatured,
+            hasVariants: i.hasVariants || false,
+            variants: i.variants || []
           }));
         }
         
@@ -545,7 +548,13 @@ export default function PosOrderPage() {
           {filteredItems.map((item, idx) => (
             <div
               key={item.id || idx}
-              onClick={() => addToCart(item)}
+              onClick={() => {
+                if (item.hasVariants && item.variants && item.variants.length > 0) {
+                  setVariantModalItem(item);
+                } else {
+                  addToCart(item);
+                }
+              }}
               style={{
                 background: '#FFF',
                 borderRadius: 4,
@@ -813,7 +822,7 @@ export default function PosOrderPage() {
               style={{
                 flex: 1,
                 padding: '10px 4px',
-                background: 'color-mix(in srgb, var(--primary-color, #ff7a00), white 20%)',
+                background: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color, #ff7a00)), white 20%)',
                 color: '#FFF',
                 border: 'none',
                 borderRadius: 4,
@@ -862,6 +871,97 @@ export default function PosOrderPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Portion/Variant Selection Modal ── */}
+      {variantModalItem && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          fontFamily: "'Inter', sans-serif"
+        }}>
+          <div style={{
+            background: '#FFF',
+            padding: 24,
+            borderRadius: 16,
+            width: '90%',
+            maxWidth: 400,
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16
+          }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#111', textTransform: 'uppercase' }}>
+                {variantModalItem.name}
+              </h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: 10, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Select Portion Size
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {variantModalItem.variants.map((v, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    addToCart({
+                      ...variantModalItem,
+                      _id: `${variantModalItem._id}_${v.name}`,
+                      id: `${variantModalItem._id}_${v.name}`,
+                      name: `${variantModalItem.name} (${v.name})`,
+                      price: v.price
+                    });
+                    setVariantModalItem(null);
+                  }}
+                  style={{
+                    padding: '14px 16px',
+                    background: '#F9FAFB',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: 12,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: '#1F2937',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    transition: 'all 0.15s'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--pos-sidebar-color, var(--primary-color, #ff7a00))'; e.currentTarget.style.color = '#FFF'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#F9FAFB'; e.currentTarget.style.color = '#1F2937'; }}
+                >
+                  <span style={{ textTransform: 'uppercase' }}>{v.name}</span>
+                  <span style={{ fontWeight: 900 }}>₹{v.price}</span>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setVariantModalItem(null)}
+              style={{
+                padding: '12px',
+                background: '#F3F4F6',
+                border: 'none',
+                borderRadius: 12,
+                fontSize: 11,
+                fontWeight: 900,
+                color: '#4B5563',
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -881,14 +981,14 @@ function InfoBox({ label, icon, active }) {
       cursor: 'pointer',
       background: active ? '#FAFAFA' : 'transparent'
     }}>
-      <div style={{ color: active ? 'var(--primary-color)' : '#9E9E9E' }}>
+      <div style={{ color: active ? 'var(--pos-sidebar-color, var(--primary-color))' : '#9E9E9E' }}>
         {icon}
       </div>
       {label && (
         <span style={{
           fontSize: 9,
           fontWeight: 900,
-          color: active ? 'var(--primary-color)' : '#9E9E9E',
+          color: active ? 'var(--pos-sidebar-color, var(--primary-color))' : '#9E9E9E',
           textTransform: 'uppercase',
           letterSpacing: '0.02em'
         }}>
@@ -914,7 +1014,7 @@ function ActionBtn({ label, onClick, dark }) {
         textTransform: 'uppercase',
         letterSpacing: '0.02em',
         whiteSpace: 'nowrap',
-        background: dark ? 'var(--primary-color)' : '#FFFFFF',
+        background: dark ? 'var(--pos-sidebar-color, var(--primary-color))' : '#FFFFFF',
         color: dark ? '#FFF' : '#1A1A1A',
         transition: 'opacity 0.1s',
       }}

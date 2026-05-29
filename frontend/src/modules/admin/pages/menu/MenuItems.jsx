@@ -890,6 +890,25 @@ export default function MenuItems() {
                </div>
              ) : (
                <div className="space-y-4 animate-in slide-in-from-top-4">
+                  <div className="flex gap-2">
+                     <button
+                       type="button"
+                       onClick={() => {
+                         setFormData({
+                           ...formData,
+                           variants: [
+                             { name: 'Quarter', price: '', originalPrice: '', sku: `${formData.sku}-QTR`, isDefault: false },
+                             { name: 'Half', price: '', originalPrice: '', sku: `${formData.sku}-HLF`, isDefault: false },
+                             { name: 'Full', price: '', originalPrice: '', sku: `${formData.sku}-FUL`, isDefault: true }
+                           ]
+                         });
+                         toast.success('Portion templates added!');
+                       }}
+                       className="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 outline-none"
+                     >
+                       Quick-Add Portions (Quarter, Half, Full)
+                     </button>
+                   </div>
                   <div className="overflow-hidden border border-slate-100 rounded-2xl">
                      <table className="w-full text-left">
                         <thead className="bg-white border-b border-slate-100">

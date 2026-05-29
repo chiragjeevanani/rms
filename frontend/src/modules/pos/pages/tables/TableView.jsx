@@ -113,7 +113,10 @@ export default function TableView() {
      
         
         <div className="flex bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
-           <div className="px-6 py-2.5 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest cursor-default">
+           <div 
+             style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color, #ef4444))' }}
+             className="px-6 py-2.5 text-white text-[10px] font-black uppercase tracking-widest cursor-default"
+           >
               Dine In
            </div>
            <button 
@@ -254,7 +257,7 @@ export default function TableView() {
                 </button>
                 <button
                   onClick={() => { if (!newCarNum.trim()) return; addCarOrder(newCarNum); setNewCarNum(''); setShowAddCar(false); }}
-                  style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: 8, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', background: '#F57C00', color: '#fff', cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: 8, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', background: 'var(--pos-sidebar-color, var(--primary-color, #F57C00))', color: '#fff', cursor: 'pointer' }}>
                   🚗 Create
                 </button>
               </div>
