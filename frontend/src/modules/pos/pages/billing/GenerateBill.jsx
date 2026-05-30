@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import dbClient from '../../../../config/dbClient';
 
 export default function GenerateBill() {
   const [activeOrders, setActiveOrders] = useState([]);
@@ -28,17 +29,42 @@ export default function GenerateBill() {
         return;
       }
 
-      // Fetch active orders for this branch
-      const ordersRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/active?branchId=${bId}`);
-      const ordersData = await ordersRes.json();
+      // Try fetching active orders online
+      try {
+        const ordersRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/active?branchId=${bId}`);
+        const ordersData = await ordersRes.json();
+        if (ordersData.success) setActiveOrders(ordersData.data);
+      } catch (orderErr) {
+        console.error('Failed to fetch active orders online:', orderErr);
+        if (dbClient.isElectron) {
+          console.log('[GenerateBill] Offline/Electron, loading active orders from local SQLite.');
+          try {
+            const localOrders = await dbClient.getOrders({ isBilled: false });
+            setActiveOrders(localOrders);
+          } catch (localErr) {
+            console.error('[GenerateBill] SQLite load failed:', localErr);
+          }
+        } else {
+          throw orderErr;
+        }
+      }
       
-      // Fetch branch details
-      const branchesRes = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
-      const branchesData = await branchesRes.json();
-      const currentBranch = branchesData.data.find(b => b._id === bId);
-
-      if (ordersData.success) setActiveOrders(ordersData.data);
-      if (currentBranch) setBranchInfo(currentBranch);
+      // Try fetching branch details online
+      try {
+        const branchesRes = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+        const branchesData = await branchesRes.json();
+        const currentBranch = branchesData.data.find(b => b._id === bId);
+        if (currentBranch) {
+          setBranchInfo(currentBranch);
+          localStorage.setItem('branch_info', JSON.stringify(currentBranch));
+        }
+      } catch (branchErr) {
+        console.error('Failed to fetch branch details online:', branchErr);
+        const cachedBranch = localStorage.getItem('branch_info');
+        if (cachedBranch) {
+          setBranchInfo(JSON.parse(cachedBranch));
+        }
+      }
 
     } catch (err) {
       console.error('Error fetching billing data:', err);
@@ -56,24 +82,41 @@ export default function GenerateBill() {
     if (!selectedOrder) return;
     setIsProcessing(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${selectedOrder._id}/settle`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          payments: [{
-            method: paymentMethod,
-            amount: selectedOrder.grandTotal
-          }],
-          status: 'completed'
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
-        toast.success('Order settled successfully');
+      const paymentDetails = [{
+        method: paymentMethod,
+        amount: selectedOrder.grandTotal
+      }];
+
+      if (dbClient.isElectron) {
+        console.log('[GenerateBill] Offline/Electron checkout, updating SQLite order status.');
+        await dbClient.updateOrder(selectedOrder._id, {
+          payments: paymentDetails,
+          isBilled: true,
+          status: 'paid'
+        });
+        toast.success('Order settled successfully locally');
         setSelectedOrder(null);
         fetchInitialData();
+      } else {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${selectedOrder._id}/settle`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            payments: paymentDetails,
+            status: 'completed'
+          })
+        });
+        const result = await response.json();
+        if (result.success) {
+          toast.success('Order settled successfully');
+          setSelectedOrder(null);
+          fetchInitialData();
+        } else {
+          toast.error(result.message || 'Failed to settle order');
+        }
       }
     } catch (err) {
+      console.error('Billing checkout failed:', err);
       toast.error('Failed to settle order');
     } finally {
       setIsProcessing(false);

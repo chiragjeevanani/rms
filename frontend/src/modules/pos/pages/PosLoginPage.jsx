@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Zap, RefreshCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { usePos } from '../context/PosContext';
+import dbClient from '../../../config/dbClient';
 
 export default function PosLoginPage() {
   const [formData, setFormData] = useState({
@@ -37,7 +38,6 @@ export default function PosLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-console.log(response.ok)
       const data = await response.json();
       if (response.ok) {
         localStorage.setItem('pos_access', data.token);
@@ -50,6 +50,22 @@ console.log(response.ok)
       }
     } catch (err) {
       console.error('POS Login Error:', err);
+      if (dbClient.isElectron) {
+        const cachedStaff = localStorage.getItem('staff_info');
+        if (cachedStaff) {
+          try {
+            const data = JSON.parse(cachedStaff);
+            if (data.email === formData.email || data.name) {
+              setUser(data);
+              toast.success(`Offline Login: Welcome back, ${data.name || 'Cashier'}`);
+              navigate('/pos/dashboard');
+              return;
+            }
+          } catch (jsonErr) {
+            console.error('Failed to parse cached staff info:', jsonErr);
+          }
+        }
+      }
       toast.error('Network Error: Communication failed.');
     } finally {
       setIsLoading(false);

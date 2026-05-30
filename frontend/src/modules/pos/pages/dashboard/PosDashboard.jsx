@@ -14,6 +14,7 @@ import {
 import { usePos } from '../../context/PosContext';
 import { playClickSound } from '../../utils/sounds';
 import PosTopNavbar from '../../components/PosTopNavbar';
+import dbClient from '../../../../config/dbClient';
 
 
 export default function PosDashboard() {
@@ -33,7 +34,66 @@ export default function PosDashboard() {
       const result = await response.json();
       if (result.success) setStats(result.data);
     } catch (err) {
-      console.error('Stats fetch error:', err);
+      console.error('Stats fetch error online:', err);
+      if (dbClient.isElectron) {
+        console.log('[PosDashboard] Offline/Electron, calculating stats locally from SQLite.');
+        try {
+          const localOrders = await dbClient.getOrders();
+          
+          // Get today's range in local date
+          const todayStr = new Date().toDateString();
+          const todayOrders = localOrders.filter(o => new Date(o.createdAt).toDateString() === todayStr);
+          
+          const todayRevenue = todayOrders
+            .filter(o => o.status === 'paid')
+            .reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+            
+          const completedToday = todayOrders.filter(o => o.status === 'paid').length;
+          
+          const pendingOrders = localOrders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length;
+          
+          // Let's compute hourlyTrends
+          // Initialize hours 9 to 22 with 0 sales
+          const hourlyMap = {};
+          for (let h = 9; h <= 22; h++) {
+            hourlyMap[h] = 0;
+          }
+          
+          todayOrders.forEach(o => {
+            if (o.status === 'paid') {
+              const hour = new Date(o.createdAt).getHours();
+              if (hour >= 9 && hour <= 22) {
+                hourlyMap[hour] += o.grandTotal || 0;
+              }
+            }
+          });
+          
+          const hourlyTrends = Object.keys(hourlyMap).map(h => {
+            const hourNum = parseInt(h);
+            const label = hourNum > 12 ? `${hourNum - 12} PM` : hourNum === 12 ? '12 PM' : `${hourNum} AM`;
+            return { name: label, sales: hourlyMap[h] };
+          });
+          
+          // Get tables cache for available tables
+          let availableTables = 0;
+          try {
+            const cachedTables = await dbClient.getTablesCache();
+            if (cachedTables) {
+              availableTables = cachedTables.filter(t => t.status === 'available' || t.status === 'Available').length;
+            }
+          } catch(e) {}
+          
+          setStats({
+            todayRevenue,
+            completedToday,
+            pendingOrders,
+            availableTables,
+            hourlyTrends
+          });
+        } catch (localErr) {
+          console.error('[PosDashboard] Failed to calculate local stats:', localErr);
+        }
+      }
     } finally {
       setLoading(false);
     }

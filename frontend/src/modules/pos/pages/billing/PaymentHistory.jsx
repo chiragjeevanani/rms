@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { usePos } from '../../context/PosContext';
 import PosTopNavbar from '../../components/PosTopNavbar';
 import { jsPDF } from "jspdf";
+import dbClient from '../../../../config/dbClient';
 
 export default function PaymentHistory() {
   const { toggleSidebar } = usePos();
@@ -32,7 +33,19 @@ export default function PaymentHistory() {
         setPayments(result.data);
       }
     } catch (err) {
-      toast.error('Sync failed');
+      console.error('Failed to sync payment history online:', err);
+      if (dbClient.isElectron) {
+        console.log('[PaymentHistory] Offline/Electron, loading settled payments from SQLite.');
+        try {
+          const localOrders = await dbClient.getOrders({ status: 'paid' });
+          setPayments(localOrders);
+        } catch (localErr) {
+          console.error('[PaymentHistory] Local SQLite load failed:', localErr);
+          toast.error('Failed to load local payment history');
+        }
+      } else {
+        toast.error('Sync failed');
+      }
     } finally {
       setLoading(false);
     }
