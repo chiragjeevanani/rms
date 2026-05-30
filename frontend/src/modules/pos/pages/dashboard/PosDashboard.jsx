@@ -115,16 +115,14 @@ export default function PosDashboard() {
               value={stats?.pendingOrders || 0} 
               icon={<Users size={20} />} 
               trend="Active" 
-              color="text-amber-600" 
-              bg="bg-amber-50"
+              isDynamic
             />
             <StatCard 
               label="Available" 
               value={stats?.availableTables || 0} 
               icon={<LayoutGrid size={20} />} 
               trend="Tables" 
-              color="text-indigo-600" 
-              bg="bg-indigo-50"
+              isDynamic
             />
           </div>
 
@@ -172,7 +170,12 @@ export default function PosDashboard() {
                        onClick={() => handleTileClick(tile.path)}
                        className="group flex flex-col items-center justify-center p-5 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all active:scale-95 text-center gap-3"
                      >
-                        <div className={`p-3 rounded-xl text-white ${tile.color} shadow-lg shadow-black/5 group-hover:scale-110 transition-transform`}>
+                        <div 
+                          style={{
+                            '--tile-hover-color': 'var(--pos-sidebar-color, var(--primary-color))',
+                          }}
+                          className={`p-3 rounded-xl text-white ${tile.color} shadow-lg shadow-black/5 group-hover:scale-110 group-hover:bg-[var(--tile-hover-color)] transition-all`}
+                        >
                            {tile.icon}
                         </div>
                         <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight group-hover:text-slate-950 transition-colors">
@@ -201,15 +204,26 @@ export default function PosDashboard() {
   );
 }
 
-function StatCard({ label, value, icon, trend, color, bg }) {
+function StatCard({ label, value, icon, trend, color, bg, isDynamic }) {
+  const dynamicStyle = isDynamic ? {
+    color: 'var(--pos-sidebar-color, var(--primary-color))',
+    backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)'
+  } : null;
+
   return (
     <motion.div 
       whileHover={{ y: -4 }}
       className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-4 relative overflow-hidden group"
     >
-      <div className={`absolute -right-4 -top-4 w-20 h-20 ${bg} rounded-full opacity-20 group-hover:scale-150 transition-transform duration-700`} />
+      <div 
+        style={isDynamic ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : null}
+        className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-20 group-hover:scale-150 transition-transform duration-700 ${!isDynamic ? bg : ''}`} 
+      />
       <div className="flex items-center justify-between relative z-10">
-        <div className={`p-3 rounded-2xl ${bg} ${color}`}>
+        <div 
+          style={dynamicStyle}
+          className={`p-3 rounded-2xl ${!isDynamic ? `${bg} ${color}` : ''}`}
+        >
           {icon}
         </div>
         <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-tighter text-emerald-500 bg-emerald-50 px-2 py-1 rounded-full">
@@ -223,6 +237,3 @@ function StatCard({ label, value, icon, trend, color, bg }) {
     </motion.div>
   );
 }
-
-
-

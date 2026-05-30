@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
+import dbClient from '../../../config/dbClient';
 
 const PosContext = createContext();
 const socket = io((import.meta.env.VITE_API_URL || '').replace('/api', ''));
@@ -56,28 +57,12 @@ export function PosProvider({ children }) {
   // ── Backend Fetch Functions ──
   const fetchActiveTableOrders = async () => {
     try {
-      const token = localStorage.getItem('staff_access');
-      let branchId = null;
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          branchId = payload.branchId;
-        } catch(e) {}
-      }
-      if (!branchId) {
-        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-        branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
-      }
-      const branchQuery = branchId ? `?branchId=${branchId}` : '';
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/active${branchQuery}`);
-      const result = await response.json();
-      if (result.success) {
-        const orderMap = {};
-        result.data.forEach(order => {
-          orderMap[order.tableName] = order;
-        });
-        setOrders(orderMap);
-      }
+      const activeOrders = await dbClient.getOrders({ isBilled: false });
+      const orderMap = {};
+      activeOrders.forEach(order => {
+        orderMap[order.tableName] = order;
+      });
+      setOrders(orderMap);
     } catch (err) {
       console.error('Failed to sync POS orders:', err);
     }
@@ -85,23 +70,35 @@ export function PosProvider({ children }) {
 
   const fetchTables = async () => {
     try {
-      const token = localStorage.getItem('staff_access');
-      let branchId = null;
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          branchId = payload.branchId;
-        } catch(e) {}
+      if (dbClient.isElectron) {
+        const cached = await dbClient.getTablesCache();
+        if (cached && cached.length > 0) {
+          setTables(cached);
+        }
       }
-      if (!branchId) {
-        const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-        branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
-      }
-      const branchQuery = branchId ? `?branchId=${branchId}` : '';
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/table${branchQuery}`);
-      if (response.ok) {
-        const data = await response.json();
-        setTables(data);
+
+      if (navigator.onLine) {
+        const token = localStorage.getItem('staff_access');
+        let branchId = null;
+        if (token) {
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            branchId = payload.branchId;
+          } catch(e) {}
+        }
+        if (!branchId) {
+          const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+          branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
+        }
+        const branchQuery = branchId ? `?branchId=${branchId}` : '';
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/table${branchQuery}`);
+        if (response.ok) {
+          const data = await response.json();
+          setTables(data);
+          if (dbClient.isElectron) {
+            await dbClient.saveTablesCache(data);
+          }
+        }
       }
     } catch (err) {
       console.error('Failed to fetch tables:', err);
@@ -223,44 +220,36 @@ export function PosProvider({ children }) {
         branchId = staffInfo?.branchId?._id || staffInfo?.branchId;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tableName,
-          items: cart,
-          ...financials,
-          waiterName: waiter?.name || 'Staff',
-          branchId
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
+      const orderPayload = {
+        tableName,
+        items: cart,
+        ...financials,
+        waiterName: waiter?.name || 'Staff',
+        branchId
+      };
+
+      const result = await dbClient.createOrder(orderPayload);
+      if (result) {
         syncAll();
         return true;
       }
       return false;
     } catch (err) {
-      toast.error('Network error during KOT placement');
+      toast.error('Error during KOT placement: ' + err.message);
       return false;
     }
   };
 
   const settleOrder = async (orderId, paymentDetails) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/settle`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payments: paymentDetails, status: 'paid' })
-      });
-      const result = await response.json();
-      if (result.success) {
+      const result = await dbClient.updateOrder(orderId, { payments: paymentDetails, isBilled: true, status: 'paid' });
+      if (result) {
         syncAll();
         return true;
       }
       return false;
     } catch (err) {
-      toast.error('Network error during settlement');
+      toast.error('Error during settlement: ' + err.message);
       return false;
     }
   };
@@ -404,19 +393,14 @@ export function PosProvider({ children }) {
 
   const updateOrderStatus = async (orderId, status) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      const result = await response.json();
-      if (result.success) {
+      const result = await dbClient.updateOrder(orderId, { status });
+      if (result) {
         syncAll();
         return true;
       }
       return false;
     } catch (err) {
-      toast.error('Failed to update order status');
+      toast.error('Failed to update order status: ' + err.message);
       return false;
     }
   };

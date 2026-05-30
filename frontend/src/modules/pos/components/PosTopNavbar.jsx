@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePos } from '../context/PosContext';
 import { playClickSound } from '../utils/sounds';
 import toast from 'react-hot-toast';
+import SyncStatusIndicator from './SyncStatusIndicator';
 
 export default function PosTopNavbar() {
   const navigate = useNavigate();
@@ -91,6 +92,7 @@ export default function PosTopNavbar() {
 
       {/* Right: Icon Toolbar + Support */}
       <div className="ml-auto flex items-center gap-1">
+        <SyncStatusIndicator />
         <NavIcon onClick={() => { playClickSound(); navigate('/pos/menu'); }}   icon={<BookOpen size={18} />} />
         <NavIcon onClick={() => { playClickSound(); navigate('/pos/tables'); }} icon={<Store size={18} />} />
         <NavIcon onClick={() => { playClickSound(); }}                           icon={<CreditCard size={18} />} />

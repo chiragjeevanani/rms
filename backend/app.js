@@ -21,6 +21,7 @@ const superAdminRoutes = require('./Routers/superAdminRoutes');
 const branchRoutes = require('./Routers/branchRoutes');
 const swiggyRoutes = require('./Routers/swiggyRoutes');
 const weraRoutes = require('./Routers/weraRoutes');
+const syncRoutes = require('./Routers/syncRoutes');
 
 // Attach sub-routes to the main router
 router.use('/admin', adminRoutes);
@@ -42,5 +43,6 @@ router.use('/wastage', wastageRoutes);
 router.use('/table', tableRoutes);
 router.use('/reservations', reservationRoutes);
 router.use('/branches', branchRoutes);
+router.use('/sync', syncRoutes);
 
 module.exports = router;

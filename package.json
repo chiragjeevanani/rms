@@ -1,0 +1,39 @@
+{
+  "name": "rms-desktop-suite",
+  "version": "1.0.0",
+  "description": "RMS Offline-First Desktop POS App",
+  "author": "Rehan Multani",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:electron": "wait-on http://localhost:5173 && electron electron/main.js",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:electron\"",
+    "dist": "npm run build --prefix frontend && electron-builder"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^30.0.9",
+    "electron-builder": "^24.13.3",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "sql.js": "^1.10.3",
+    "uuid": "^9.0.1"
+  },
+  "build": {
+    "appId": "com.rms.pos",
+    "productName": "RMS POS",
+    "directories": {
+      "output": "dist_installer"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "files": [
+      "electron/**/*",
+      "frontend/dist/**/*",
+      "package.json"
+    ]
+  }
+}

@@ -79,12 +79,20 @@ export default function CustomerList() {
             <motion.div 
               key={cust.id}
               whileHover={{ y: -4 }}
-              className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm hover:border-blue-300 hover:shadow-xl hover:shadow-blue-600/5 transition-all group relative overflow-hidden"
+              style={{
+                '--hover-border': 'var(--pos-sidebar-color, var(--primary-color))',
+                '--hover-shadow-color': 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 15%, transparent)',
+              }}
+              className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm hover:border-[var(--hover-border)] hover:shadow-xl hover:shadow-[0_20px_25px_-5px_var(--hover-shadow-color)] transition-all group relative overflow-hidden"
             >
-              <div className={`absolute top-0 right-0 w-24 h-24 opacity-[0.03] -mr-12 -mt-12 rounded-full transition-all group-hover:scale-110 ${
-                cust.tier === 'PLATINUM' ? 'bg-slate-900' : 
-                cust.tier === 'GOLD' ? 'bg-amber-500' : 'bg-blue-500'
-              }`} />
+              <div 
+                style={
+                  cust.tier === 'PLATINUM' ? { backgroundColor: '#1e293b' } :
+                  cust.tier === 'GOLD' ? { backgroundColor: '#f59e0b' } :
+                  { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }
+                }
+                className="absolute top-0 right-0 w-24 h-24 opacity-[0.03] -mr-12 -mt-12 rounded-full transition-all group-hover:scale-110" 
+              />
               
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-4">

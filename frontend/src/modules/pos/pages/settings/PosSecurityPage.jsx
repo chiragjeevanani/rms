@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Eye, EyeOff, Key, Save, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PosTopNavbar from '../../components/PosTopNavbar';
 
 export default function PosSecurityPage() {
   const [showCurrent, setShowCurrent] = useState(false);
@@ -56,8 +57,10 @@ export default function PosSecurityPage() {
   };
 
   return (
-    <div className="h-full bg-[#F8F9FB] p-10 overflow-y-auto no-scrollbar">
-      <div className="max-w-2xl mx-auto">
+    <div className="h-full flex flex-col bg-[#F8F9FB] font-sans overflow-hidden select-none">
+      <PosTopNavbar />
+      <div className="flex-1 p-10 overflow-y-auto no-scrollbar">
+        <div className="max-w-2xl mx-auto">
         <header className="mb-10">
           <div className="flex items-center gap-4 mb-2">
             <div 
@@ -226,5 +229,6 @@ export default function PosSecurityPage() {
         </motion.div>
       </div>
     </div>
+   </div>
   );
 }

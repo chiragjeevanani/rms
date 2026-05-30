@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './modules/user/context/CartContext';
 import { ThemeProvider } from './modules/user/context/ThemeContext';
 import UserRoutes from './modules/user/routes/UserRoutes';
@@ -9,6 +9,7 @@ import PosRoutes from './modules/pos/routes/PosRoutes';
 import AdminRoutes from './modules/admin/routes/AdminRoutes';
 import { OrderProvider } from './context/OrderContext';
 import { PosProvider } from './modules/pos/context/PosContext';
+import { SyncProvider } from './context/SyncContext';
 import { Toaster } from 'react-hot-toast';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/error/ErrorBoundary';
@@ -30,8 +31,14 @@ function RootRedirect() {
   if (isKds) return <Navigate to="/kds/dashboard" replace />;
   if (isUser) return <Navigate to="/menu" replace />;
 
+  // Default to POS login directly on Electron offline shell
+  const isElectron = typeof window !== 'undefined' && !!window.api;
+  if (isElectron) return <Navigate to="/pos/login" replace />;
+
   return <Navigate to="/welcome" replace />;
 }
+
+const Router = window.location.protocol === 'file:' ? HashRouter : BrowserRouter;
 
 function App() {
   const [isBooting, setIsBooting] = useState(true);
@@ -48,38 +55,40 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <Router>
       <ErrorBoundary>
         <SystemThemeProvider>
           <ThemeProvider>
-            <CartProvider>
-              <PosProvider>
-                <OrderProvider>
-                  <Routes>
-                    <Route path="/" element={<RootRedirect />} />
-                    <Route path="/staff/*" element={<StaffRoutes />} />
-                    <Route path="/kds/*" element={<KdsRoutes />} />
-                    <Route path="/pos/*" element={<PosRoutes />} />
-                    <Route path="/admin/*" element={<AdminRoutes />} />
-                    <Route path="/superadmin/*" element={
-                      <SuperAdminThemeProvider>
-                        <Routes>
-                          <Route index element={<Navigate to="login" replace />} />
-                          <Route path="login" element={<SuperAdminLogin />} />
-                          <Route path="dashboard" element={<SuperAdminDashboard />} />
-                        </Routes>
-                      </SuperAdminThemeProvider>
-                    } />
-                    <Route path="/*" element={<UserRoutes />} />
-                  </Routes>
-                </OrderProvider>
-              </PosProvider>
-            </CartProvider>
+            <SyncProvider>
+              <CartProvider>
+                <PosProvider>
+                  <OrderProvider>
+                    <Routes>
+                      <Route path="/" element={<RootRedirect />} />
+                      <Route path="/staff/*" element={<StaffRoutes />} />
+                      <Route path="/kds/*" element={<KdsRoutes />} />
+                      <Route path="/pos/*" element={<PosRoutes />} />
+                      <Route path="/admin/*" element={<AdminRoutes />} />
+                      <Route path="/superadmin/*" element={
+                        <SuperAdminThemeProvider>
+                          <Routes>
+                            <Route index element={<Navigate to="login" replace />} />
+                            <Route path="login" element={<SuperAdminLogin />} />
+                            <Route path="dashboard" element={<SuperAdminDashboard />} />
+                          </Routes>
+                        </SuperAdminThemeProvider>
+                      } />
+                      <Route path="/*" element={<UserRoutes />} />
+                    </Routes>
+                  </OrderProvider>
+                </PosProvider>
+              </CartProvider>
+            </SyncProvider>
           </ThemeProvider>
         </SystemThemeProvider>
       </ErrorBoundary>
       <Toaster position="top-center" reverseOrder={false} />
-    </BrowserRouter>
+    </Router>
   );
 }
 

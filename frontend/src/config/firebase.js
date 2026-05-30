@@ -15,7 +15,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
+const isElectron = typeof window !== 'undefined' && !!window.api;
+
 export const requestForToken = (topic) => {
+  if (isElectron || window.location.protocol === 'file:') {
+    console.log('[FCM] Electron shell detected or running under file://. Skipping FCM token retrieval.');
+    return Promise.resolve();
+  }
+
   return getToken(messaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY })
     .then((currentToken) => {
       if (currentToken) {

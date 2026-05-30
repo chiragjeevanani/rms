@@ -557,7 +557,7 @@ export default function ActiveOrders() {
                         </div>
                       )}
 
-                      {/* Handover OTP */}
+                      {/* Delivery Password */}
                       {order.otp && (
                         <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100 shadow-sm">
                           <Shield size={12} className="text-blue-500" />
@@ -568,9 +568,16 @@ export default function ActiveOrders() {
 
                       {/* Delivery Password */}
                       {order.password && (
-                        <div className="flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-100 shadow-sm">
-                          <Lock size={12} className="text-indigo-500" />
-                          <span className="text-[8px] uppercase tracking-wider font-extrabold text-indigo-600">PASS:</span>
+                        <div 
+                          style={{
+                            backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)',
+                            borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 15%, transparent)',
+                            color: 'var(--pos-sidebar-color, var(--primary-color))'
+                          }}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg border shadow-sm"
+                        >
+                          <Lock size={12} style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }} />
+                          <span className="text-[8px] uppercase tracking-wider font-extrabold">PASS:</span>
                           <span className="font-black text-slate-900">{order.password}</span>
                         </div>
                       )}
@@ -718,7 +725,13 @@ export default function ActiveOrders() {
                       
                       {selectedOrder.password && (
                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3">
-                          <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                          <div 
+                            style={{
+                              backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)',
+                              color: 'var(--pos-sidebar-color, var(--primary-color))'
+                            }}
+                            className="p-2.5 rounded-xl"
+                          >
                             <Lock size={18} />
                           </div>
                           <div>
@@ -760,7 +773,7 @@ export default function ActiveOrders() {
 
                   <div className="p-6 bg-white border border-slate-200 rounded-[1.5rem] space-y-4">
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-3 flex items-center gap-2">
-                      <User size={14} className="text-indigo-600" /> Customer Information
+                      <User size={14} style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }} /> Customer Information
                     </h4>
                     
                     <div className="space-y-3">
@@ -803,7 +816,14 @@ export default function ActiveOrders() {
                           <button
                             onClick={() => fetchCustomerNumber(selectedOrder._id)}
                             disabled={fetchingCustomer}
-                            className="px-4 py-2 border border-indigo-200 text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-50 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-1.5"
+                            style={{
+                              borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 30%, transparent)',
+                              color: 'var(--pos-sidebar-color, var(--primary-color))',
+                              '--hover-bg': 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--hover-bg)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+                            className="px-4 py-2 border rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-1.5"
                           >
                             {fetchingCustomer ? <RefreshCcw size={10} className="animate-spin" /> : <Phone size={10} />}
                             Decrypt Details
@@ -940,7 +960,15 @@ export default function ActiveOrders() {
                             {item.modifiers && item.modifiers.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 mt-1.5">
                                 {item.modifiers.map((mod, midx) => (
-                                  <span key={midx} className="text-[8px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-1.5 py-0.5 uppercase tracking-wider">
+                                  <span 
+                                    key={mod.name || midx} 
+                                    style={{
+                                      color: 'var(--pos-sidebar-color, var(--primary-color))',
+                                      backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)',
+                                      borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 15%, transparent)'
+                                    }}
+                                    className="text-[8px] font-black border rounded px-1.5 py-0.5 uppercase tracking-wider"
+                                  >
                                     {mod.group}: {mod.value}
                                   </span>
                                 ))}
@@ -1055,7 +1083,14 @@ export default function ActiveOrders() {
                               setShowSupportModal(true);
                             }}
                             disabled={actionLoading}
-                            className="flex-1 py-3 border-2 border-indigo-200 text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                            style={{
+                              borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 30%, transparent)',
+                              color: 'var(--pos-sidebar-color, var(--primary-color))',
+                              '--hover-bg': 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--hover-bg)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+                            className="flex-1 py-3 border-2 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                           >
                             <Phone size={12} />
                             Call Support
@@ -1210,7 +1245,15 @@ export default function ActiveOrders() {
                       <select 
                         value={supportRemark} 
                         onChange={(e) => setSupportRemark(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-indigo-50"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = 'var(--pos-sidebar-color, var(--primary-color))';
+                          e.target.style.boxShadow = '0 0 0 4px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '';
+                          e.target.style.boxShadow = '';
+                        }}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold focus:outline-none transition-all"
                       >
                         <option value="rider_not_arrived">Rider delayed / Not arrived</option>
                         <option value="food_spilled">Food spilled by courier</option>
