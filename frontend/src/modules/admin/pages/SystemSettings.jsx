@@ -8,10 +8,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAdminTheme } from '../context/AdminThemeContext';
 
 export default function SystemSettings() {
   const { section = 'general' } = useParams();
   const navigate = useNavigate();
+  const { primaryColor, setPrimaryColor } = useAdminTheme();
   const [isSaving, setIsSaving] = useState(false);
   const [autoCommit, setAutoCommit] = useState(true);
   const [config, setConfig] = useState({
@@ -20,7 +22,8 @@ export default function SystemSettings() {
   });
 
   const settingsGroups = [
-    { id: 'general', label: 'Store Preferences', icon: Sliders },
+    { id: 'general', label: 'Store Preferences', icon: Settings },
+    { id: 'design', label: 'Design Studio', icon: Sliders },
     { id: 'payment', label: 'Taxation & Billing', icon: CreditCard },
     { id: 'printers', label: 'Printers & KOT', icon: Printer },
     { id: 'security', label: 'Staff Permissions', icon: Shield },
@@ -190,7 +193,92 @@ export default function SystemSettings() {
                      </motion.div>
                   )}
 
-                  {(section !== 'general' && section !== 'security') && (
+                  {section === 'design' && (
+                     <motion.div 
+                        key="design"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-8 underline decoration-transparent"
+                     >
+                        <div className="flex items-center gap-4 mb-6 underline decoration-transparent">
+                           <div className="w-12 h-12 bg-slate-50 rounded-sm flex items-center justify-center text-slate-900 underline decoration-transparent">
+                              <Sliders size={24} />
+                           </div>
+                           <div className="underline decoration-transparent">
+                              <h3 className="text-sm font-black uppercase tracking-tight underline decoration-transparent">Design Studio</h3>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 underline decoration-transparent">Craft Dashboard Aesthetics & Brand Identity</p>
+                           </div>
+                        </div>
+
+                        <div className="space-y-8 underline decoration-transparent">
+                          <div className="flex items-center justify-between underline decoration-transparent">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-800 underline decoration-transparent">Color Palette</p>
+                            <div className="relative underline decoration-transparent">
+                              <input 
+                                type="color" 
+                                value={primaryColor} 
+                                onChange={(e) => setPrimaryColor(e.target.value)}
+                                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                              />
+                              <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-sm border border-slate-200 shadow-sm cursor-pointer hover:bg-white transition-all underline decoration-transparent">
+                                <div className="w-4 h-4 rounded-full shadow-inner" style={{ backgroundColor: primaryColor }} />
+                                <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest underline decoration-transparent">Custom Tint</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 underline decoration-transparent">
+                            {[
+                              { color: '#ff7a00', name: 'RMS Orange' },
+                              { color: '#2C2C2C', name: 'Charcoal Black' },
+                              { color: '#3B82F6', name: 'Electric Blue' },
+                              { color: '#EF4444', name: 'Passion Red' },
+                              { color: '#10B981', name: 'Emerald Green' },
+                              { color: '#8B5CF6', name: 'Royal Purple' },
+                              { color: '#EC4899', name: 'Ruby Pink' },
+                              { color: '#06B6D4', name: 'Ocean Cyan' }
+                            ].map((preset) => (
+                              <button
+                                key={preset.color}
+                                type="button"
+                                onClick={() => setPrimaryColor(preset.color)}
+                                className="group relative aspect-square rounded-sm transition-all duration-300 hover:scale-105 flex items-center justify-center shadow-sm cursor-pointer underline decoration-transparent"
+                                style={{ backgroundColor: preset.color }}
+                                title={preset.name}
+                              >
+                                {primaryColor === preset.color && (
+                                  <div className="w-2 h-2 rounded-full bg-white shadow-xl animate-pulse" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="pt-6 border-t border-slate-100 underline decoration-transparent">
+                            <div className="bg-slate-50 p-6 rounded-sm border-2 border-dashed border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 underline decoration-transparent">
+                              <div className="flex items-center gap-4 underline decoration-transparent">
+                                <div className="w-12 h-12 shadow-md rounded-sm flex items-center justify-center text-white transition-all transform hover:rotate-6" style={{ backgroundColor: primaryColor }}>
+                                  <CheckCircle2 size={20} />
+                                </div>
+                                <div className="underline decoration-transparent">
+                                  <p className="text-xs font-black text-slate-800 uppercase tracking-tight underline decoration-transparent">Theme Preview</p>
+                                  <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider underline decoration-transparent">Dynamic primary color updated live</p>
+                                </div>
+                              </div>
+                              <button 
+                                type="button"
+                                onClick={() => setPrimaryColor('#2C2C2C')}
+                                className="px-4 py-2 bg-white text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-sm shadow-sm hover:bg-slate-100 transition-all border border-slate-200 cursor-pointer underline decoration-transparent"
+                              >
+                                Reset Default
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                     </motion.div>
+                  )}
+
+                  {(section !== 'general' && section !== 'security' && section !== 'design') && (
                      <motion.div 
                         key="others"
                         initial={{ opacity: 0 }}

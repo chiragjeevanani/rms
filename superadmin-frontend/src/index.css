@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Brand Colors - Warm Orange */
+  --color-brand-50: #fff7ed;
+  --color-brand-100: #ffedd5;
+  --color-brand-200: #fed7aa;
+  --color-brand-300: #fdba74;
+  --color-brand-400: #fb923c;
+  --color-brand-500: var(--primary-color, #ff7a00);
+  --color-brand-600: color-mix(in srgb, var(--primary-color, #ff7a00), black 10%);
+  --color-brand-700: color-mix(in srgb, var(--primary-color, #ff7a00), black 25%);
+  --color-brand-800: color-mix(in srgb, var(--primary-color, #ff7a00), black 40%);
+  --color-brand-900: color-mix(in srgb, var(--primary-color, #ff7a00), black 55%);
+
+  /* Surfaces */
+  --color-cream-50: #fffaf5;
+  --color-cream-100: #fff4e8;
+  --color-charcoal-900: #121212;
+  --color-charcoal-800: #1e1e1e;
+  --color-charcoal-700: #2a2a2a;
+  --color-charcoal-600: #4a4a4a;
+  --color-charcoal-500: #6a6a6a;
+  --color-charcoal-400: #9a9a9a;
+  --color-charcoal-300: #d1d1d1;
+  --color-charcoal-200: #e5e5e5;
+  --color-charcoal-100: #f5f5f5;
+
+  /* Elevation */
+  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.03), 0 2px 6px rgba(0, 0, 0, 0.02);
+  --shadow-premium-hover: 0 12px 40px rgba(255, 122, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-drawer: -10px 0 50px rgba(0, 0, 0, 0.08);
+
+  /* Typography */
+  --font-family-sans: 'Outfit', system-ui, sans-serif;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: #121212;
+  font-family: var(--font-family-sans);
+  overflow-x: hidden;
+  zoom: 0.9;
+  background-color: #F4F6FA;
+}
+
+h1, h2, h3, h4, h5, h6 { 
+  font-family: var(--font-family-sans); 
+}
+
+.no-scrollbar::-webkit-scrollbar { 
+  display: none; 
+}
+.no-scrollbar { 
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
+
+/* Dynamic Accent Colors */
+:root {
+  --superadmin-accent: #ff7a00;
+  --superadmin-glow: rgba(255, 122, 0, 0.2);
+  --primary-color: #ff7a00;
+  --admin-primary: #ff7a00;
+}

@@ -58,7 +58,7 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('superadmin_token');
-    if (!token) navigate('/superadmin/login');
+    if (!token) navigate('/login');
     fetchData();
   }, []);
 
@@ -143,7 +143,7 @@ export default function SuperAdminDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-[#F4F6FA] text-slate-700 font-sans overflow-hidden select-none">
+    <div className="flex h-full bg-[#F4F6FA] text-slate-700 font-sans overflow-hidden select-none">
       
       {/* ══ LEFT: Curated Sidebar Layout ═════════════════════════════════════ */}
       <aside 
@@ -168,10 +168,10 @@ export default function SuperAdminDashboard() {
           
           {/* TAB 1: Dashboard */}
           <button 
-            onClick={() => navigate('/superadmin/dashboard/overview')}
-            style={location.pathname === '/superadmin/dashboard/overview' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
+            onClick={() => navigate('/dashboard/overview')}
+            style={location.pathname === '/dashboard/overview' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
             className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl font-bold text-xs uppercase tracking-wider text-left transition-all cursor-pointer ${
-              location.pathname === '/superadmin/dashboard/overview' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
+              location.pathname === '/dashboard/overview' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
             <LayoutGrid size={18} />
@@ -180,10 +180,10 @@ export default function SuperAdminDashboard() {
 
           {/* TAB 2: Admin Management (Direct) */}
           <button 
-            onClick={() => navigate('/superadmin/dashboard/admins')}
-            style={location.pathname === '/superadmin/dashboard/admins' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
+            onClick={() => navigate('/dashboard/admins')}
+            style={location.pathname === '/dashboard/admins' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
             className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl font-bold text-xs uppercase tracking-wider text-left transition-all cursor-pointer ${
-              location.pathname === '/superadmin/dashboard/admins' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
+              location.pathname === '/dashboard/admins' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
             <Users size={18} />
@@ -192,10 +192,10 @@ export default function SuperAdminDashboard() {
 
           {/* TAB 3: Security (Direct) */}
           <button 
-            onClick={() => navigate('/superadmin/dashboard/security')}
-            style={location.pathname === '/superadmin/dashboard/security' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
+            onClick={() => navigate('/dashboard/security')}
+            style={location.pathname === '/dashboard/security' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
             className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl font-bold text-xs uppercase tracking-wider text-left transition-all cursor-pointer ${
-              location.pathname === '/superadmin/dashboard/security' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
+              location.pathname === '/dashboard/security' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
             <Key size={18} />
@@ -204,10 +204,10 @@ export default function SuperAdminDashboard() {
 
           {/* TAB 4: Reports & Analytics */}
           <button 
-            onClick={() => navigate('/superadmin/dashboard/reports')}
-            style={location.pathname === '/superadmin/dashboard/reports' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
+            onClick={() => navigate('/dashboard/reports')}
+            style={location.pathname === '/dashboard/reports' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
             className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl font-bold text-xs uppercase tracking-wider text-left transition-all cursor-pointer ${
-              location.pathname === '/superadmin/dashboard/reports' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
+              location.pathname === '/dashboard/reports' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
             <FileText size={18} />
@@ -218,7 +218,7 @@ export default function SuperAdminDashboard() {
         {/* Sidebar Footer - Logout */}
         <div className="p-4 border-t border-white/10 bg-black/15 relative z-10">
           <button 
-            onClick={() => { localStorage.removeItem('superadmin_token'); navigate('/superadmin/login'); toast.success('Secure Logout Complete.'); }}
+            onClick={() => { localStorage.removeItem('superadmin_token'); navigate('/login'); toast.success('Secure Logout Complete.'); }}
             className="w-full h-11 flex items-center justify-center gap-2 bg-white/10 hover:bg-rose-600/20 hover:text-rose-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/80 border border-white/10 hover:border-rose-500/30 transition-all cursor-pointer"
           >
             <LogOut size={14} />
@@ -239,9 +239,9 @@ export default function SuperAdminDashboard() {
 
           <div className="relative z-10">
             <h2 className="text-sm font-black text-white uppercase tracking-widest">
-              {location.pathname === '/superadmin/dashboard/overview' ? 'Overview Stats' :
-               location.pathname === '/superadmin/dashboard/admins' ? 'Admin Management Module' :
-               location.pathname === '/superadmin/dashboard/reports' ? 'Reports & Analytics Ledgers' : 'Security & Access Protocols'}
+              {location.pathname === '/dashboard/overview' ? 'Overview Stats' :
+               location.pathname === '/dashboard/admins' ? 'Admin Management Module' :
+               location.pathname === '/dashboard/reports' ? 'Reports & Analytics Ledgers' : 'Security & Access Protocols'}
             </h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400" />

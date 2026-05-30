@@ -14,13 +14,6 @@ import { Toaster } from 'react-hot-toast';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/error/ErrorBoundary';
 import { SystemThemeProvider } from './context/SystemThemeContext';
-import SuperAdminLogin from './modules/superadmin/pages/SuperAdminLogin';
-import SuperAdminDashboard from './modules/superadmin/pages/SuperAdminDashboard';
-import { SuperAdminThemeProvider } from './modules/superadmin/context/SuperAdminThemeContext';
-import DashboardOverview from './modules/superadmin/components/DashboardOverview';
-import AdminManagement from './modules/superadmin/components/AdminManagement';
-import SecuritySettings from './modules/superadmin/components/SecuritySettings';
-import SuperAdminReports from './modules/superadmin/pages/SuperAdminReports';
 
 function RootRedirect() {
   const isAdmin = localStorage.getItem('admin_access');
@@ -73,21 +66,6 @@ function App() {
                       <Route path="/kds/*" element={<KdsRoutes />} />
                       <Route path="/pos/*" element={<PosRoutes />} />
                       <Route path="/admin/*" element={<AdminRoutes />} />
-                      <Route path="/superadmin/*" element={
-                        <SuperAdminThemeProvider>
-                          <Routes>
-                            <Route index element={<Navigate to="login" replace />} />
-                            <Route path="login" element={<SuperAdminLogin />} />
-                            <Route path="dashboard" element={<SuperAdminDashboard />}>
-                              <Route index element={<Navigate to="overview" replace />} />
-                              <Route path="overview" element={<DashboardOverview />} />
-                              <Route path="admins" element={<AdminManagement />} />
-                              <Route path="security" element={<SecuritySettings />} />
-                              <Route path="reports" element={<SuperAdminReports />} />
-                            </Route>
-                          </Routes>
-                        </SuperAdminThemeProvider>
-                      } />
                       <Route path="/*" element={<UserRoutes />} />
                     </Routes>
                   </OrderProvider>

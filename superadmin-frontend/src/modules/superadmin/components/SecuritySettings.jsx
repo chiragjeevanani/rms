@@ -1,10 +1,9 @@
-import { Lock, Eye, EyeOff, Sliders, Check } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 
 export default function SecuritySettings() {
   const { 
     accentColor, 
-    setAccentColor, 
     passFormData, 
     setPassFormData, 
     showPasswords, 
@@ -13,7 +12,7 @@ export default function SecuritySettings() {
     loading 
   } = useOutletContext();
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div className="max-w-2xl mx-auto">
       {/* Password Change Form */}
       <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
         <div className="bg-slate-950 px-8 py-8 text-white relative flex items-center justify-between">
@@ -100,80 +99,6 @@ export default function SecuritySettings() {
             {loading ? 'Updating Key...' : 'Confirm Key Change'}
           </button>
         </form>
-      </div>
-
-      {/* Design Studio Theme Picker */}
-      <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden animate-fade-in">
-        <div className="bg-slate-950 px-8 py-8 text-white relative flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-black uppercase tracking-widest leading-tight">Design Studio</h2>
-            <p className="text-amber-500 text-[9px] font-bold uppercase tracking-[0.3em] mt-1.5">Craft Dashboard Aesthetics</p>
-          </div>
-          <Sliders size={20} className="text-white/20" />
-        </div>
-
-        <div className="p-8 space-y-8">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-black uppercase tracking-widest text-slate-800">Color Palette</p>
-            <div className="relative">
-              <input 
-                type="color" 
-                value={accentColor} 
-                onChange={(e) => setAccentColor(e.target.value)}
-                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-              />
-              <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:bg-white transition-all">
-                <div className="w-4 h-4 rounded-full shadow-inner" style={{ backgroundColor: accentColor }} />
-                <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Custom Tint</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
-            {[
-              { color: '#ff7a00', name: 'RMS Orange' },
-              { color: '#3B82F6', name: 'Electric Blue' },
-              { color: '#EF4444', name: 'Passion Red' },
-              { color: '#10B981', name: 'Emerald Green' },
-              { color: '#8B5CF6', name: 'Royal Purple' },
-              { color: '#EC4899', name: 'Ruby Pink' },
-              { color: '#06B6D4', name: 'Ocean Cyan' },
-              { color: '#0F172A', name: 'Slate Gray' }
-            ].map((preset) => (
-              <button
-                key={preset.color}
-                onClick={() => setAccentColor(preset.color)}
-                className="group relative aspect-square rounded-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center shadow-sm cursor-pointer"
-                style={{ backgroundColor: preset.color }}
-                title={preset.name}
-              >
-                {accentColor === preset.color && (
-                  <div className="w-2 h-2 rounded-full bg-white shadow-xl animate-pulse" />
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div className="pt-6 border-t border-slate-100">
-            <div className="bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 shadow-md rounded-xl flex items-center justify-center text-white transition-all transform hover:rotate-6" style={{ backgroundColor: accentColor }}>
-                  <Check size={20} strokeWidth={3} />
-                </div>
-                <div>
-                  <p className="text-xs font-black text-slate-800 uppercase tracking-tight">Theme Preview</p>
-                  <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Dynamic primary color updated live</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setAccentColor('#ff7a00')}
-                className="px-4 py-2 bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-sm hover:bg-slate-100 transition-all border border-slate-200 cursor-pointer"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

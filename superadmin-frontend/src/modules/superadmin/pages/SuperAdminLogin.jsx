@@ -24,7 +24,7 @@ export default function SuperAdminLogin() {
       if (data.success) {
         localStorage.setItem('superadmin_token', data.token);
         toast.success('Access Granted');
-        navigate('/superadmin/dashboard');
+        navigate('/dashboard/overview');
       } else {
         toast.error(data.message || 'Invalid Credentials');
       }
@@ -36,7 +36,7 @@ export default function SuperAdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 font-sans selection:bg-[#ff7a00]/10">
+    <div className="min-h-full bg-[#F8FAFC] flex items-center justify-center p-4 font-sans selection:bg-[#ff7a00]/10">
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-orange-50/40 blur-[120px] rounded-full opacity-60" />
