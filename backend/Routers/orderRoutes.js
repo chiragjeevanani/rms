@@ -21,12 +21,12 @@ const { protectAdmin, protectStaff } = require('../Middleware/authMiddleware');
 
 router.post('/', createOrder);
 router.post('/register-token', registerToken);
-router.get('/', getAllOrders);
-router.get('/active', getActiveOrders);
-router.get('/completed', getCompletedOrders);
-router.get('/cancelled', getCancelledOrders);
-router.get('/analytics', getKitchenAnalytics);
-router.get('/reports/sales', protectStaff, getSalesAnalytics);
+router.get('/', protectAdmin, getAllOrders);
+router.get('/active', protectAdmin, getActiveOrders);
+router.get('/completed', protectAdmin, getCompletedOrders);
+router.get('/cancelled', protectAdmin, getCancelledOrders);
+router.get('/analytics', protectAdmin, getKitchenAnalytics);
+router.get('/reports/sales', protectAdmin, getSalesAnalytics);
 router.get('/stats/staff/:staffName', getStaffDailyStats);
 router.get('/stats/staff-snapshot', getStaffDashboardSnapshot);
 

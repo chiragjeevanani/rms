@@ -1,10 +1,12 @@
 const Staff = require('../Models/Staff');
 const sendEmail = require('../Utils/sendEmail');
 const jwt = require('jsonwebtoken');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getAllStaff = async (req, res) => {
   try {
-    const staff = await Staff.find().populate('role').populate('branchId');
+    const { filter } = await getAdminBranchFilter(req);
+    const staff = await Staff.find(filter).populate('role').populate('branchId');
     res.json(staff);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

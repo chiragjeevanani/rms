@@ -1,8 +1,10 @@
 const Wastage = require('../Models/Wastage');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getAllWastage = async (req, res) => {
   try {
-    const wastage = await Wastage.find().sort({ createdAt: -1 });
+    const { filter } = await getAdminBranchFilter(req);
+    const wastage = await Wastage.find(filter).sort({ createdAt: -1 });
     res.json(wastage);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

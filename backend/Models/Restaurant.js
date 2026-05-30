@@ -6,6 +6,8 @@ const restaurantSchema = new mongoose.Schema({
   password: { type: String, required: true }, // In production, hash this
   thirdPartyApi: { type: Boolean, default: false },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  mobileNumber: { type: String, default: '' },
+  branchLimit: { type: Number, default: 5 },
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -1,8 +1,10 @@
 const Role = require('../Models/Role');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getAllRoles = async (req, res) => {
   try {
-    const roles = await Role.find().populate('branchId');
+    const { filter } = await getAdminBranchFilter(req);
+    const roles = await Role.find(filter).populate('branchId');
     res.json(roles);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

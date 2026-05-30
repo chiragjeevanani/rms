@@ -29,6 +29,10 @@ export default function AdminLoginPage() {
       if (response.ok) {
         localStorage.setItem('admin_access', data.token);
         localStorage.setItem('admin_info', JSON.stringify(data.admin));
+        // Save restaurantId separately for easy access in branch filtering
+        if (data.admin.restaurantId) {
+          localStorage.setItem('admin_restaurantId', data.admin.restaurantId);
+        }
         toast.success('Login Successful!');
         navigate('/admin/dashboard');
       } else {

@@ -26,9 +26,15 @@ export default function TableHistory() {
     setIsLoading(true);
     try {
       const [tableRes, orderRes, branchRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/table`),
-        fetch(`${import.meta.env.VITE_API_URL}/orders`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/table`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        }),
+        fetch(`${import.meta.env.VITE_API_URL}/orders`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })(), {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        })
       ]);
       const tableData = await tableRes.json();
       const orderData = await orderRes.json();

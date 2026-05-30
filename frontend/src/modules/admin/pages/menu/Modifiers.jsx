@@ -22,7 +22,7 @@ export default function Modifiers() {
   const [isSaving, setIsSaving] = useState(false);
   const [filterStatus, setFilterStatus] = useState('All');
   const [branches, setBranches] = useState([]);
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState(localStorage.getItem('admin_selected_branch') || 'all');
 
   // CSV Import States and Functions
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -161,8 +161,8 @@ export default function Modifiers() {
     setIsLoading(true);
     try {
       const [modRes, brsRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/modifier`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/modifier`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })())
       ]);
       const mods = await modRes.json();
       const brs = await brsRes.json();
@@ -186,7 +186,7 @@ export default function Modifiers() {
         maxSelection: mod.maxSelection || 1,
         options: mod.options.length > 0 ? mod.options : [{ name: '', price: 0, isDefault: false }],
         status: mod.status || 'Published',
-        branchId: mod.branchId || ''
+        branchId: (typeof mod.branchId === 'object' ? mod.branchId?._id : mod.branchId) || ''
       });
     } else {
       setEditingModifier(null);
@@ -365,11 +365,13 @@ export default function Modifiers() {
 
         <div className="h-8 w-px bg-slate-100 hidden md:block" />
 
-        {/* Branch Filter */}
         <BranchSelector 
           branches={branches}
           selectedBranch={selectedBranchFilter}
-          onSelect={setSelectedBranchFilter}
+          onSelect={(val) => {
+            setSelectedBranchFilter(val);
+            localStorage.setItem('admin_selected_branch', val);
+          }}
         />
       </div>
 

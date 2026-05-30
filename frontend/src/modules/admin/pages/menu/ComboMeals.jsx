@@ -31,7 +31,7 @@ export default function ComboMeals() {
   const [isUploading, setIsUploading] = useState(false);
   const [filterStatus, setFilterStatus] = useState('All');
   const [branches, setBranches] = useState([]);
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState(localStorage.getItem('admin_selected_branch') || 'all');
 
   const [combos, setCombos] = useState([]);
   const [availableItems, setAvailableItems] = useState([]);
@@ -196,9 +196,11 @@ export default function ComboMeals() {
     setIsLoading(true);
     try {
       const [comboRes, itemRes, brsRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/combo`),
-        fetch(`${import.meta.env.VITE_API_URL}/item`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/combo`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch(`${import.meta.env.VITE_API_URL}/item`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })(), {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        })
       ]);
       
       const combosData = await comboRes.json();
@@ -263,7 +265,7 @@ export default function ComboMeals() {
         trackStock: combo.trackStock || false,
         stockCount: combo.stockCount || 0,
         minStockLevel: combo.minStockLevel || 5,
-        branchId: combo.branchId || ''
+        branchId: (typeof combo.branchId === 'object' ? combo.branchId?._id : combo.branchId) || ''
       });
     } else {
       setEditingCombo(null);
@@ -469,7 +471,10 @@ export default function ComboMeals() {
         <BranchSelector 
           branches={branches}
           selectedBranch={selectedBranchFilter}
-          onSelect={setSelectedBranchFilter}
+          onSelect={(val) => {
+            setSelectedBranchFilter(val);
+            localStorage.setItem('admin_selected_branch', val);
+          }}
         />
 
         <div className="flex items-center border border-slate-100 rounded-2xl p-1 bg-slate-50">
@@ -705,7 +710,20 @@ export default function ComboMeals() {
                     className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black uppercase outline-none focus:border-blue-500/50 rounded-2xl"
                     value={formData.branchId}
                     required
-                    onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                    onChange={(e) => {
+                      const newBranchId = e.target.value;
+                      const filteredItems = formData.items.filter(comboItem => {
+                        const itemObj = availableItems.find(i => i._id === comboItem.item);
+                        if (!itemObj) return false;
+                        const itemBranchId = typeof itemObj.branchId === 'object' ? itemObj.branchId?._id : itemObj.branchId;
+                        return !newBranchId || itemBranchId === newBranchId;
+                      });
+                      setFormData({
+                        ...formData,
+                        branchId: newBranchId,
+                        items: filteredItems
+                      });
+                    }}
                   >
                     <option value="">Select Target Branch</option>
                     {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
@@ -777,7 +795,13 @@ export default function ComboMeals() {
                         value={item.item}
                         onChange={(e) => updateComboItem(idx, 'item', e.target.value)}
                       >
-                        {availableItems.map(i => <option key={i._id} value={i._id}>{i.name}</option>)}
+                        {availableItems
+                          .filter(i => {
+                            if (!formData.branchId) return true;
+                            const itemBranchId = typeof i.branchId === 'object' ? i.branchId?._id : i.branchId;
+                            return itemBranchId === formData.branchId;
+                          })
+                          .map(i => <option key={i._id} value={i._id}>{i.name}</option>)}
                       </select>
                     </div>
                     <div className="w-32 space-y-2">

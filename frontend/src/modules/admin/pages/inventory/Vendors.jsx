@@ -38,8 +38,8 @@ export default function Vendors() {
   const fetchVendors = async () => {
     try {
       const [vendorRes, branchRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/vendor`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/vendor`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })())
       ]);
       const vendorData = await vendorRes.json();
       const branchData = await branchRes.json();

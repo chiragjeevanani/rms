@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
    ShoppingBag, Clock, CheckCircle2, Utensils,
    Package, LayoutGrid, Layers, Activity,
@@ -24,7 +25,11 @@ export default function AdminDashboard() {
 
    const fetchBranches = async () => {
       try {
-         const response = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+         const restaurantId = localStorage.getItem('admin_restaurantId');
+         const url = restaurantId 
+            ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${restaurantId}`
+            : `${import.meta.env.VITE_API_URL}/branches`;
+         const response = await fetch(url);
          const result = await response.json();
          if (result.success) {
             setBranches(result.data);
@@ -40,6 +45,21 @@ export default function AdminDashboard() {
          const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/dashboard-stats${branchParam}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
          });
+
+         if (response.status === 403) {
+            const errData = await response.json();
+            if (errData.code === 'ACCOUNT_INACTIVE') {
+               localStorage.removeItem('admin_access');
+               localStorage.removeItem('admin_info');
+               localStorage.removeItem('admin_restaurantId');
+               toast.error(errData.message || 'Account deactivated. Logging out...');
+               setTimeout(() => {
+                  window.location.href = '/admin/login';
+               }, 1000);
+               return;
+            }
+         }
+
          if (response.ok) {
             const result = await response.json();
             setData(result.data);

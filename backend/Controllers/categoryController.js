@@ -1,14 +1,14 @@
 const Category = require('../Models/Category');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getCategories = async (req, res) => {
   try {
     const mongoose = require('mongoose');
-    let matchStage = { $match: {} };
-    if (req.query.branchId && req.query.branchId !== 'undefined' && req.query.branchId !== '[object Object]') {
-      if (mongoose.Types.ObjectId.isValid(req.query.branchId)) {
-        matchStage = { $match: { branchId: new mongoose.Types.ObjectId(req.query.branchId) } };
-      }
-    }
+    const { filter: branchFilter } = await getAdminBranchFilter(req);
+
+    // If a specific branchId was passed in query, override with just that
+    let matchStage = { $match: branchFilter };
+
     const categories = await Category.aggregate([
       matchStage,
       {

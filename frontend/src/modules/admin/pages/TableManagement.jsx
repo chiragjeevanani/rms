@@ -55,8 +55,12 @@ export default function TableManagement() {
   const fetchTables = async () => {
     try {
       const [tableRes, branchRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/table`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/table`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })(), {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        })
       ]);
       const tableData = await tableRes.json();
       const branchData = await branchRes.json();

@@ -1,4 +1,5 @@
 const Admin = require('../Models/Admin');
+const CentralAdmin = require('../Models/CentralAdmin');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
@@ -19,9 +20,19 @@ const loginAdmin = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Generate token
+    // Check account status via Restaurant record
+    const Restaurant = require('../Models/Restaurant');
+    const restaurant = await Restaurant.findOne({ email });
+    if (restaurant && restaurant.status === 'inactive') {
+      return res.status(403).json({
+        message: 'Your account has been deactivated. Please contact your system administrator to regain access.',
+        code: 'ACCOUNT_INACTIVE'
+      });
+    }
+
+    // Generate token (include restaurantId for branch filtering)
     const token = jwt.sign(
-      { id: admin._id, email: admin.email, role: 'admin' },
+      { id: admin._id, email: admin.email, role: 'admin', restaurantId: restaurant?._id },
       process.env.JWT_SECRET || 'fallback_secret',
       { expiresIn: '1d' }
     );
@@ -33,7 +44,8 @@ const loginAdmin = async (req, res) => {
         id: admin._id,
         name: admin.name,
         email: admin.email,
-        thirdPartyApi: admin.thirdPartyApi
+        thirdPartyApi: admin.thirdPartyApi,
+        restaurantId: restaurant?._id || null
       }
     });
 
@@ -46,7 +58,15 @@ const loginAdmin = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const admin = await Admin.findById(req.admin.id).select('-password');
-    res.json(admin);
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+    // Fetch branchLimit and restaurantId from Restaurant record
+    const Restaurant = require('../Models/Restaurant');
+    const restaurant = await Restaurant.findOne({ email: admin.email });
+    const branchLimit = restaurant ? (restaurant.branchLimit ?? 5) : 5;
+    const restaurantId = restaurant?._id || null;
+
+    res.json({ ...admin.toObject(), branchLimit, restaurantId });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -71,10 +91,22 @@ const updateProfile = async (req, res) => {
     if (name) admin.name = name;
     if (profileImg) admin.profileImg = profileImg;
     if (restaurantName) admin.restaurantName = restaurantName;
-    if (mobileNumber) admin.mobileNumber = mobileNumber;
+    if (mobileNumber !== undefined) admin.mobileNumber = mobileNumber;
     if (address) admin.address = address;
 
     await admin.save();
+
+    // Sync updated profile to admins collection
+    try {
+      const syncData = {};
+      if (name)                       syncData.name         = name;
+      if (profileImg)                 syncData.profileImg   = profileImg;
+      if (mobileNumber !== undefined) syncData.mobileNumber = mobileNumber;
+      await CentralAdmin.updateOne({ email: admin.email }, { $set: syncData });
+    } catch (syncErr) {
+      console.error('CentralAdmin sync error (non-critical):', syncErr.message);
+    }
+
     res.json({
       message: 'Profile updated successfully',
       admin: {
@@ -143,10 +175,26 @@ const Combo = require('../Models/Combo');
 const getDashboardStats = async (req, res) => {
   try {
     const { branchId } = req.query;
+
+    // Get restaurantId from JWT token (set during login)
+    const restaurantId = req.admin?.restaurantId;
+    const Branch = require('../Models/Branch');
+
     let filter = {};
+
     if (branchId && branchId !== 'all' && branchId !== 'undefined' && branchId !== '[object Object]') {
+      // Specific branch selected
       if (mongoose.Types.ObjectId.isValid(branchId)) {
         filter = { branchId: new mongoose.Types.ObjectId(branchId) };
+      }
+    } else if (restaurantId && mongoose.Types.ObjectId.isValid(String(restaurantId))) {
+      // No specific branch — filter by all branches belonging to this admin's restaurant
+      const adminBranches = await Branch.find({ restaurantId: new mongoose.Types.ObjectId(String(restaurantId)) }).select('_id');
+      if (adminBranches.length > 0) {
+        const branchIds = adminBranches.map(b => b._id);
+        filter = { branchId: { $in: branchIds } };
+      } else {
+        filter = { branchId: { $in: [] } };
       }
     }
 

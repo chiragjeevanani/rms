@@ -34,7 +34,7 @@ export default function Integrations() {
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+        const res = await fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })());
         const result = await res.json();
         if (result.success && result.data) {
           setBranches(result.data);

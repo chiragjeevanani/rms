@@ -27,7 +27,7 @@ export default function MenuItems() {
   const [isUploading, setIsUploading] = useState(false);
   const [filterStatus, setFilterStatus] = useState('All');
   const [branches, setBranches] = useState([]);
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState(localStorage.getItem('admin_selected_branch') || 'all');
 
   const [categories, setCategories] = useState([]);
   const [modifierGroups, setModifierGroups] = useState([]);
@@ -200,10 +200,18 @@ export default function MenuItems() {
     setIsLoading(true);
     try {
       const [catRes, modRes, itemRes, brsRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/category`),
-        fetch(`${import.meta.env.VITE_API_URL}/modifier`),
-        fetch(`${import.meta.env.VITE_API_URL}/item`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/category`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        }),
+        fetch(`${import.meta.env.VITE_API_URL}/modifier`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        }),
+        fetch(`${import.meta.env.VITE_API_URL}/item`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })(), {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+        })
       ]);
       
       const [cats, mods, its, brs] = await Promise.all([
@@ -238,7 +246,7 @@ export default function MenuItems() {
         minStockLevel: item.minStockLevel || 5,
         alphaShortCode: item.alphaShortCode || '',
         numericShortCode: item.numericShortCode || '',
-        branchId: item.branchId || ''
+        branchId: (typeof item.branchId === 'object' ? item.branchId?._id : item.branchId) || ''
       });
     } else {
       setEditingItem(null);
@@ -480,11 +488,13 @@ export default function MenuItems() {
 
         <div className="h-8 w-px bg-slate-100 hidden md:block" />
 
-        {/* Branch Filter */}
         <BranchSelector 
           branches={branches}
           selectedBranch={selectedBranchFilter}
-          onSelect={setSelectedBranchFilter}
+          onSelect={(val) => {
+            setSelectedBranchFilter(val);
+            localStorage.setItem('admin_selected_branch', val);
+          }}
         />
         <div className="flex items-center border border-slate-100 rounded-2xl p-1 bg-slate-50">
           <button 
@@ -793,7 +803,21 @@ export default function MenuItems() {
                       className="w-full bg-slate-50 border border-slate-100 p-4 text-[10px] font-black uppercase outline-none focus:border-amber-500/50 rounded-2xl"
                       value={formData.branchId}
                       required
-                      onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                      onChange={(e) => {
+                        const newBranchId = e.target.value;
+                        // Filter selected modifiers to only keep ones belonging to the new branch
+                        const filteredModifiers = formData.modifiers.filter(modId => {
+                          const modGroup = modifierGroups.find(m => m._id === modId);
+                          if (!modGroup) return false;
+                          const modBranchId = typeof modGroup.branchId === 'object' ? modGroup.branchId?._id : modGroup.branchId;
+                          return !newBranchId || modBranchId === newBranchId;
+                        });
+                        setFormData({
+                          ...formData,
+                          branchId: newBranchId,
+                          modifiers: filteredModifiers
+                        });
+                      }}
                     >
                       <option value="">Select Branch</option>
                       {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
@@ -970,7 +994,13 @@ export default function MenuItems() {
              </div>
              
              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {modifierGroups.map((mod) => (
+                {modifierGroups
+                  .filter(mod => {
+                    if (!formData.branchId) return true;
+                    const modBranchId = typeof mod.branchId === 'object' ? mod.branchId?._id : mod.branchId;
+                    return modBranchId === formData.branchId;
+                  })
+                  .map((mod) => (
                   <button 
                     key={mod._id}
                     type="button"

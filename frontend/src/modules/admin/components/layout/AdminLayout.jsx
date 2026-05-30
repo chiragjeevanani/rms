@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../navigation/Sidebar';
 import TopBar from '../navigation/TopBar';
+import toast from 'react-hot-toast';
 
 export default function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -18,6 +19,21 @@ export default function AdminLayout() {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+
+        if (res.status === 403) {
+          const errData = await res.json();
+          if (errData.code === 'ACCOUNT_INACTIVE') {
+            localStorage.removeItem('admin_access');
+            localStorage.removeItem('admin_info');
+            localStorage.removeItem('admin_restaurantId');
+            toast.error(errData.message || 'Account deactivated. Logging out...');
+            setTimeout(() => {
+              window.location.href = '/admin/login';
+            }, 1000);
+            return;
+          }
+        }
+
         const data = await res.json();
         if (data && data._id) {
           // Flatten/format data to match login response if needed

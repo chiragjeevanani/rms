@@ -37,8 +37,8 @@ export default function PurchaseOrders() {
   const fetchOrders = async () => {
     try {
       const [orderRes, branchRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/order`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/order`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })())
       ]);
       const orderData = await orderRes.json();
       const branchData = await branchRes.json();
@@ -54,7 +54,9 @@ export default function PurchaseOrders() {
 
   const fetchVendors = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/vendor`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/vendor`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+      });
       const data = await res.json();
       setVendors(data);
       if (data.length > 0 && !formData.vendor) {

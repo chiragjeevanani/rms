@@ -1,9 +1,10 @@
 const Item = require('../Models/Item');
 const Category = require('../Models/Category');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getItems = async (req, res) => {
   try {
-    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const { filter } = await getAdminBranchFilter(req);
     const items = await Item.find(filter)
       .populate('category')
       .populate('modifiers')

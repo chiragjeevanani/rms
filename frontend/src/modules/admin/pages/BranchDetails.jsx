@@ -87,7 +87,7 @@ export default function BranchDetails() {
   const fetchBranchDetails = async () => {
     try {
       // 1. Fetch Branch Info
-      const branchRes = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+      const branchRes = await fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })());
       const branchResult = await branchRes.json();
       if (branchResult.success) {
         const found = branchResult.data.find(b => b._id === id);

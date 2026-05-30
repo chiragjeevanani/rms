@@ -1,8 +1,10 @@
 const Vendor = require('../Models/Vendor');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getAllVendors = async (req, res) => {
   try {
-    const vendors = await Vendor.find().sort({ name: 1 });
+    const { filter } = await getAdminBranchFilter(req);
+    const vendors = await Vendor.find(filter).sort({ name: 1 });
     res.json(vendors);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

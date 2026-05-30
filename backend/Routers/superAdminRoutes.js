@@ -7,6 +7,11 @@ router.get('/restaurants', superAdminController.getAllRestaurants);
 router.post('/restaurants', superAdminController.createRestaurant);
 router.patch('/restaurants/:email/toggle-api', superAdminController.toggleThirdPartyApi);
 router.get('/global-admins', superAdminController.getGlobalAdmins);
+router.get('/dashboard-stats', superAdminController.getDashboardStats);
 router.post('/change-password', superAdminController.changeSuperAdminPassword);
+router.put('/update-theme', superAdminController.updateSystemTheme);
+router.put('/restaurants/:email', superAdminController.updateRestaurant);
+router.delete('/restaurants/:email', superAdminController.deleteRestaurant);
+router.post('/restaurants/:email/resend-credentials', superAdminController.resendCredentials);
 
 module.exports = router;

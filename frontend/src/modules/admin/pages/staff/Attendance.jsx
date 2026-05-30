@@ -73,7 +73,7 @@ export default function Attendance() {
     try {
       const [staffRes, branchRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_URL}/staff`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })())
       ]);
       const staffData = await staffRes.json();
       const branchData = await branchRes.json();
@@ -89,7 +89,9 @@ export default function Attendance() {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/role`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/role`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+      });
       const data = await res.json();
       setRoles(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -100,9 +102,11 @@ export default function Attendance() {
   const fetchAttendanceForDate = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/attendance/date/${selectedDate}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/attendance/date/${selectedDate}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+      });
       const data = await res.json();
-      setAttendanceRecords(data);
+      setAttendanceRecords(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error('Sync error');
     } finally {

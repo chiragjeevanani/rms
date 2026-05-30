@@ -1,18 +1,19 @@
 const Admin = require('../Models/Admin');
-const connectSuperAdminDB = require('../Config/superAdminDb');
+const Restaurant = require('../Models/Restaurant');
+const CentralAdmin = require('../Models/CentralAdmin');
 const bcrypt = require('bcryptjs');
 
 const initAdmin = async () => {
   try {
     const adminCount = await Admin.countDocuments();
-    
+
     if (adminCount === 0) {
       console.log('🚀 No Admin found. Initializing default system admin...');
-      
+
       const defaultAdminData = {
         name: 'Main Admin',
         email: 'admin@gmail.com',
-        password: '123', 
+        password: '123',
         restaurantName: 'Royal Kitchen',
         theme: {
           mode: 'light',
@@ -23,33 +24,41 @@ const initAdmin = async () => {
         }
       };
 
-      // 1. Save to Local DB
+      // 1. Save local Admin
       const defaultAdmin = new Admin(defaultAdminData);
       await defaultAdmin.save();
       console.log('✅ Local Admin created: admin@gmail.com');
 
-      // 2. Sync to Central SuperAdmin DB
-      const centralConn = await connectSuperAdminDB();
-      if (centralConn) {
-        const CentralAdmin = centralConn.collection('admins');
-        
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(defaultAdminData.password, salt);
+      // 2. Save local Restaurant
+      const defaultRestaurant = new Restaurant({
+        name: defaultAdminData.restaurantName,
+        email: defaultAdminData.email,
+        password: defaultAdminData.password,
+        thirdPartyApi: false,
+        status: 'active',
+        mobileNumber: '',
+        branchLimit: 5
+      });
+      await defaultRestaurant.save();
+      console.log('✅ Local Restaurant created: admin@gmail.com');
 
-        // Fetching full DB URL from env
-        const localDbUrl = process.env.MONGODB_URL;
+      // 3. Sync to admins collection (via Mongoose model)
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(defaultAdminData.password, salt);
 
-        await CentralAdmin.insertOne({
-          ...defaultAdminData,
+      await CentralAdmin.findOneAndUpdate(
+        { email: defaultAdminData.email },
+        {
+          name: defaultAdminData.name,
+          email: defaultAdminData.email,
           password: hashedPassword,
-          localDbUrl: localDbUrl, // Full DB URL Sync
-          createdAt: new Date(),
+          restaurantName: defaultAdminData.restaurantName,
+          localDbUrl: process.env.MONGODB_URL,
           isSuperAdminDefault: true
-        });
-        
-        console.log('🌐 Central Sync Successful (URL Included): admin@gmail.com');
-        await centralConn.close();
-      }
+        },
+        { upsert: true, new: true }
+      );
+      console.log('✅ CentralAdmin sync complete: admin@gmail.com');
     } else {
       console.log('✔ System Admin check passed.');
     }

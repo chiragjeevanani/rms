@@ -35,8 +35,8 @@ export default function Wastage() {
   const fetchWastage = async () => {
     try {
       const [wastageRes, branchRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/wastage`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/wastage`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })())
       ]);
       const wastageData = await wastageRes.json();
       const branchData = await branchRes.json();

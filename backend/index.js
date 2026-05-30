@@ -6,7 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const connectDB = require('./Config/db');
 const routes = require('./app');
-const initAdmin = require('./Utils/adminInit');
+const initSuperAdmin = require('./Utils/superAdminInit');
 // mongodb://mohammadrehan00121_db_user:L4SOVC0ipr5Ez0y3@ac-pxrc1fm-shard-00-00.vydv7ur.mongodb.net:27017,ac-pxrc1fm-shard-00-01.vydv7ur.mongodb.net:27017,ac-pxrc1fm-shard-00-02.vydv7ur.mongodb.net:27017/RMS-Superadmin?ssl=true&replicaSet=atlas-112ag1-shard-0&authSource=admin&appName=Cluster0
 const app = express();
 const server = http.createServer(app);
@@ -28,7 +28,7 @@ app.set('socketio', io);
 
 // Database
 connectDB().then(() => {
-  initAdmin();
+  initSuperAdmin();
 });
 
 // Routes

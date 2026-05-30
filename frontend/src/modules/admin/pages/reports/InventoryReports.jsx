@@ -43,7 +43,7 @@ export default function InventoryReports() {
 
   const fetchBranches = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+      const res = await fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })());
       const data = await res.json();
       if (data.success) setBranches(data.data);
     } catch (err) {

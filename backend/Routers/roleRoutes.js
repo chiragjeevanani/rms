@@ -3,7 +3,7 @@ const router = express.Router();
 const { getAllRoles, createRole, updateRole, deleteRole } = require('../Controllers/roleController');
 const { protectAdmin } = require('../Middleware/authMiddleware');
 
-router.get('/', getAllRoles);
+router.get('/', protectAdmin, getAllRoles);
 router.post('/', protectAdmin, createRole);
 router.put('/:id', protectAdmin, updateRole);
 router.delete('/:id', protectAdmin, deleteRole);

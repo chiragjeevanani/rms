@@ -1,9 +1,10 @@
 const Combo = require('../Models/Combo');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 // @desc    Get all combos
 const getCombos = async (req, res) => {
   try {
-    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const { filter } = await getAdminBranchFilter(req);
     const combos = await Combo.find(filter).populate('items.item').sort({ createdAt: -1 });
     res.json({ success: true, data: combos });
   } catch (err) {

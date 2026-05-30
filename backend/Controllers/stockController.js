@@ -1,8 +1,10 @@
 const Stock = require('../Models/Stock');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getAllStock = async (req, res) => {
   try {
-    const stock = await Stock.find().sort({ name: 1 });
+    const { filter } = await getAdminBranchFilter(req);
+    const stock = await Stock.find(filter).sort({ name: 1 });
     res.json(stock);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -45,16 +47,13 @@ const deleteStock = async (req, res) => {
 
 const getStockAnalytics = async (req, res) => {
   try {
-    const { branchId } = req.query;
     const Stock = require('../Models/Stock');
     const Item = require('../Models/Item');
     const Combo = require('../Models/Combo');
     const Wastage = require('../Models/Wastage');
-    
-    const filter = {};
-    if (branchId && branchId !== 'all') {
-      filter.branchId = branchId;
-    }
+
+    const { filter, branchIds } = await getAdminBranchFilter(req);
+    const { branchId } = req.query;
 
     const [allRawStock, allItems, allCombos, allWastage] = await Promise.all([
       Stock.find(filter).sort({ name: 1 }),

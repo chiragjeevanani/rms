@@ -45,8 +45,8 @@ export default function RecentOrders() {
     setLoading(true);
     try {
       const [orderRes, branchRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/orders`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/orders`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })())
       ]);
       
       const orderResult = await orderRes.json();

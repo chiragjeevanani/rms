@@ -1,9 +1,11 @@
 const Attendance = require('../Models/Attendance');
 const Staff = require('../Models/Staff');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getAllAttendance = async (req, res) => {
   try {
-    const records = await Attendance.find().populate({
+    const { filter } = await getAdminBranchFilter(req);
+    const records = await Attendance.find(filter).populate({
       path: 'staff',
       populate: { path: 'role' }
     }).sort({ createdAt: -1 });
@@ -94,7 +96,8 @@ const markAttendance = async (req, res) => {
 // @route   GET /api/attendance/date/:date
 const getAttendanceByDate = async (req, res) => {
   try {
-    const records = await Attendance.find({ date: req.params.date }).populate({
+    const { filter } = await getAdminBranchFilter(req);
+    const records = await Attendance.find({ date: req.params.date, ...filter }).populate({
       path: 'staff',
       populate: { path: 'role' }
     });

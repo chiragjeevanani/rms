@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, Camera, Save, Loader2, Lock, 
-  ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Package,
-  Sliders, Check
+  ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Package
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { useAdminTheme } from '../../context/AdminThemeContext';
 
 export default function AccountSettings() {
-  const { 
-    primaryColor, setPrimaryColor
-  } = useAdminTheme();
   
   // Profile State
   const [admin, setAdmin] = useState({ name: '', email: '', profileImg: '', restaurantName: '', mobileNumber: '', address: '' });
+  const [branchLimit, setBranchLimit] = useState(5);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -48,6 +44,7 @@ export default function AccountSettings() {
           mobileNumber: data.mobileNumber || '',
           address: data.address || ''
         });
+        setBranchLimit(data.branchLimit ?? 5);
       } else {
         toast.error(data.message);
       }
@@ -240,20 +237,6 @@ export default function AccountSettings() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Restaurant Name</label>
-                <div className="relative">
-                  <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
-                  <input 
-                    type="text" 
-                    value={admin.restaurantName}
-                    onChange={(e) => setAdmin({...admin, restaurantName: e.target.value})}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800"
-                    placeholder="Enter restaurant name"
-                    required
-                  />
-                </div>
-              </div>
 
               <div className="space-y-2 opacity-70">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Email Address</label>
@@ -283,19 +266,14 @@ export default function AccountSettings() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 ml-1">Restaurant Address</label>
-              <div className="relative">
-                <div className="absolute left-4 top-4 text-stone-400">
-                   <Mail size={18} />
-                </div>
-                <textarea 
-                  value={admin.address}
-                  onChange={(e) => setAdmin({...admin, address: e.target.value})}
-                  rows={3}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-stone-800 resize-none"
-                  placeholder="Enter restaurant address"
-                />
+            {/* Branch Limit Info Banner */}
+            <div className="flex items-center gap-4 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 shadow-md">
+                <span className="text-white font-black text-sm">{branchLimit}</span>
+              </div>
+              <div>
+                <p className="text-[11px] font-black text-amber-800 uppercase tracking-widest">Branch Creation Limit</p>
+                <p className="text-[11px] text-amber-700 mt-0.5">You are allowed to create up to <strong>{branchLimit} branch{branchLimit !== 1 ? 'es' : ''}</strong> on this account. Contact your system administrator to increase this limit.</p>
               </div>
             </div>
 
@@ -405,84 +383,7 @@ export default function AccountSettings() {
             </form>
           </motion.div>
 
-          {/* Theme Settings Section - Advanced Design Studio */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-stone-100"
-          >
-            <div className="bg-[#2C2C2C] px-10 py-10 text-white relative overflow-hidden group">
-              <div className="relative z-10">
-                 <h2 className="text-2xl font-black uppercase tracking-widest leading-tight">Design Studio</h2>
-                 <p className="text-amber-400 text-[10px] font-bold uppercase tracking-[0.4em] mt-2 italic">Craft your workspace aesthetics</p>
-              </div>
-              <Sliders size={120} className="absolute -right-10 -top-10 text-white/5 group-hover:rotate-12 transition-transform duration-700" />
-            </div>
 
-            <div className="p-10 space-y-12">
-               {/* Advanced Color System */}
-               <div className="space-y-8">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-black uppercase tracking-widest text-stone-800 ml-1">Color Palette</p>
-                    <div className="relative">
-                       <input 
-                         type="color" 
-                         value={primaryColor} 
-                         onChange={(e) => setPrimaryColor(e.target.value)}
-                         className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                       />
-                       <div className="flex items-center gap-2 bg-stone-50 px-6 py-3 rounded-2xl border border-stone-200 shadow-sm cursor-pointer hover:bg-white transition-all">
-                          <div className="w-5 h-5 rounded-full shadow-inner" style={{ backgroundColor: primaryColor }} />
-                          <span className="text-[11px] font-black text-stone-800 uppercase tracking-widest">Custom Tint</span>
-                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-4">
-                    {[
-                      { color: '#2C2C2C', name: 'Industrial' },
-                      { color: '#3B82F6', name: 'Electric' },
-                      { color: '#EF4444', name: 'Passion' },
-                      { color: '#10B981', name: 'Emerald' },
-                      { color: '#F59E0B', name: 'Amber' },
-                      { color: '#8B5CF6', name: 'Purple' },
-                      { color: '#EC4899', name: 'Ruby' },
-                      { color: '#06B6D4', name: 'Ocean' }
-                    ].map((preset) => (
-                      <button
-                        key={preset.color}
-                        onClick={() => setPrimaryColor(preset.color)}
-                        className={`group relative aspect-square rounded-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center ${primaryColor === preset.color ? 'ring-4 ring-offset-4 ring-amber-500 scale-110' : 'hover:ring-2 hover:ring-stone-200'}`}
-                        style={{ backgroundColor: preset.color }}
-                        title={preset.name}
-                      >
-                         {primaryColor === preset.color && <div className="w-2.5 h-2.5 rounded-full bg-white shadow-xl animate-pulse" />}
-                      </button>
-                    ))}
-                  </div>
-               </div>
-
-               <div className="pt-6 border-t border-stone-100">
-                  <div className="bg-stone-50 p-8 rounded-[3rem] border-2 border-dashed border-stone-200 flex flex-col md:flex-row items-center justify-between gap-6">
-                     <div className="flex items-center gap-6">
-                        <div className="w-20 h-20 shadow-2xl rounded-[2rem] flex items-center justify-center text-white transition-all transform hover:rotate-6" style={{ backgroundColor: primaryColor }}>
-                           <Check size={32} strokeWidth={3} />
-                        </div>
-                        <div>
-                           <p className="text-sm font-black text-stone-800 uppercase tracking-tight leading-none">Theme Preview</p>
-                           <p className="text-[10px] font-bold text-stone-400 mt-2 uppercase tracking-[0.2em]">Dynamic primary color updated live</p>
-                        </div>
-                     </div>
-                     <button 
-                        onClick={() => {
-                           setPrimaryColor('#ff7a00'); // POS Default
-                        }}
-                        className="px-10 py-4 bg-white text-stone-500 text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-sm hover:bg-stone-100 transition-all border border-stone-200"
-                     >Reset to Default</button>
-                  </div>
-               </div>
-            </div>
-          </motion.div>
         </div>
       </div>
     </div>

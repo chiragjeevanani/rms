@@ -4,6 +4,26 @@ exports.createBranch = async (req, res) => {
   try {
     const { restaurantId, branchName, branchEmail, phone, address, city, state, pincode, gstNumber, managerName, openingTime, closingTime, invoicePolicy } = req.body;
     
+    // Enforce branch creation limit
+    const Restaurant = require('../Models/Restaurant');
+    let targetLimit = 5;
+    if (restaurantId) {
+      const restaurant = await Restaurant.findById(restaurantId);
+      if (restaurant) {
+        targetLimit = restaurant.branchLimit !== undefined ? restaurant.branchLimit : 5;
+      }
+    } else {
+      const restaurant = await Restaurant.findOne();
+      if (restaurant) {
+        targetLimit = restaurant.branchLimit !== undefined ? restaurant.branchLimit : 5;
+      }
+    }
+
+    const branchCount = await Branch.countDocuments(restaurantId ? { restaurantId } : {});
+    if (branchCount >= targetLimit) {
+      return res.status(400).json({ success: false, message: `Branch creation limit reached. Maximum allowed is ${targetLimit}.` });
+    }
+
     // Auto-generate Branch Code
     const count = await Branch.countDocuments();
     const branchCode = `BR-${(count + 1).toString().padStart(3, '0')}`;

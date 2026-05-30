@@ -13,9 +13,9 @@ const {
 } = require('../Controllers/attendanceController');
 const { protectAdmin, protectStaff } = require('../Middleware/authMiddleware');
 
-router.get('/', getAllAttendance);
+router.get('/', protectAdmin, getAllAttendance);
 router.get('/report', protectAdmin, getAttendanceReport);
-router.get('/date/:date', getAttendanceByDate);
+router.get('/date/:date', protectAdmin, getAttendanceByDate);
 router.get('/staff/:staffId', getStaffHistory);
 router.post('/', protectAdmin, createAttendance);
 router.post('/mark', protectAdmin, markAttendance);

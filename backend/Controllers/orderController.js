@@ -2,6 +2,7 @@ const Order = require('../Models/Order');
 const Table = require('../Models/Table');
 const mongoose = require('mongoose');
 const { sendToTopic } = require('../Utils/firebaseAdmin');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 // 1. Create a dynamic order number helper
 const generateOrderNumber = async () => {
@@ -144,7 +145,7 @@ const createOrder = async (req, res) => {
 
 const getAllOrders = async (req, res) => {
   try {
-    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const { filter } = await getAdminBranchFilter(req);
     const orders = await Order.find(filter)
       .populate('items.itemId')
       .populate('items.comboId')
@@ -157,9 +158,9 @@ const getAllOrders = async (req, res) => {
 
 const getActiveOrders = async (req, res) => {
   try {
-    const filter = { status: { $nin: ['paid', 'cancelled'] } };
-    if (req.query.branchId) filter.branchId = req.query.branchId;
-    const orders = await Order.find(filter)
+    const { filter } = await getAdminBranchFilter(req);
+    const activeFilter = { ...filter, status: { $nin: ['paid', 'cancelled'] } };
+    const orders = await Order.find(activeFilter)
       .populate('items.itemId')
       .populate('items.comboId')
       .sort({ createdAt: -1 });
@@ -171,9 +172,9 @@ const getActiveOrders = async (req, res) => {
 
 const getCompletedOrders = async (req, res) => {
   try {
-    const filter = { status: { $in: ['completed', 'Completed', 'paid', 'Paid'] } };
-    if (req.query.branchId) filter.branchId = req.query.branchId;
-    const orders = await Order.find(filter)
+    const { filter } = await getAdminBranchFilter(req);
+    const completedFilter = { ...filter, status: { $in: ['completed', 'Completed', 'paid', 'Paid'] } };
+    const orders = await Order.find(completedFilter)
       .populate('items.itemId')
       .populate('items.comboId')
       .sort({ updatedAt: -1 });
@@ -185,9 +186,9 @@ const getCompletedOrders = async (req, res) => {
 
 const getCancelledOrders = async (req, res) => {
   try {
-    const filter = { status: 'cancelled' };
-    if (req.query.branchId) filter.branchId = req.query.branchId;
-    const orders = await Order.find(filter)
+    const { filter } = await getAdminBranchFilter(req);
+    const cancelledFilter = { ...filter, status: 'cancelled' };
+    const orders = await Order.find(cancelledFilter)
       .populate('items.itemId')
       .populate('items.comboId')
       .sort({ updatedAt: -1 });
@@ -407,9 +408,11 @@ const getSalesAnalytics = async (req, res) => {
       };
     }
 
+    const { filter: branchFilter } = await getAdminBranchFilter(req);
+
     const filter = { 
       status: { $in: ['paid', 'Paid'] },
-      ...(branchId && branchId !== 'all' ? { branchId: new mongoose.Types.ObjectId(branchId) } : {}),
+      ...branchFilter,
       ...dateFilter
     };
 
@@ -418,7 +421,7 @@ const getSalesAnalytics = async (req, res) => {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const metricsMatch = branchId && branchId !== 'all' ? { branchId: new mongoose.Types.ObjectId(branchId) } : {};
+    const metricsMatch = branchFilter;
 
     // 1. Core Metrics
     const metricsResult = await Order.aggregate([

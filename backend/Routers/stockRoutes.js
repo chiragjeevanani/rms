@@ -10,7 +10,7 @@ const {
 } = require('../Controllers/stockController');
 const { protectAdmin } = require('../Middleware/authMiddleware');
 
-router.get('/', getAllStock);
+router.get('/', protectAdmin, getAllStock);
 router.get('/reports/inventory', protectAdmin, getStockAnalytics);
 router.post('/bulk', protectAdmin, bulkCreateStock);
 router.post('/', protectAdmin, createStock);

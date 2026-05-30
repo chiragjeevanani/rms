@@ -39,7 +39,11 @@ export default function BranchManagement() {
 
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+      const restaurantId = localStorage.getItem('admin_restaurantId');
+      const url = restaurantId
+        ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${restaurantId}`
+        : `${import.meta.env.VITE_API_URL}/branches`;
+      const response = await fetch(url);
       const result = await response.json();
       if (result.success) {
         setBranches(result.data);
@@ -88,10 +92,11 @@ export default function BranchManagement() {
     
     const method = editingBranch ? 'PUT' : 'POST';
 
-    // Temporary hardcoded restaurantId - in real app, get from auth context
+    // Get restaurantId from logged-in admin's localStorage
+    const restaurantId = localStorage.getItem('admin_restaurantId');
     const payload = { 
       ...formData, 
-      restaurantId: '662b9f3e1c9d440000000001' // Placeholder
+      restaurantId: restaurantId || formData.restaurantId
     };
 
     try {

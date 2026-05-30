@@ -1,8 +1,10 @@
 const PurchaseOrder = require('../Models/PurchaseOrder');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 const getAllOrders = async (req, res) => {
   try {
-    const orders = await PurchaseOrder.find().sort({ createdAt: -1 });
+    const { filter } = await getAdminBranchFilter(req);
+    const orders = await PurchaseOrder.find(filter).sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

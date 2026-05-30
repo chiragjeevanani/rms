@@ -3,7 +3,7 @@ const router = express.Router();
 const { getModifiers, createModifier, updateModifier, deleteModifier, bulkCreateModifiers } = require('../Controllers/modifierController');
 const { protectAdmin } = require('../Middleware/authMiddleware');
 
-router.get('/', getModifiers);
+router.get('/', protectAdmin, getModifiers);
 router.post('/bulk', protectAdmin, bulkCreateModifiers);
 router.post('/', protectAdmin, createModifier);
 router.put('/:id', protectAdmin, updateModifier);

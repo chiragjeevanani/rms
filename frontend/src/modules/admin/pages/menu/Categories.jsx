@@ -20,7 +20,7 @@ export default function Categories() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [viewMode, setViewMode] = useState('grid');
   const [branches, setBranches] = useState([]);
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState(localStorage.getItem('admin_selected_branch') || 'all');
   const fileInputRef = useRef(null);
 
   // CSV Import States and Functions
@@ -152,7 +152,9 @@ export default function Categories() {
 
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+      const response = await fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })(), {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+      });
       const result = await response.json();
       if (result.success) {
         setBranches(result.data);
@@ -164,7 +166,9 @@ export default function Categories() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/category`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/category`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+      });
       const data = await response.json();
       if (response.ok) {
         setCategories(data);
@@ -184,7 +188,7 @@ export default function Categories() {
         image: category.image || '', 
         description: category.description || '',
         status: category.status || 'Published',
-        branchId: category.branchId || ''
+        branchId: (typeof category.branchId === 'object' ? category.branchId?._id : category.branchId) || ''
       });
     } else {
       setEditingCategory(null);
@@ -362,11 +366,13 @@ export default function Categories() {
 
           <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
 
-          {/* Branch Filter */}
           <BranchSelector 
             branches={branches}
             selectedBranch={selectedBranchFilter}
-            onSelect={setSelectedBranchFilter}
+            onSelect={(val) => {
+              setSelectedBranchFilter(val);
+              localStorage.setItem('admin_selected_branch', val);
+            }}
           />
 
           <button

@@ -49,8 +49,8 @@ export default function Roles() {
   const fetchData = async () => {
     try {
       const [roleRes, branchRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/role`),
-        fetch(`${import.meta.env.VITE_API_URL}/branches`)
+        fetch(`${import.meta.env.VITE_API_URL}/role`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
+        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })())
       ]);
       const roleData = await roleRes.json();
       const branchData = await branchRes.json();

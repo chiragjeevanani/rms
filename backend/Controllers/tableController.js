@@ -1,10 +1,25 @@
 const Table = require('../Models/Table');
+const jwt = require('jsonwebtoken');
+const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 
 // @desc    Get all tables
 // @route   GET /api/table
 const getTables = async (req, res) => {
   try {
-    const filter = req.query.branchId ? { branchId: req.query.branchId } : {};
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+        if (decoded.role === 'admin') {
+          req.admin = decoded;
+        }
+      } catch (err) {
+        // Safe check fallback - ignore invalid/expired tokens for public endpoints
+      }
+    }
+
+    const { filter } = await getAdminBranchFilter(req);
     const tables = await Table.find(filter).sort({ tableName: 1 });
     res.json(tables);
   } catch (error) {
@@ -86,8 +101,22 @@ const updateTableStatus = async (req, res) => {
 const bulkUpdateTables = async (req, res) => {
   const { status } = req.body;
   try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+        if (decoded.role === 'admin') {
+          req.admin = decoded;
+        }
+      } catch (err) {
+        // Ignore invalid tokens
+      }
+    }
+
+    const { filter } = await getAdminBranchFilter(req);
     const isAvailable = status === 'Available';
-    await Table.updateMany({}, { status, isAvailable });
+    await Table.updateMany(filter, { status, isAvailable });
     
     const io = req.app.get('socketio');
     if (io) io.emit('tableStatusChanged');
