@@ -1,6 +1,6 @@
 const { getDatabase, saveDatabase } = require('./db/dbManager');
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://rmsapi.cloudedata.in/api';
 let syncTimer = null;
 let isSyncing = false;
 
