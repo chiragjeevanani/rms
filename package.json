@@ -25,7 +25,7 @@
     "appId": "com.rms.pos",
     "productName": "RMS POS",
     "directories": {
-      "output": "dist_installer"
+      "output": "dist_app"
     },
     "win": {
       "target": "nsis"
