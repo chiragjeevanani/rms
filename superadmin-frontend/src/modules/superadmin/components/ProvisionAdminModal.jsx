@@ -45,7 +45,7 @@ export default function ProvisionAdminModal({
                     required 
                     value={formData.name} 
                     onChange={e => setFormData({...formData, name: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
                     placeholder="e.g. Royal Kitchen Admin" 
                   />
                 </div>
@@ -56,7 +56,7 @@ export default function ProvisionAdminModal({
                     required 
                     value={formData.email} 
                     onChange={e => setFormData({...formData, email: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
                     placeholder="email@rms.com" 
                   />
                 </div>
@@ -69,7 +69,7 @@ export default function ProvisionAdminModal({
                     type="text" 
                     value={formData.phone || ''} 
                     onChange={e => setFormData({...formData, phone: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
                     placeholder="+91 9988776655" 
                   />
                 </div>
@@ -95,7 +95,7 @@ export default function ProvisionAdminModal({
                     required 
                     value={formData.branchLimit} 
                     onChange={e => setFormData({...formData, branchLimit: parseInt(e.target.value) || 1})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all" 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all" 
                     placeholder="e.g. 5"
                   />
                 </div>

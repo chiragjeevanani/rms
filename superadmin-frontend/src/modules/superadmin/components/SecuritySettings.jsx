@@ -33,13 +33,13 @@ export default function SecuritySettings() {
                 required 
                 value={passFormData.currentPassword} 
                 onChange={e => setPassFormData({...passFormData, currentPassword: e.target.value})} 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
                 placeholder="••••••••" 
               />
               <button 
                 type="button" 
                 onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})} 
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#ff7a00] cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#EF4444] cursor-pointer"
               >
                 {showPasswords.current ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -55,13 +55,13 @@ export default function SecuritySettings() {
                 required 
                 value={passFormData.newPassword} 
                 onChange={e => setPassFormData({...passFormData, newPassword: e.target.value})} 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
                 placeholder="••••••••" 
               />
               <button 
                 type="button" 
                 onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})} 
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#ff7a00] cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#EF4444] cursor-pointer"
               >
                 {showPasswords.new ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -77,13 +77,13 @@ export default function SecuritySettings() {
                 required 
                 value={passFormData.confirmPassword} 
                 onChange={e => setPassFormData({...passFormData, confirmPassword: e.target.value})} 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
                 placeholder="••••••••" 
               />
               <button 
                 type="button" 
                 onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})} 
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#ff7a00] cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#EF4444] cursor-pointer"
               >
                 {showPasswords.confirm ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>

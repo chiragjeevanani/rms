@@ -267,7 +267,7 @@ export default function SuperAdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2 }}
-              className="max-w-6xl mx-auto space-y-8"
+              className="max-w-[1440px] mx-auto space-y-8"
             >
               <Outlet context={{
                 admins,

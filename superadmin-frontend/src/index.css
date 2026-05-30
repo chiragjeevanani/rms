@@ -11,11 +11,11 @@
   --color-brand-200: #fed7aa;
   --color-brand-300: #fdba74;
   --color-brand-400: #fb923c;
-  --color-brand-500: var(--primary-color, #ff7a00);
-  --color-brand-600: color-mix(in srgb, var(--primary-color, #ff7a00), black 10%);
-  --color-brand-700: color-mix(in srgb, var(--primary-color, #ff7a00), black 25%);
-  --color-brand-800: color-mix(in srgb, var(--primary-color, #ff7a00), black 40%);
-  --color-brand-900: color-mix(in srgb, var(--primary-color, #ff7a00), black 55%);
+  --color-brand-500: var(--primary-color, #EF4444);
+  --color-brand-600: color-mix(in srgb, var(--primary-color, #EF4444), black 10%);
+  --color-brand-700: color-mix(in srgb, var(--primary-color, #EF4444), black 25%);
+  --color-brand-800: color-mix(in srgb, var(--primary-color, #EF4444), black 40%);
+  --color-brand-900: color-mix(in srgb, var(--primary-color, #EF4444), black 55%);
 
   /* Surfaces */
   --color-cream-50: #fffaf5;
@@ -67,8 +67,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Dynamic Accent Colors */
 :root {
-  --superadmin-accent: #ff7a00;
-  --superadmin-glow: rgba(255, 122, 0, 0.2);
-  --primary-color: #ff7a00;
-  --admin-primary: #ff7a00;
+  --superadmin-accent: #EF4444;
+  --superadmin-glow: rgba(239, 68, 68, 0.2);
+  --primary-color: #EF4444;
+  --admin-primary: #EF4444;
 }

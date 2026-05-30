@@ -237,7 +237,7 @@ export default function AdminManagement() {
       </div>
 
       {/* Admin List Table */}
-      <div className="p-8">
+      <div className="p-6">
         <div className="overflow-x-auto rounded-[2rem] border border-slate-200 bg-white shadow-sm no-scrollbar">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-2">
@@ -442,7 +442,7 @@ export default function AdminManagement() {
                       required 
                       value={editFormData.name} 
                       onChange={e => setEditFormData({...editFormData, name: e.target.value})} 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
                       placeholder="e.g. Royal Kitchen Admin" 
                     />
                   </div>
@@ -453,7 +453,7 @@ export default function AdminManagement() {
                       required 
                       value={editFormData.email} 
                       onChange={e => setEditFormData({...editFormData, email: e.target.value})} 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300"
                       placeholder="email@rms.com" 
                     />
                   </div>
@@ -466,7 +466,7 @@ export default function AdminManagement() {
                       type="text" 
                       value={editFormData.phone} 
                       onChange={e => setEditFormData({...editFormData, phone: e.target.value})} 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all placeholder:text-slate-300" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
                       placeholder="+91 9988776655" 
                     />
                   </div>
@@ -492,7 +492,7 @@ export default function AdminManagement() {
                       required 
                       value={editFormData.branchLimit} 
                       onChange={e => setEditFormData({...editFormData, branchLimit: parseInt(e.target.value) || 1})} 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#ff7a00]/50 transition-all" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all" 
                       placeholder="e.g. 5"
                     />
                   </div>
