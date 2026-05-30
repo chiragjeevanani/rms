@@ -64,12 +64,14 @@ export default function PosLoginPage() {
         } catch (jsonErr) {
           console.error('Failed to parse cached staff info:', jsonErr);
         }
-      } else if (formData.email === 'pos@rms.com' && formData.password === '123') {
-        // Provision local mock cashier profile for fresh offline runs
+      } else {
+        // Provision local mock cashier profile for fresh offline runs for any entered email
+        const namePart = formData.email ? formData.email.split('@')[0] : 'cashier';
+        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
         const mockData = {
-          _id: 'local_offline_cashier',
-          name: 'Offline Cashier',
-          email: 'pos@rms.com',
+          _id: 'local_offline_' + namePart,
+          name: formattedName + ' (Offline)',
+          email: formData.email || 'pos@rms.com',
           role: 'Cashier',
           branchId: 'LOCAL_POS',
           token: 'mock_local_offline_token'
@@ -77,7 +79,7 @@ export default function PosLoginPage() {
         localStorage.setItem('pos_access', mockData.token);
         localStorage.setItem('staff_info', JSON.stringify(mockData));
         setUser(mockData);
-        toast.success('Offline Login: Provisioned Offline Cashier session');
+        toast.success(`Offline Login: Provisioned ${formattedName} session`);
         navigate('/pos/dashboard');
         return;
       }
