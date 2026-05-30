@@ -3,8 +3,10 @@ import { motion } from 'framer-motion';
 import { Shield, Lock, Eye, EyeOff, Key, Save, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PosTopNavbar from '../../components/PosTopNavbar';
+import { useSync } from '../../../../context/SyncContext';
 
 export default function PosSecurityPage() {
+  const { isOnline, isElectron } = useSync();
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -23,6 +25,10 @@ export default function PosSecurityPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isElectron && !isOnline) {
+      return toast.error('You are offline. Cannot change password in offline mode.');
+    }
+
     if (formData.newPassword !== formData.confirmPassword) {
       return toast.error('New passwords do not match');
     }
@@ -104,6 +110,7 @@ export default function PosSecurityPage() {
                 <input 
                   type={showCurrent ? 'text' : 'password'}
                   required
+                  disabled={isElectron && !isOnline}
                   value={formData.currentPassword}
                   onChange={(e) => setFormData({...formData, currentPassword: e.target.value})}
                   onFocus={(e) => {
@@ -116,7 +123,7 @@ export default function PosSecurityPage() {
                     e.target.style.borderColor = '';
                     e.target.style.boxShadow = '';
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900 disabled:opacity-50"
                   placeholder="Enter current password"
                 />
                 <button 
@@ -143,6 +150,7 @@ export default function PosSecurityPage() {
                   <input 
                     type={showNew ? 'text' : 'password'}
                     required
+                    disabled={isElectron && !isOnline}
                     value={formData.newPassword}
                     onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
                     onFocus={(e) => {
@@ -155,7 +163,7 @@ export default function PosSecurityPage() {
                       e.target.style.borderColor = '';
                       e.target.style.boxShadow = '';
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900 disabled:opacity-50"
                     placeholder="Min. 8 characters"
                   />
                   <button 
@@ -180,6 +188,7 @@ export default function PosSecurityPage() {
                   <input 
                     type={showConfirm ? 'text' : 'password'}
                     required
+                    disabled={isElectron && !isOnline}
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                     onFocus={(e) => {
@@ -192,7 +201,7 @@ export default function PosSecurityPage() {
                       e.target.style.borderColor = '';
                       e.target.style.boxShadow = '';
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-14 outline-none focus:bg-white transition-all font-bold text-slate-900 disabled:opacity-50"
                     placeholder="Repeat new password"
                   />
                   <button 
@@ -206,21 +215,30 @@ export default function PosSecurityPage() {
               </div>
             </div>
 
-            <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100 flex gap-4">
-              <AlertTriangle className="text-amber-500 shrink-0" size={20} />
-              <div className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-tight">
-                Warning: Changing your password will affect all terminal access. Ensure you remember your new credentials to avoid being locked out of the POS system.
+            {isElectron && !isOnline ? (
+              <div className="bg-rose-50 rounded-2xl p-6 border border-rose-100 flex gap-4">
+                <AlertTriangle className="text-rose-500 shrink-0" size={20} />
+                <div className="text-[10px] font-bold text-rose-700 leading-relaxed uppercase tracking-tight">
+                  Offline Mode: Password updates are disabled while the terminal is offline. Please connect to the internet to change your password safely.
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100 flex gap-4">
+                <AlertTriangle className="text-amber-500 shrink-0" size={20} />
+                <div className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-tight">
+                  Warning: Changing your password will affect all terminal access. Ensure you remember your new credentials to avoid being locked out of the POS system.
+                </div>
+              </div>
+            )}
 
             <button
-              disabled={isLoading}
+              disabled={isLoading || (isElectron && !isOnline)}
               style={{ 
                 backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))', 
                 boxShadow: '0 10px 15px -3px color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 20%, transparent)' 
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.9)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.filter = ''; }}
+              onMouseEnter={(e) => { if (!(isElectron && !isOnline)) e.currentTarget.style.filter = 'brightness(0.9)'; }}
+              onMouseLeave={(e) => { if (!(isElectron && !isOnline)) e.currentTarget.style.filter = ''; }}
               className="w-full text-white py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {isLoading ? <RefreshCw size={18} className="animate-spin" /> : <><Save size={18} /> Update Password</>}

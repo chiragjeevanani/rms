@@ -6,6 +6,7 @@ import {
 import { usePos } from '../../context/PosContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import dbClient from '../../../../config/dbClient';
 
 export default function CancelledOrders() {
   const { toggleSidebar } = usePos();
@@ -26,8 +27,19 @@ export default function CancelledOrders() {
         toast.error('Failed to fetch cancelled orders');
       }
     } catch (err) {
-      console.error('Error fetching cancelled orders:', err);
-      toast.error('Network error while fetching history');
+      console.error('Error fetching cancelled orders online:', err);
+      if (dbClient.isElectron) {
+        console.log('[CancelledOrders] Offline/Electron, loading cancelled orders from SQLite.');
+        try {
+          const localOrders = await dbClient.getOrders({ status: 'cancelled' });
+          setOrders(localOrders);
+        } catch (localErr) {
+          console.error('[CancelledOrders] SQLite load failed:', localErr);
+          toast.error('Failed to load cancelled orders locally');
+        }
+      } else {
+        toast.error('Network error while fetching history');
+      }
     } finally {
       setLoading(false);
     }

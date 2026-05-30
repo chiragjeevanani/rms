@@ -12,6 +12,7 @@ import { MOCK_WAITERS } from '../../data/staff';
 import { POS_CATEGORIES, POS_MENU_ITEMS } from '../../data/posMenu';
 import toast from 'react-hot-toast';
 import { jsPDF } from "jspdf";
+import dbClient from '../../../../config/dbClient';
 
 // ── Color tokens (Now Dynamic) ────────────────────────────────────────────────
 const C = {
@@ -76,7 +77,19 @@ export default function PosOrderPage() {
         setTableHistory(filtered);
       }
     } catch (err) {
-      console.error('Failed to fetch table history:', err);
+      console.error('Failed to fetch table history online:', err);
+      if (dbClient.isElectron) {
+        console.log('[PosOrderPage] Offline/Electron, loading table history from SQLite.');
+        try {
+          const localOrders = await dbClient.getOrders({ status: 'paid' });
+          const filtered = localOrders
+            .filter(o => o.tableName?.toLowerCase() === tableId.toLowerCase())
+            .slice(0, 5);
+          setTableHistory(filtered);
+        } catch (localErr) {
+          console.error('[PosOrderPage] Failed to fetch table history from SQLite:', localErr);
+        }
+      }
     } finally {
       setLoadingHistory(false);
     }
@@ -160,10 +173,53 @@ export default function PosOrderPage() {
         const bData = await bRes.json();
         if (bData.success) {
           const currentBranch = bData.data.find(b => b._id === bid);
-          if (currentBranch) setBranchInfo(currentBranch);
+          if (currentBranch) {
+            setBranchInfo(currentBranch);
+            localStorage.setItem('branch_info', JSON.stringify(currentBranch));
+          }
         }
       } catch (err) {
         console.error('Error fetching dynamic menu:', err);
+        if (dbClient.isElectron) {
+          try {
+            const cachedMenu = await dbClient.getMenuCache();
+            if (cachedMenu && cachedMenu.items && cachedMenu.categories) {
+              console.log('[PosOrderPage] Loaded menu from local SQLite cache.');
+              
+              let cats = [{ id: 'fav', name: 'Favorite' }];
+              cats = cats.concat(cachedMenu.categories.map(c => ({ id: c._id || c.id, name: c.name })));
+              cats.push({ id: 'combo', name: 'Combo' });
+              
+              setCategories(cats);
+              if (cats.length > 0) setSelectedCategory(cats[0].id);
+              
+              const itemsList = cachedMenu.items.map(i => ({
+                id: i._id || i.id, _id: i._id || i.id, catId: i.category?._id || i.category,
+                name: i.name, price: i.basePrice || i.price || 0,
+                shortcut: i.shortcut || '',
+                alphaShortCode: i.alphaShortCode || '',
+                numericShortCode: i.numericShortCode || '',
+                isFeatured: i.isFeatured,
+                hasVariants: i.hasVariants || false,
+                variants: i.variants || []
+              }));
+              
+              setMenuItems(itemsList);
+              
+              const cachedBranch = localStorage.getItem('branch_info');
+              if (cachedBranch) {
+                setBranchInfo(JSON.parse(cachedBranch));
+              }
+              return;
+            }
+          } catch (cacheErr) {
+            console.error('[PosOrderPage] Failed to load menu from cache:', cacheErr);
+          }
+        }
+        const cachedBranch = localStorage.getItem('branch_info');
+        if (cachedBranch) {
+          setBranchInfo(JSON.parse(cachedBranch));
+        }
         setCategories(POS_CATEGORIES);
         setSelectedCategory(POS_CATEGORIES[0]?.id || null);
         setMenuItems(POS_MENU_ITEMS);

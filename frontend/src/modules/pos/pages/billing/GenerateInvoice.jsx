@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { usePos } from '../../context/PosContext';
 import { jsPDF } from "jspdf";
+import dbClient from '../../../../config/dbClient';
 
 export default function GenerateInvoice() {
   const { toggleSidebar } = usePos();
@@ -66,7 +67,18 @@ export default function GenerateInvoice() {
         setOrders(result.data);
       }
     } catch (err) {
-      toast.error('Failed to sync completed orders');
+      if (dbClient.isElectron) {
+        console.log('[GenerateInvoice] Network fetch failed, loading completed orders from SQLite.');
+        try {
+          const localOrders = await dbClient.getOrders({ status: 'paid' });
+          setOrders(localOrders);
+        } catch (localErr) {
+          console.error('[GenerateInvoice] Failed to fetch local orders:', localErr);
+          toast.error('Failed to load completed orders locally');
+        }
+      } else {
+        toast.error('Failed to sync completed orders');
+      }
     } finally {
       setLoading(false);
     }

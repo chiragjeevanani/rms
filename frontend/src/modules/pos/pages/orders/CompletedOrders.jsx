@@ -6,6 +6,7 @@ import {
 import { usePos } from '../../context/PosContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import dbClient from '../../../../config/dbClient';
 
 export default function CompletedOrders() {
   const { toggleSidebar } = usePos();
@@ -26,8 +27,19 @@ export default function CompletedOrders() {
         toast.error('Failed to fetch completed orders');
       }
     } catch (err) {
-      console.error('Error fetching orders:', err);
-      toast.error('Network error while fetching history');
+      console.error('Error fetching orders online:', err);
+      if (dbClient.isElectron) {
+        console.log('[CompletedOrders] Offline/Electron, loading from local SQLite.');
+        try {
+          const localOrders = await dbClient.getOrders({ status: 'paid' });
+          setOrders(localOrders);
+        } catch (localErr) {
+          console.error('[CompletedOrders] SQLite load failed:', localErr);
+          toast.error('Failed to load completed orders locally');
+        }
+      } else {
+        toast.error('Network error while fetching history');
+      }
     } finally {
       setLoading(false);
     }
