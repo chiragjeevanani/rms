@@ -34,7 +34,7 @@ const loginAdmin = async (req, res) => {
     const token = jwt.sign(
       { id: admin._id, email: admin.email, role: 'admin', restaurantId: restaurant?._id },
       process.env.JWT_SECRET || 'fallback_secret',
-      { expiresIn: '1d' }
+      { expiresIn: '365d' }
     );
 
     res.json({

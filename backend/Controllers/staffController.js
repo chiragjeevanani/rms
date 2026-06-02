@@ -90,7 +90,7 @@ const staffLogin = async (req, res) => {
       const token = jwt.sign(
         { id: staff._id, role: staff.role.name, branchId: staff.branchId?._id || staff.branchId },
         process.env.JWT_SECRET,
-        { expiresIn: '30d' }
+        { expiresIn: '365d' }
       );
       res.json({
         _id: staff._id,
@@ -116,7 +116,7 @@ const pinLogin = async (req, res) => {
       const token = jwt.sign(
         { id: staff._id, role: staff.role.name, branchId: staff.branchId?._id || staff.branchId },
         process.env.JWT_SECRET,
-        { expiresIn: '30d' }
+        { expiresIn: '365d' }
       );
       res.json({
         _id: staff._id,
