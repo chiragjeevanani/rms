@@ -8,6 +8,7 @@ import DashboardOverview from './modules/superadmin/components/DashboardOverview
 import AdminManagement from './modules/superadmin/components/AdminManagement';
 import SecuritySettings from './modules/superadmin/components/SecuritySettings';
 import SuperAdminReports from './modules/superadmin/pages/SuperAdminReports';
+import BranchManagement from './modules/superadmin/components/BranchManagement';
 //
 function RootRedirect() {
   const token = localStorage.getItem('superadmin_token');
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/dashboard/admins" element={<AdminManagement />} />
             <Route path="/dashboard/security" element={<SecuritySettings />} />
             <Route path="/dashboard/reports" element={<SuperAdminReports />} />
+            <Route path="/dashboard/branches" element={<BranchManagement />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

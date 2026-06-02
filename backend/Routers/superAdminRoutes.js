@@ -13,5 +13,6 @@ router.put('/update-theme', superAdminController.updateSystemTheme);
 router.put('/restaurants/:email', superAdminController.updateRestaurant);
 router.delete('/restaurants/:email', superAdminController.deleteRestaurant);
 router.post('/restaurants/:email/resend-credentials', superAdminController.resendCredentials);
+router.get('/branches', superAdminController.getAllBranches);
 
 module.exports = router;

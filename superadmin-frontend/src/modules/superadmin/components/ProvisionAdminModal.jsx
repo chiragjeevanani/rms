@@ -98,45 +98,7 @@ export default function ProvisionAdminModal({
                   placeholder="mongodb+srv://username:password@cluster.mongodb.net/dbname" 
                 />
               </div>
-
-              {/* API Sync URL */}
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">API Synchronization URL (VPS Sync API)</label>
-                <input 
-                  type="text" 
-                  value={formData.apiUrl || ''} 
-                  onChange={e => setFormData({...formData, apiUrl: e.target.value})} 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
-                  placeholder="e.g. http://123.456.78.90:3000 or https://restaurant.com" 
-                />
-              </div>
-
-              {/* App Type & Deployment ID */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">App Type Calibration</label>
-                  <select 
-                    value={formData.appType || 'Admin'} 
-                    onChange={e => setFormData({...formData, appType: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-500 focus:outline-none transition-all"
-                  >
-                    <option value="Admin">Admin Portal</option>
-                    <option value="POS">POS System</option>
-                    <option value="KDS">KDS Screen</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Deployment ID</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={formData.adminId || ''} 
-                    onChange={e => setFormData({...formData, adminId: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
-                    placeholder="e.g. DEP-ROYAL01" 
-                  />
-                </div>
-              </div>
+      
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -151,12 +113,16 @@ export default function ProvisionAdminModal({
                     placeholder="e.g. 5"
                   />
                 </div>
-                <div className="space-y-2 flex flex-col justify-center">
-                  <div className="flex items-center gap-3 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3.5 mt-4">
-                    <span className="text-[9px] font-bold text-amber-600 uppercase leading-normal">
-                      Password will be generated randomly and sent to the admin's email.
-                    </span>
-                  </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
+                  <input 
+                    type="password" 
+                    required 
+                    value={formData.password || ''} 
+                    onChange={e => setFormData({...formData, password: e.target.value})} 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
+                    placeholder="Enter admin password..." 
+                  />
                 </div>
               </div>
 

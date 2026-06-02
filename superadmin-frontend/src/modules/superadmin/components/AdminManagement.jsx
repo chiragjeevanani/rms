@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, Zap, CheckCircle2, Edit3, Trash2, X, ToggleLeft, ToggleRight, Mail, Loader, ChevronLeft, ChevronRight, Hash, Layers } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Plus, Zap, CheckCircle2, Edit3, Trash2, X, ToggleLeft, ToggleRight, Mail, Loader, ChevronLeft, ChevronRight, Hash, Layers, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,6 +21,21 @@ export default function AdminManagement() {
   const [limit] = useState(5);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const statusDropdownRef = useRef(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target)) {
+        setIsStatusDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editAdminEmail, setEditAdminEmail] = useState('');
@@ -255,22 +270,59 @@ export default function AdminManagement() {
 
           <div className="h-8 w-px bg-slate-100 hidden sm:block mx-1" />
 
-          {/* Status Dropdown Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 w-full sm:w-48 shadow-sm">
-            <Hash size={14} className="text-slate-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => handleStatusFilterChange(e.target.value)}
-              className="bg-transparent text-[10px] font-black uppercase tracking-wider text-slate-700 outline-none w-full cursor-pointer"
+          {/* Custom Status Dropdown Filter */}
+          <div ref={statusDropdownRef} className="relative w-full sm:w-48">
+            <button
+              type="button"
+              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-wider text-slate-700 outline-none cursor-pointer shadow-sm hover:border-slate-300 focus:bg-white transition-all flex items-center justify-between min-h-[42px]"
             >
-              <option value="all">ALL NODES</option>
-              <option value="active">ACTIVE</option>
-              <option value="inactive">INACTIVE</option>
-            </select>
+              <span className="flex items-center gap-2">
+                <Hash size={14} className="text-slate-450" />
+                <span className="text-left font-black leading-none">
+                  {statusFilter === 'all' ? 'ALL NODES' : statusFilter.toUpperCase()}
+                </span>
+              </span>
+              <ChevronDown size={13} className={`stroke-[2.5] text-slate-450 transition-transform duration-200 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isStatusDropdownOpen && (
+              <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200/80 rounded-xl shadow-xl z-20 py-1.5 overflow-hidden">
+                {['all', 'active', 'inactive'].map(status => {
+                  const isSelected = statusFilter === status;
+                  return (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => {
+                        handleStatusFilterChange(status);
+                        setIsStatusDropdownOpen(false);
+                      }}
+                      style={isSelected ? { backgroundColor: `${accentColor}12`, color: accentColor } : {}}
+                      className={`w-full text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-colors duration-150 ${
+                        isSelected 
+                          ? 'font-extrabold' 
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                      }`}
+                    >
+                      {status === 'all' ? 'ALL NODES' : status.toUpperCase()}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
-     
+        {/* Provision Admin Button */}
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          style={{ backgroundColor: accentColor }}
+          className="flex items-center justify-center gap-2 text-white font-black rounded-xl shadow-md uppercase tracking-widest text-[10px] px-6 py-3.5 transition-all hover:brightness-95 active:scale-[0.98] cursor-pointer w-full md:w-auto"
+        >
+          <Plus size={14} />
+          <span>Provision Admin</span>
+        </button>
       </div>
 
       {/* Admin List Table */}
@@ -367,14 +419,6 @@ export default function AdminManagement() {
                           >
                             DB: {admin.dbUrl || 'N/A'}
                           </span>
-                          {admin.apiUrl && (
-                            <span 
-                              title={admin.apiUrl}
-                              className="text-[9px] font-mono bg-amber-500/5 px-2 py-0.5 border border-amber-500/10 rounded-md text-amber-600 max-w-[180px] inline-block truncate"
-                            >
-                              API: {admin.apiUrl}
-                            </span>
-                          )}
                         </div>
                       </td>
                       
@@ -590,17 +634,7 @@ export default function AdminManagement() {
                   />
                 </div>
 
-                {/* API Sync URL */}
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">API Synchronization URL (VPS Sync API)</label>
-                  <input 
-                    type="text" 
-                    value={editFormData.apiUrl || ''} 
-                    onChange={e => setEditFormData({...editFormData, apiUrl: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
-                    placeholder="e.g. http://123.456.78.90:3000 or https://restaurant.com" 
-                  />
-                </div>
+
 
                 {/* App Type & Deployment ID */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

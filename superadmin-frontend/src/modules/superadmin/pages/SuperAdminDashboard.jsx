@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ShieldCheck, RefreshCw, LogOut, LayoutGrid, Users, Key, FileText
+  ShieldCheck, RefreshCw, LogOut, LayoutGrid, Users, Key, FileText, Building2
 } from 'lucide-react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +29,7 @@ export default function SuperAdminDashboard() {
   // Forms
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', branchLimit: 0, status: 'Inactive', thirdPartyIntegration: false,
-    dbUrl: '', appType: 'Admin', adminId: '', apiUrl: ''
+    dbUrl: '', appType: 'Admin', adminId: '', apiUrl: '', password: ''
   });
 
   useEffect(() => {
@@ -129,13 +129,14 @@ export default function SuperAdminDashboard() {
           dbUrl: formData.dbUrl,
           apiUrl: formData.apiUrl,
           appType: formData.appType,
-          adminId: formData.adminId
+          adminId: formData.adminId,
+          password: formData.password
         })
       });
       const data = await res.json();
       if (data.success) {
         toast.success('Node Admin Provisioned Successfully');
-        setFormData({ name: '', email: '', phone: '', branchLimit: 0, status: 'Inactive', thirdPartyIntegration: false, dbUrl: '', appType: 'Admin', adminId: '', apiUrl: '' });
+        setFormData({ name: '', email: '', phone: '', branchLimit: 0, status: 'Inactive', thirdPartyIntegration: false, dbUrl: '', appType: 'Admin', adminId: '', apiUrl: '', password: '' });
         setIsCreateModalOpen(false);
         fetchData();
       } else {
@@ -243,6 +244,18 @@ export default function SuperAdminDashboard() {
             <span>Admin Management</span>
           </button>
 
+          {/* TAB 2.5: Branch Management (Direct) */}
+          <button 
+            onClick={() => navigate('/dashboard/branches')}
+            style={location.pathname === '/dashboard/branches' ? { backgroundColor: 'rgba(255, 255, 255, 0.18)' } : {}}
+            className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl font-bold text-xs uppercase tracking-wider text-left transition-all cursor-pointer ${
+              location.pathname === '/dashboard/branches' ? 'text-white shadow-md backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Building2 size={18} />
+            <span>Branch Management</span>
+          </button>
+
           {/* TAB 3: Security (Direct) */}
           <button 
             onClick={() => navigate('/dashboard/security')}
@@ -294,6 +307,7 @@ export default function SuperAdminDashboard() {
             <h2 className="text-sm font-black text-white uppercase tracking-widest">
               {location.pathname === '/dashboard/overview' ? 'Overview Stats' :
                location.pathname === '/dashboard/admins' ? 'Admin Management Module' :
+               location.pathname === '/dashboard/branches' ? 'Branch Management Registry' :
                location.pathname === '/dashboard/reports' ? 'Reports & Analytics Ledgers' : 'Security & Access Protocols'}
             </h2>
             <div className="flex items-center gap-2 mt-1">

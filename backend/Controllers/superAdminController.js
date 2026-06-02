@@ -123,7 +123,7 @@ exports.superAdminLogin = async (req, res) => {
 // ── Create Admin Node ─────────────────────────────────────────────────────────
 exports.createRestaurant = async (req, res) => {
   try {
-    const { name, email, branchLimit, thirdPartyIntegration, mobileNumber, status, dbUrl, apiUrl, appType, adminId } = req.body;
+    const { name, email, branchLimit, thirdPartyIntegration, mobileNumber, status, dbUrl, apiUrl, appType, adminId, password } = req.body;
 
     // Check duplicate in CentralAdmin (default connection and SuperAdmin DB if different)
     const isDefaultSuperAdmin = (process.env.IS_SUPERADMIN === 'true' || !process.env.MONGODB_URL);
@@ -155,10 +155,13 @@ exports.createRestaurant = async (req, res) => {
       return res.status(400).json({ success: false, message: 'MongoDB Connection URL or API Sync URL is required' });
     }
 
-    // Random 8-char password
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
-    let randomPassword = '';
-    for (let i = 0; i < 8; i++) randomPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Set password
+    const resolvedPassword = password || (() => {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
+      let randPass = '';
+      for (let i = 0; i < 8; i++) randPass += chars.charAt(Math.floor(Math.random() * chars.length));
+      return randPass;
+    })();
 
     const limitValue = branchLimit ? parseInt(branchLimit) : 0;
     const nodeStatus = status ? status.toLowerCase() : 'inactive';
@@ -170,7 +173,7 @@ exports.createRestaurant = async (req, res) => {
     const restaurantPayload = {
       name,
       email,
-      password: randomPassword,
+      password: resolvedPassword,
       branchLimit: limitValue,
       thirdPartyApi: thirdPartyIntegration || false,
       thirdPartyIntegration: thirdPartyIntegration || false,
@@ -183,7 +186,7 @@ exports.createRestaurant = async (req, res) => {
     const adminPayload = {
       name: `Admin - ${name}`,
       email,
-      password: randomPassword,
+      password: resolvedPassword,
       restaurantName: name,
       thirdPartyApi: thirdPartyIntegration || false,
       thirdPartyIntegration: thirdPartyIntegration || false,
@@ -226,7 +229,7 @@ exports.createRestaurant = async (req, res) => {
 
     // 2. Hash password for SuperAdmin DB storage
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(randomPassword, salt);
+    const hashedPassword = await bcrypt.hash(resolvedPassword, salt);
 
     // 3. Save in default DB (CentralAdmin / admins collection)
     const centralAdmin = new CentralAdmin({
@@ -284,87 +287,13 @@ exports.createRestaurant = async (req, res) => {
       }
     }
 
-    // 5. Send credentials email
-    try {
-      await sendEmail({
-        email,
-        subject: 'Your RMS Node Administrator Credentials',
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 24px; color: #1e293b; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 16px;">
-            <h2 style="color: #ff7a00; margin-top: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Welcome to RMS Portal</h2>
-            <p style="font-size: 14px; line-height: 1.6; color: #334155;">Your administrator account for deployment <strong>${name}</strong> (${resolvedAppType}) has been successfully provisioned.</p>
-            <p style="font-size: 14px; line-height: 1.6; color: #334155;">Below are your secure login credentials:</p>
-            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 20px 0;">
-              <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                <tr><td style="padding: 6px 0; font-weight: bold; color: #64748b; width: 140px;">Deployment ID / Admin ID:</td><td style="padding: 6px 0; color: #0f172a; font-family: monospace; font-size: 14px; font-weight: bold;">${resolvedDeploymentId}</td></tr>
-                <tr><td style="padding: 6px 0; font-weight: bold; color: #64748b;">App Type:</td><td style="padding: 6px 0; color: #0f172a;"><span style="background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${resolvedAppType}</span></td></tr>
-                <tr><td style="padding: 6px 0; font-weight: bold; color: #64748b;">Username/Email:</td><td style="padding: 6px 0; color: #0f172a; font-family: monospace; font-size: 14px; font-weight: bold;">${email}</td></tr>
-                <tr><td style="padding: 6px 0; font-weight: bold; color: #64748b;">Temporary Password:</td><td style="padding: 6px 0; color: #0f172a; font-family: monospace; font-size: 14px; font-weight: bold; background-color: #e2e8f0; padding: 4px 8px; border-radius: 4px; display: inline-block;">${randomPassword}</td></tr>
-              </table>
-            </div>
-            <p style="font-size: 12px; line-height: 1.6; color: #64748b; margin-bottom: 0; border-top: 1px solid #f1f5f9; padding-top: 16px;">
-              <strong>Security Notice:</strong> Please log in and change your password immediately.
-            </p>
-          </div>
-        `
-      });
-      console.log(`✉ Email dispatched: ${email}`);
-    } catch (mailErr) {
-      console.error(`❌ Email failed for ${email}:`, mailErr.message);
-      // Rollback target database
-      try {
-        await syncToClientNode({
-          apiUrl,
-          dbUrl,
-          action: 'delete',
-          payload: { email },
-          fallbackFn: async () => {
-            const cleanupConn = await mongoose.createConnection(dbUrl).asPromise();
-            const AdminSchema = require('../Models/Admin').schema;
-            const RestaurantSchema = require('../Models/Restaurant').schema;
-            const TargetAdmin = cleanupConn.model('Admin', AdminSchema);
-            const TargetRestaurant = cleanupConn.model('Restaurant', RestaurantSchema);
-            await TargetAdmin.deleteOne({ email });
-            await TargetRestaurant.deleteOne({ email });
-            await cleanupConn.close();
-          }
-        });
-      } catch (cleanErr) {
-        console.error('Cleanup target DB error:', cleanErr.message);
-      }
-      // Rollback default DB
-      await CentralAdmin.deleteOne({ email });
-      // Rollback SuperAdmin DB if different
-      if (!isDefaultSuperAdmin) {
-        let superConn;
-        try {
-          superConn = await mongoose.createConnection(SUPERADMIN_DB_URL, {
-            serverSelectionTimeoutMS: 5000,
-            connectTimeoutMS: 5000
-          }).asPromise();
-          const CentralAdminModel = superConn.model('CentralAdmin', CentralAdmin.schema, 'admins');
-          await CentralAdminModel.deleteOne({ email });
-        } catch (err) {
-          console.error('Failed to rollback SuperAdmin DB:', err.message);
-        } finally {
-          if (superConn) {
-            try { await superConn.close(); } catch (e) {}
-          }
-        }
-      }
-      return res.status(500).json({
-        success: false,
-        message: `Email delivery failed: ${mailErr.message || 'SMTP Error'}. Provisioning rolled back.`
-      });
-    }
-
     const io = req.app.get('socketio');
     if (io) {
       io.emit('admin_created', { email, adminId: resolvedDeploymentId });
       io.emit('dashboard_stats_updated');
     }
 
-    res.json({ success: true, message: 'Restaurant created and credentials dispatched successfully', data: centralAdmin });
+    res.json({ success: true, message: 'Restaurant created successfully', data: centralAdmin });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -1178,6 +1107,60 @@ exports.getDashboardStats = async (req, res) => {
   } finally {
     if (superConn) {
       try { await superConn.close(); } catch (err) {}
+    }
+  }
+};
+
+// ── Get All Branches across deployments ──────────────────────────────────────────
+exports.getAllBranches = async (req, res) => {
+  let superConn;
+  try {
+    const isDefaultSuperAdmin = (process.env.IS_SUPERADMIN === 'true' || !process.env.MONGODB_URL);
+    let deployments;
+
+    if (isDefaultSuperAdmin) {
+      deployments = await CentralAdmin.find({ isSuperAdminDefault: { $ne: true } }).lean();
+    } else {
+      superConn = await mongoose.createConnection(SUPERADMIN_DB_URL, {
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000
+      }).asPromise();
+      const CentralAdminModel = superConn.model('CentralAdmin', CentralAdmin.schema, 'admins');
+      deployments = await CentralAdminModel.find({ isSuperAdminDefault: { $ne: true } }).lean();
+    }
+
+    const allBranches = [];
+
+    // Query in parallel
+    await Promise.all(deployments.map(async (dep) => {
+      const dbUrl = dep.dbUrl;
+      if (!dbUrl) return;
+      
+      try {
+        const targetConn = await getCachedConnection(dbUrl);
+        const BranchSchema = require('../Models/Branch').schema;
+        const TargetBranch = targetConn.model('Branch', BranchSchema);
+        
+        const branches = await TargetBranch.find().lean();
+        branches.forEach(b => {
+          allBranches.push({
+            ...b,
+            adminEmail: dep.email,
+            adminName: dep.name ? dep.name.replace('Admin - ', '') : (dep.restaurantName || 'Deployment')
+          });
+        });
+      } catch (err) {
+        console.error(`Error querying branches for ${dep.email}:`, err.message);
+      }
+    }));
+
+    res.json({ success: true, data: allBranches });
+  } catch (err) {
+    console.error('Get all branches error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    if (superConn) {
+      try { await superConn.close(); } catch (e) {}
     }
   }
 };
