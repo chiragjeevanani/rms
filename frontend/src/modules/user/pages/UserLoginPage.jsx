@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Github, Chrome } from 'lucide-react';
+import { Mail, Lock, ArrowRight, GithubIcon, ChromeIcon  } from 'lucide-react';
 
 export default function UserLoginPage() {
   const [email, setEmail] = useState('user@example.com');
@@ -94,10 +94,10 @@ export default function UserLoginPage() {
 
           <div className="flex gap-4">
             <button className="flex-1 bg-white dark:bg-charcoal-800 border border-charcoal-900/10 dark:border-white/5 py-4 rounded-2xl flex items-center justify-center hover:bg-charcoal-50 dark:hover:bg-white/5 transition-all">
-              <Chrome size={20} />
+              <ChromeIcon  size={20} />
             </button>
             <button className="flex-1 bg-white dark:bg-charcoal-800 border border-charcoal-900/10 dark:border-white/5 py-4 rounded-2xl flex items-center justify-center hover:bg-charcoal-50 dark:hover:bg-white/5 transition-all">
-              <Github size={20} />
+              <GithubIcon size={20} />
             </button>
           </div>
         </main>
