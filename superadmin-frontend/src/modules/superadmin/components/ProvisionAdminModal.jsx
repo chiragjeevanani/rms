@@ -99,6 +99,18 @@ export default function ProvisionAdminModal({
                 />
               </div>
 
+              {/* API Sync URL */}
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">API Synchronization URL (VPS Sync API)</label>
+                <input 
+                  type="text" 
+                  value={formData.apiUrl || ''} 
+                  onChange={e => setFormData({...formData, apiUrl: e.target.value})} 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
+                  placeholder="e.g. http://123.456.78.90:3000 or https://restaurant.com" 
+                />
+              </div>
+
               {/* App Type & Deployment ID */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">

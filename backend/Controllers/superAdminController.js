@@ -33,6 +33,40 @@ async function getCachedConnection(dbUrl) {
   return conn;
 }
 
+// Helper to synchronize database updates to the client VPS node via API, with fallback to direct DB connection
+async function syncToClientNode({ apiUrl, dbUrl, action, payload, fallbackFn }) {
+  const secret = process.env.INTERNAL_SYNC_SECRET || 'fallback_sync_secret_token_1234';
+  
+  if (apiUrl) {
+    try {
+      console.log(`[Sync] Attempting API sync to ${apiUrl} for action: ${action}`);
+      const response = await fetch(`${apiUrl}/api/internal/sync-admin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, payload, secret })
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          console.log(`[Sync Success] Sync successful for action: ${action} on client API: ${apiUrl}`);
+          return true;
+        }
+      }
+      console.warn(`[Sync Warning] API sync to ${apiUrl} returned status: ${response.status}`);
+    } catch (err) {
+      console.error(`[Sync Error] API sync failed to ${apiUrl}: ${err.message}`);
+    }
+  }
+
+  // Fallback to direct DB connection
+  console.log(`[Sync Fallback] Falling back to direct database connection using dbUrl for action: ${action}`);
+  if (fallbackFn) {
+    return await fallbackFn();
+  } else {
+    throw new Error('Database Connection URL is not defined and API sync failed/was not provided.');
+  }
+}
+
 
 // ── Login ─────────────────────────────────────────────────────────────────────
 exports.superAdminLogin = async (req, res) => {
@@ -73,7 +107,7 @@ exports.superAdminLogin = async (req, res) => {
 // ── Create Admin Node ─────────────────────────────────────────────────────────
 exports.createRestaurant = async (req, res) => {
   try {
-    const { name, email, branchLimit, thirdPartyIntegration, mobileNumber, status, dbUrl, appType, adminId } = req.body;
+    const { name, email, branchLimit, thirdPartyIntegration, mobileNumber, status, dbUrl, apiUrl, appType, adminId } = req.body;
 
     // Check duplicate in CentralAdmin (default connection and SuperAdmin DB if different)
     const isDefaultSuperAdmin = (process.env.IS_SUPERADMIN === 'true' || !process.env.MONGODB_URL);
@@ -101,8 +135,8 @@ exports.createRestaurant = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Administrator email already exists' });
     }
 
-    if (!dbUrl) {
-      return res.status(400).json({ success: false, message: 'MongoDB Connection URL is required' });
+    if (!dbUrl && !apiUrl) {
+      return res.status(400).json({ success: false, message: 'MongoDB Connection URL or API Sync URL is required' });
     }
 
     // Random 8-char password
@@ -116,62 +150,58 @@ exports.createRestaurant = async (req, res) => {
     const resolvedDeploymentId = adminId || `DEP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
     const resolvedDbName = `rms_${name.toLowerCase().replace(/\s+/g, '_')}`;
 
-    // 1. Connect dynamically to the target MongoDB URL and provision Restaurant & Admin
-    let targetConn;
+    // 1. Connect dynamically to target MongoDB or sync via Client API
+    const restaurantPayload = {
+      name,
+      email,
+      password: randomPassword,
+      branchLimit: limitValue,
+      thirdPartyApi: thirdPartyIntegration || false,
+      thirdPartyIntegration: thirdPartyIntegration || false,
+      mobileNumber: mobileNumber || '',
+      status: nodeStatus,
+      isActive: nodeStatus === 'active',
+      adminId: resolvedDeploymentId
+    };
+
+    const adminPayload = {
+      name: `Admin - ${name}`,
+      email,
+      password: randomPassword,
+      restaurantName: name,
+      thirdPartyApi: thirdPartyIntegration || false,
+      thirdPartyIntegration: thirdPartyIntegration || false,
+      mobileNumber: mobileNumber || '',
+      branchLimit: limitValue,
+      isActive: nodeStatus === 'active',
+      adminId: resolvedDeploymentId
+    };
+
     try {
-      targetConn = await mongoose.createConnection(dbUrl, {
-        serverSelectionTimeoutMS: 5000,
-        connectTimeoutMS: 5000
-      }).asPromise();
-    } catch (connErr) {
-      return res.status(400).json({
-        success: false,
-        message: `Could not connect to target MongoDB Database: ${connErr.message}`
+      await syncToClientNode({
+        apiUrl,
+        dbUrl,
+        action: 'create',
+        payload: { restaurant: restaurantPayload, admin: adminPayload },
+        fallbackFn: async () => {
+          const targetConn = await mongoose.createConnection(dbUrl, {
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000
+          }).asPromise();
+          const AdminSchema = require('../Models/Admin').schema;
+          const RestaurantSchema = require('../Models/Restaurant').schema;
+          const TargetAdmin = targetConn.model('Admin', AdminSchema);
+          const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
+          
+          const targetRestaurant = new TargetRestaurant(restaurantPayload);
+          await targetRestaurant.save();
+
+          const targetAdmin = new TargetAdmin(adminPayload);
+          await targetAdmin.save();
+          await targetConn.close();
+        }
       });
-    }
-
-    const AdminSchema = require('../Models/Admin').schema;
-    const RestaurantSchema = require('../Models/Restaurant').schema;
-    
-    try {
-      const TargetAdmin = targetConn.model('Admin', AdminSchema);
-      const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
-
-      // Create Restaurant in target DB
-      const targetRestaurant = new TargetRestaurant({
-        name,
-        email,
-        password: randomPassword,
-        branchLimit: limitValue,
-        thirdPartyApi: thirdPartyIntegration || false,
-        thirdPartyIntegration: thirdPartyIntegration || false,
-        mobileNumber: mobileNumber || '',
-        status: nodeStatus,
-        isActive: nodeStatus === 'active',
-        adminId: resolvedDeploymentId
-      });
-      await targetRestaurant.save();
-
-      // Create Admin in target DB (pre-save hook hashes password)
-      const targetAdmin = new TargetAdmin({
-        name: `Admin - ${name}`,
-        email,
-        password: randomPassword,
-        restaurantName: name,
-        thirdPartyApi: thirdPartyIntegration || false,
-        thirdPartyIntegration: thirdPartyIntegration || false,
-        mobileNumber: mobileNumber || '',
-        branchLimit: limitValue,
-        isActive: nodeStatus === 'active',
-        adminId: resolvedDeploymentId
-      });
-      await targetAdmin.save();
-
-      await targetConn.close();
     } catch (dbErr) {
-      if (targetConn) {
-        try { await targetConn.close(); } catch (err) {}
-      }
       return res.status(500).json({
         success: false,
         message: `Error provisioning collections in target database: ${dbErr.message}`
@@ -187,6 +217,7 @@ exports.createRestaurant = async (req, res) => {
       adminId: resolvedDeploymentId,
       email: email,
       dbUrl,
+      apiUrl,
       dbName: resolvedDbName,
       branchLimit: limitValue,
       thirdPartyIntegration: thirdPartyIntegration || false,
@@ -214,6 +245,7 @@ exports.createRestaurant = async (req, res) => {
           adminId: resolvedDeploymentId,
           email: email,
           dbUrl,
+          apiUrl,
           dbName: resolvedDbName,
           branchLimit: limitValue,
           thirdPartyIntegration: thirdPartyIntegration || false,
@@ -265,12 +297,22 @@ exports.createRestaurant = async (req, res) => {
       console.error(`❌ Email failed for ${email}:`, mailErr.message);
       // Rollback target database
       try {
-        const cleanupConn = await mongoose.createConnection(dbUrl).asPromise();
-        const TargetAdmin = cleanupConn.model('Admin', AdminSchema);
-        const TargetRestaurant = cleanupConn.model('Restaurant', RestaurantSchema);
-        await TargetAdmin.deleteOne({ email });
-        await TargetRestaurant.deleteOne({ email });
-        await cleanupConn.close();
+        await syncToClientNode({
+          apiUrl,
+          dbUrl,
+          action: 'delete',
+          payload: { email },
+          fallbackFn: async () => {
+            const cleanupConn = await mongoose.createConnection(dbUrl).asPromise();
+            const AdminSchema = require('../Models/Admin').schema;
+            const RestaurantSchema = require('../Models/Restaurant').schema;
+            const TargetAdmin = cleanupConn.model('Admin', AdminSchema);
+            const TargetRestaurant = cleanupConn.model('Restaurant', RestaurantSchema);
+            await TargetAdmin.deleteOne({ email });
+            await TargetRestaurant.deleteOne({ email });
+            await cleanupConn.close();
+          }
+        });
       } catch (cleanErr) {
         console.error('Cleanup target DB error:', cleanErr.message);
       }
@@ -381,25 +423,34 @@ exports.toggleThirdPartyApi = async (req, res) => {
 
     // Update in target DB
     const dbUrl = deployment.dbUrl;
-    if (dbUrl) {
-      try {
-        const targetConn = await mongoose.createConnection(dbUrl, {
-          serverSelectionTimeoutMS: 3000,
-          connectTimeoutMS: 3000
-        }).asPromise();
-        
-        const AdminSchema = require('../Models/Admin').schema;
-        const RestaurantSchema = require('../Models/Restaurant').schema;
-        const TargetAdmin = targetConn.model('Admin', AdminSchema);
-        const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
+    const apiUrl = deployment.apiUrl;
 
-        await TargetAdmin.updateMany({ email }, { $set: { thirdPartyApi: newThirdParty, thirdPartyIntegration: newThirdParty } });
-        await TargetRestaurant.updateMany({ email }, { $set: { thirdPartyApi: newThirdParty, thirdPartyIntegration: newThirdParty } });
+    try {
+      await syncToClientNode({
+        apiUrl,
+        dbUrl,
+        action: 'toggle-api',
+        payload: { email, thirdPartyIntegration: newThirdParty },
+        fallbackFn: async () => {
+          if (!dbUrl) return;
+          const targetConn = await mongoose.createConnection(dbUrl, {
+            serverSelectionTimeoutMS: 3000,
+            connectTimeoutMS: 3000
+          }).asPromise();
+          
+          const AdminSchema = require('../Models/Admin').schema;
+          const RestaurantSchema = require('../Models/Restaurant').schema;
+          const TargetAdmin = targetConn.model('Admin', AdminSchema);
+          const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
 
-        await targetConn.close();
-      } catch (err) {
-        console.error(`Could not toggle API protocol on target DB for ${email}:`, err.message);
-      }
+          await TargetAdmin.updateMany({ email }, { $set: { thirdPartyApi: newThirdParty, thirdPartyIntegration: newThirdParty } });
+          await TargetRestaurant.updateMany({ email }, { $set: { thirdPartyApi: newThirdParty, thirdPartyIntegration: newThirdParty } });
+
+          await targetConn.close();
+        }
+      });
+    } catch (err) {
+      console.error(`Could not toggle API protocol on target DB for ${email}:`, err.message);
     }
 
     const io = req.app.get('socketio');
@@ -582,20 +633,29 @@ exports.updateSystemTheme = async (req, res) => {
     // Update theme color in parallel
     await Promise.all(deployments.map(async (dep) => {
       const dbUrl = dep.dbUrl;
-      if (dbUrl) {
-        try {
-          const targetConn = await mongoose.createConnection(dbUrl, {
-            serverSelectionTimeoutMS: 3000,
-            connectTimeoutMS: 3000
-          }).asPromise();
-          const AdminSchema = require('../Models/Admin').schema;
-          const TargetAdmin = targetConn.model('Admin', AdminSchema);
-          
-          await TargetAdmin.updateMany({}, { $set: { 'theme.primaryColor': primaryColor } });
-          await targetConn.close();
-        } catch (err) {
-          console.error(`Could not update theme color for ${dep.email}:`, err.message);
-        }
+      const apiUrl = dep.apiUrl;
+      
+      try {
+        await syncToClientNode({
+          apiUrl,
+          dbUrl,
+          action: 'update-theme',
+          payload: { primaryColor },
+          fallbackFn: async () => {
+            if (!dbUrl) return;
+            const targetConn = await mongoose.createConnection(dbUrl, {
+              serverSelectionTimeoutMS: 3000,
+              connectTimeoutMS: 3000
+            }).asPromise();
+            const AdminSchema = require('../Models/Admin').schema;
+            const TargetAdmin = targetConn.model('Admin', AdminSchema);
+            
+            await TargetAdmin.updateMany({}, { $set: { 'theme.primaryColor': primaryColor } });
+            await targetConn.close();
+          }
+        });
+      } catch (err) {
+        console.error(`Could not update theme color for ${dep.email}:`, err.message);
       }
     }));
 
@@ -612,7 +672,7 @@ exports.updateSystemTheme = async (req, res) => {
 // ── Update Admin Node ─────────────────────────────────────────────────────────
 exports.updateRestaurant = async (req, res) => {
   const { email } = req.params;
-  const { name, email: newEmail, mobileNumber, branchLimit, status, thirdPartyIntegration, dbUrl, appType, adminId } = req.body;
+  const { name, email: newEmail, mobileNumber, branchLimit, status, thirdPartyIntegration, dbUrl, apiUrl, appType, adminId } = req.body;
   let superConn;
 
   try {
@@ -662,6 +722,9 @@ exports.updateRestaurant = async (req, res) => {
     if (dbUrl) {
       syncData.dbUrl = dbUrl;
     }
+    if (apiUrl !== undefined) {
+      syncData.apiUrl = apiUrl;
+    }
     if (appType) syncData.appType = appType;
     if (adminId) {
       syncData.adminId = adminId;
@@ -677,66 +740,75 @@ exports.updateRestaurant = async (req, res) => {
 
     // Connect to the target DB to sync changes there
     const targetDbUrl = dbUrl || deployment.dbUrl;
-    if (targetDbUrl) {
-      try {
-        const targetConn = await mongoose.createConnection(targetDbUrl, {
-          serverSelectionTimeoutMS: 5000,
-          connectTimeoutMS: 5000
-        }).asPromise();
-        
-        const AdminSchema = require('../Models/Admin').schema;
-        const RestaurantSchema = require('../Models/Restaurant').schema;
-        const TargetAdmin = targetConn.model('Admin', AdminSchema);
-        const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
+    const targetApiUrl = apiUrl !== undefined ? apiUrl : deployment.apiUrl;
 
-        // Update target Restaurant
-        const restDoc = await TargetRestaurant.findOne({ email });
-        if (restDoc) {
-          if (name) restDoc.name = name;
-          if (newEmail) restDoc.email = newEmail;
-          if (mobileNumber !== undefined) restDoc.mobileNumber = mobileNumber;
-          if (branchLimit !== undefined) restDoc.branchLimit = parseInt(branchLimit);
-          if (status) {
-            restDoc.status = status.toLowerCase();
-            restDoc.isActive = status.toLowerCase() === 'active';
+    try {
+      await syncToClientNode({
+        apiUrl: targetApiUrl,
+        dbUrl: targetDbUrl,
+        action: 'update',
+        payload: { email, syncData },
+        fallbackFn: async () => {
+          if (!targetDbUrl) return;
+          const targetConn = await mongoose.createConnection(targetDbUrl, {
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000
+          }).asPromise();
+          
+          const AdminSchema = require('../Models/Admin').schema;
+          const RestaurantSchema = require('../Models/Restaurant').schema;
+          const TargetAdmin = targetConn.model('Admin', AdminSchema);
+          const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
+
+          // Update target Restaurant
+          const restDoc = await TargetRestaurant.findOne({ email });
+          if (restDoc) {
+            if (name) restDoc.name = name;
+            if (newEmail) restDoc.email = newEmail;
+            if (mobileNumber !== undefined) restDoc.mobileNumber = mobileNumber;
+            if (branchLimit !== undefined) restDoc.branchLimit = parseInt(branchLimit);
+            if (status) {
+              restDoc.status = status.toLowerCase();
+              restDoc.isActive = status.toLowerCase() === 'active';
+            }
+            if (thirdPartyIntegration !== undefined) {
+              restDoc.thirdPartyApi = thirdPartyIntegration;
+              restDoc.thirdPartyIntegration = thirdPartyIntegration;
+            }
+            if (adminId) restDoc.adminId = adminId;
+            await restDoc.save();
+          } else {
+            console.warn(`[Sync Warning] Restaurant not found in target DB for email ${email}`);
           }
-          if (thirdPartyIntegration !== undefined) {
-            restDoc.thirdPartyApi = thirdPartyIntegration;
-            restDoc.thirdPartyIntegration = thirdPartyIntegration;
+
+          // Update target Admin
+          const adminDoc = await TargetAdmin.findOne({ email });
+          if (adminDoc) {
+            if (name) adminDoc.name = `Admin - ${name}`;
+            if (newEmail) adminDoc.email = newEmail;
+            if (mobileNumber !== undefined) adminDoc.mobileNumber = mobileNumber;
+            if (branchLimit !== undefined) adminDoc.branchLimit = parseInt(branchLimit);
+            if (thirdPartyIntegration !== undefined) {
+              adminDoc.thirdPartyApi = thirdPartyIntegration;
+              adminDoc.thirdPartyIntegration = thirdPartyIntegration;
+            }
+            if (name) adminDoc.restaurantName = name;
+            if (status) adminDoc.isActive = status.toLowerCase() === 'active';
+            if (adminId) adminDoc.adminId = adminId;
+            await adminDoc.save();
+          } else {
+            console.warn(`[Sync Warning] Admin not found in target DB for email ${email}`);
           }
-          if (adminId) restDoc.adminId = adminId;
-          await restDoc.save();
-        } else {
-          console.warn(`[Sync Warning] Restaurant not found in target DB for email ${email}`);
+
+          await targetConn.close();
         }
-
-        // Update target Admin
-        const adminDoc = await TargetAdmin.findOne({ email });
-        if (adminDoc) {
-          if (name) adminDoc.name = `Admin - ${name}`;
-          if (newEmail) adminDoc.email = newEmail;
-          if (mobileNumber !== undefined) adminDoc.mobileNumber = mobileNumber;
-          if (branchLimit !== undefined) adminDoc.branchLimit = parseInt(branchLimit);
-          if (thirdPartyIntegration !== undefined) {
-            adminDoc.thirdPartyApi = thirdPartyIntegration;
-            adminDoc.thirdPartyIntegration = thirdPartyIntegration;
-          }
-          if (name) adminDoc.restaurantName = name;
-          if (status) adminDoc.isActive = status.toLowerCase() === 'active';
-          if (adminId) adminDoc.adminId = adminId;
-          await adminDoc.save();
-        } else {
-          console.warn(`[Sync Warning] Admin not found in target DB for email ${email}`);
-        }
-
-        await targetConn.close();
-      } catch (err) {
-        console.error(`Could not sync updates to target DB for ${email}:`, err.message);
-        return res.status(500).json({
-          success: false,
-          message: `Failed to sync updates to target database: ${err.message}`
-        });
-      }
+      });
+    } catch (err) {
+      console.error(`Could not sync updates to target DB for ${email}:`, err.message);
+      return res.status(500).json({
+        success: false,
+        message: `Failed to sync updates to target database: ${err.message}`
+      });
     }
 
     const io = req.app.get('socketio');
@@ -782,26 +854,34 @@ exports.deleteRestaurant = async (req, res) => {
     }
 
     const targetDbUrl = deployment.dbUrl;
-    if (targetDbUrl) {
-      try {
-        const targetConn = await mongoose.createConnection(targetDbUrl, {
-          serverSelectionTimeoutMS: 5000,
-          connectTimeoutMS: 5000
-        }).asPromise();
-        
-        const AdminSchema = require('../Models/Admin').schema;
-        const RestaurantSchema = require('../Models/Restaurant').schema;
-        const TargetAdmin = targetConn.model('Admin', AdminSchema);
-        const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
+    const targetApiUrl = deployment.apiUrl;
 
-        // Delete Admin and Restaurant in the target deployment DB
-        await TargetAdmin.deleteOne({ email });
-        await TargetRestaurant.deleteOne({ email });
+    try {
+      await syncToClientNode({
+        apiUrl: targetApiUrl,
+        dbUrl: targetDbUrl,
+        action: 'delete',
+        payload: { email },
+        fallbackFn: async () => {
+          if (!targetDbUrl) return;
+          const targetConn = await mongoose.createConnection(targetDbUrl, {
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000
+          }).asPromise();
+          
+          const AdminSchema = require('../Models/Admin').schema;
+          const RestaurantSchema = require('../Models/Restaurant').schema;
+          const TargetAdmin = targetConn.model('Admin', AdminSchema);
+          const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
 
-        await targetConn.close();
-      } catch (err) {
-        console.error(`Could not delete Admin/Restaurant from target DB for ${email}:`, err.message);
-      }
+          // Delete Admin and Restaurant in target DB
+          await TargetAdmin.deleteOne({ email });
+          await TargetRestaurant.deleteOne({ email });
+          await targetConn.close();
+        }
+      });
+    } catch (err) {
+      console.error(`Could not delete Admin/Restaurant from target DB for ${email}:`, err.message);
     }
 
     // Delete central record from SuperAdmin DB
@@ -857,38 +937,46 @@ exports.resendCredentials = async (req, res) => {
 
     const displayName = deployment.restaurantName || deployment.name || 'Your Restaurant';
     const targetDbUrl = deployment.dbUrl;
+    const targetApiUrl = deployment.apiUrl;
 
-    if (targetDbUrl) {
-      try {
-        const targetConn = await mongoose.createConnection(targetDbUrl, {
-          serverSelectionTimeoutMS: 5000,
-          connectTimeoutMS: 5000
-        }).asPromise();
-        
-        const AdminSchema = require('../Models/Admin').schema;
-        const RestaurantSchema = require('../Models/Restaurant').schema;
-        const TargetAdmin = targetConn.model('Admin', AdminSchema);
-        const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
+    try {
+      await syncToClientNode({
+        apiUrl: targetApiUrl,
+        dbUrl: targetDbUrl,
+        action: 'resend-credentials',
+        payload: { email, newPassword },
+        fallbackFn: async () => {
+          if (!targetDbUrl) return;
+          const targetConn = await mongoose.createConnection(targetDbUrl, {
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000
+          }).asPromise();
+          
+          const AdminSchema = require('../Models/Admin').schema;
+          const RestaurantSchema = require('../Models/Restaurant').schema;
+          const TargetAdmin = targetConn.model('Admin', AdminSchema);
+          const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
 
-        // Update plain password in Restaurant
-        const restDoc = await TargetRestaurant.findOne({ email });
-        if (restDoc) {
-          restDoc.password = newPassword;
-          await restDoc.save();
+          // Update plain password in Restaurant
+          const restDoc = await TargetRestaurant.findOne({ email });
+          if (restDoc) {
+            restDoc.password = newPassword;
+            await restDoc.save();
+          }
+
+          // Update hashed password in Admin (pre-save hook hashes it)
+          const adminDoc = await TargetAdmin.findOne({ email });
+          if (adminDoc) {
+            adminDoc.password = newPassword;
+            await adminDoc.save();
+          }
+
+          await targetConn.close();
         }
-
-        // Update hashed password in Admin (pre-save hook hashes it)
-        const adminDoc = await TargetAdmin.findOne({ email });
-        if (adminDoc) {
-          adminDoc.password = newPassword;
-          await adminDoc.save();
-        }
-
-        await targetConn.close();
-      } catch (err) {
-        console.error(`Could not update new password in target DB for ${email}:`, err.message);
-        return res.status(500).json({ success: false, message: `Failed to update credentials in deployment database: ${err.message}` });
-      }
+      });
+    } catch (err) {
+      console.error(`Could not update new password in target DB for ${email}:`, err.message);
+      return res.status(500).json({ success: false, message: `Failed to update credentials in deployment database: ${err.message}` });
     }
 
     // Update hashed password in CentralAdmin (SuperAdmin DB)

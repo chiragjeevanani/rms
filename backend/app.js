@@ -22,10 +22,12 @@ const branchRoutes = require('./Routers/branchRoutes');
 const swiggyRoutes = require('./Routers/swiggyRoutes');
 const weraRoutes = require('./Routers/weraRoutes');
 const syncRoutes = require('./Routers/syncRoutes');
+const internalRoutes = require('./Routers/internalRoutes');
 
 // Attach sub-routes to the main router
 router.use('/admin', adminRoutes);
 router.use('/superadmin', superAdminRoutes);
+router.use('/internal', internalRoutes);
 router.use('/integrations/swiggy', swiggyRoutes);
 router.use('/integrations/wera', weraRoutes);
 router.use('/category', categoryRoutes);

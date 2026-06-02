@@ -5,6 +5,7 @@ const centralAdminSchema = new mongoose.Schema({
   adminId:                { type: String },
   email:                  { type: String, required: true, unique: true },
   dbUrl:                  { type: String },
+  apiUrl:                 { type: String, default: '' },
   dbName:                 { type: String },
   branchLimit:            { type: Number, default: 0 },
   thirdPartyIntegration:  { type: Boolean, default: false },

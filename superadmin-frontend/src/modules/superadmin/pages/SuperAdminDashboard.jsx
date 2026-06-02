@@ -29,7 +29,7 @@ export default function SuperAdminDashboard() {
   // Forms
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', branchLimit: 0, status: 'Inactive', thirdPartyIntegration: false,
-    dbUrl: '', appType: 'Admin', adminId: ''
+    dbUrl: '', appType: 'Admin', adminId: '', apiUrl: ''
   });
 
   useEffect(() => {
@@ -127,6 +127,7 @@ export default function SuperAdminDashboard() {
           mobileNumber: formData.phone,
           status: formData.status,
           dbUrl: formData.dbUrl,
+          apiUrl: formData.apiUrl,
           appType: formData.appType,
           adminId: formData.adminId
         })
@@ -134,7 +135,7 @@ export default function SuperAdminDashboard() {
       const data = await res.json();
       if (data.success) {
         toast.success('Node Admin Provisioned Successfully');
-        setFormData({ name: '', email: '', phone: '', branchLimit: 0, status: 'Inactive', thirdPartyIntegration: false, dbUrl: '', appType: 'Admin', adminId: '' });
+        setFormData({ name: '', email: '', phone: '', branchLimit: 0, status: 'Inactive', thirdPartyIntegration: false, dbUrl: '', appType: 'Admin', adminId: '', apiUrl: '' });
         setIsCreateModalOpen(false);
         fetchData();
       } else {

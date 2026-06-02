@@ -26,7 +26,7 @@ export default function AdminManagement() {
   const [editAdminEmail, setEditAdminEmail] = useState('');
   const [editFormData, setEditFormData] = useState({
     name: '', email: '', phone: '', branchLimit: 5, status: 'Active', thirdPartyIntegration: false,
-    dbUrl: '', appType: 'Admin', adminId: ''
+    dbUrl: '', appType: 'Admin', adminId: '', apiUrl: ''
   });
   const [actionLoading, setActionLoading] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(null); // stores email being resent
@@ -126,7 +126,8 @@ export default function AdminManagement() {
       thirdPartyIntegration: admin.thirdPartyIntegration || false,
       dbUrl: admin.dbUrl || '',
       appType: admin.appType || 'Admin',
-      adminId: admin.adminId || ''
+      adminId: admin.adminId || '',
+      apiUrl: admin.apiUrl || ''
     });
     setIsEditModalOpen(true);
   };
@@ -147,6 +148,7 @@ export default function AdminManagement() {
           status: editFormData.status,
           thirdPartyIntegration: editFormData.thirdPartyIntegration,
           dbUrl: editFormData.dbUrl,
+          apiUrl: editFormData.apiUrl,
           appType: editFormData.appType,
           adminId: editFormData.adminId
         })
@@ -344,12 +346,22 @@ export default function AdminManagement() {
                         </div>
                       </td>
                       <td className="px-8 py-5">
-                        <span 
-                          title={admin.dbUrl}
-                          className="text-[10px] font-mono bg-slate-50 px-2 py-1 border border-slate-100 rounded-md text-slate-500 max-w-[180px] inline-block truncate hover:text-slate-850 transition-colors"
-                        >
-                          {admin.dbUrl || 'N/A'}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span 
+                            title={admin.dbUrl}
+                            className="text-[10px] font-mono bg-slate-50 px-2 py-1 border border-slate-100 rounded-md text-slate-500 max-w-[180px] inline-block truncate hover:text-slate-850 transition-colors"
+                          >
+                            DB: {admin.dbUrl || 'N/A'}
+                          </span>
+                          {admin.apiUrl && (
+                            <span 
+                              title={admin.apiUrl}
+                              className="text-[9px] font-mono bg-amber-500/5 px-2 py-0.5 border border-amber-500/10 rounded-md text-amber-600 max-w-[180px] inline-block truncate"
+                            >
+                              API: {admin.apiUrl}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       
                       {/* Branch limit / Allocation progress display */}
@@ -561,6 +573,18 @@ export default function AdminManagement() {
                     onChange={e => setEditFormData({...editFormData, dbUrl: e.target.value})} 
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
                     placeholder="mongodb+srv://username:password@cluster.mongodb.net/dbname" 
+                  />
+                </div>
+
+                {/* API Sync URL */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">API Synchronization URL (VPS Sync API)</label>
+                  <input 
+                    type="text" 
+                    value={editFormData.apiUrl || ''} 
+                    onChange={e => setEditFormData({...editFormData, apiUrl: e.target.value})} 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
+                    placeholder="e.g. http://123.456.78.90:3000 or https://restaurant.com" 
                   />
                 </div>
 
