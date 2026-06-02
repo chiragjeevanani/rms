@@ -60,8 +60,24 @@ async function syncToClientNode({ apiUrl, dbUrl, action, payload, fallbackFn }) 
 
   // Fallback to direct DB connection
   console.log(`[Sync Fallback] Falling back to direct database connection using dbUrl for action: ${action}`);
+  
+  if (dbUrl) {
+    const isTargetDbLocal = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
+    const isSuperDbLocal = SUPERADMIN_DB_URL && (SUPERADMIN_DB_URL.includes('localhost') || SUPERADMIN_DB_URL.includes('127.0.0.1'));
+    if (isTargetDbLocal && !isSuperDbLocal) {
+      throw new Error('Direct database connection to localhost is not possible from a remote SuperAdmin server. Please configure and run the client API Synchronization.');
+    }
+  }
+
   if (fallbackFn) {
-    return await fallbackFn();
+    try {
+      return await fallbackFn();
+    } catch (err) {
+      if (err.message.includes('requires authentication') || err.message.includes('auth')) {
+        err.message += ' (Note: This might be due to direct localhost MongoDB connection fallback on a remote SuperAdmin server. Please configure and verify your API Synchronization URL.)';
+      }
+      throw err;
+    }
   } else {
     throw new Error('Database Connection URL is not defined and API sync failed/was not provided.');
   }
@@ -742,6 +758,9 @@ exports.updateRestaurant = async (req, res) => {
     const targetDbUrl = dbUrl || deployment.dbUrl;
     const targetApiUrl = apiUrl !== undefined ? apiUrl : deployment.apiUrl;
 
+    let syncSuccess = true;
+    let syncErrorMsg = '';
+
     try {
       await syncToClientNode({
         apiUrl: targetApiUrl,
@@ -805,10 +824,8 @@ exports.updateRestaurant = async (req, res) => {
       });
     } catch (err) {
       console.error(`Could not sync updates to target DB for ${email}:`, err.message);
-      return res.status(500).json({
-        success: false,
-        message: `Failed to sync updates to target database: ${err.message}`
-      });
+      syncSuccess = false;
+      syncErrorMsg = err.message;
     }
 
     const io = req.app.get('socketio');
@@ -820,6 +837,15 @@ exports.updateRestaurant = async (req, res) => {
         thirdPartyApi: syncData.thirdPartyIntegration
       });
       io.emit('dashboard_stats_updated');
+    }
+
+    if (!syncSuccess) {
+      return res.json({
+        success: true,
+        message: `Node updated locally, but failed to sync to client node: ${syncErrorMsg}`,
+        syncWarning: true,
+        data: syncData
+      });
     }
 
     res.json({ success: true, message: 'Node updated successfully', data: syncData });

@@ -103,7 +103,14 @@ export default function AdminManagement() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`Node status changed to ${nextStatus}`);
+        if (data.syncWarning) {
+          toast(data.message || `Node status changed locally, but sync failed.`, {
+            icon: '⚠️',
+            duration: 6000
+          });
+        } else {
+          toast.success(`Node status changed to ${nextStatus}`);
+        }
         fetchPaginatedAdmins();
         syncGlobalData();
       } else {
@@ -155,7 +162,14 @@ export default function AdminManagement() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success('Node Admin Updated Successfully');
+        if (data.syncWarning) {
+          toast(data.message || 'Updated locally, but client sync failed.', {
+            icon: '⚠️',
+            duration: 6000
+          });
+        } else {
+          toast.success('Node Admin Updated Successfully');
+        }
         setIsEditModalOpen(false);
         fetchPaginatedAdmins();
         syncGlobalData();
