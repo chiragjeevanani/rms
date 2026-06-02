@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 
 const SystemThemeContext = createContext();
 
@@ -32,9 +33,28 @@ export const SystemThemeProvider = ({ children }) => {
 
   useEffect(() => {
     fetchSystemTheme();
+
+    // Connect to Socket.IO for real-time theme updates
+    const socket = io(API_URL.replace('/api', ''));
+
+    socket.on('themeUpdated', (newTheme) => {
+      console.log('Received real-time theme update:', newTheme);
+      if (newTheme) {
+        const { mode, primaryColor, borderRadius, fontFamily } = newTheme;
+        if (mode) setThemeMode(mode);
+        if (primaryColor) setPrimaryColor(primaryColor);
+        if (borderRadius) setBorderRadius(borderRadius);
+        if (fontFamily) setFontFamily(fontFamily);
+      }
+    });
+
     // Refresh theme every 5 minutes to stay in sync
     const interval = setInterval(fetchSystemTheme, 300000);
-    return () => clearInterval(interval);
+
+    return () => {
+      socket.disconnect();
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {

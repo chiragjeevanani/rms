@@ -5,9 +5,12 @@ const restaurantSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }, // In production, hash this
   thirdPartyApi: { type: Boolean, default: false },
-  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  thirdPartyIntegration: { type: Boolean, default: false },
+  status: { type: String, enum: ['active', 'inactive'], default: 'inactive' },
+  isActive: { type: Boolean, default: false },
   mobileNumber: { type: String, default: '' },
-  branchLimit: { type: Number, default: 5 },
+  branchLimit: { type: Number, default: 0 },
+  adminId: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 

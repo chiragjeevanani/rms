@@ -35,7 +35,9 @@ const initAdmin = async () => {
         email: defaultAdminData.email,
         password: defaultAdminData.password,
         thirdPartyApi: false,
+        thirdPartyIntegration: false,
         status: 'active',
+        isActive: true,
         mobileNumber: '',
         branchLimit: 5
       });
@@ -53,8 +55,12 @@ const initAdmin = async () => {
           email: defaultAdminData.email,
           password: hashedPassword,
           restaurantName: defaultAdminData.restaurantName,
-          localDbUrl: process.env.MONGODB_URL,
-          isSuperAdminDefault: true
+          dbUrl: process.env.MONGODB_URL,
+          dbName: 'rms_default_admin',
+          adminId: 'DEP-DEFAULT',
+          appType: 'Admin',
+          isActive: true,
+          status: 'active'
         },
         { upsert: true, new: true }
       );

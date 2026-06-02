@@ -4,7 +4,6 @@ const bcrypt = require('bcryptjs');
 const adminSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
   },
   email: {
     type: String,
@@ -21,7 +20,6 @@ const adminSchema = new mongoose.Schema({
   },
   restaurantName: {
     type: String,
-    default: 'Your Restaurant Name',
   },
   mobileNumber: {
     type: String,
@@ -41,12 +39,32 @@ const adminSchema = new mongoose.Schema({
   thirdPartyApi: {
     type: Boolean,
     default: false
+  },
+  // Registry sync fields
+  branchLimit: {
+    type: Number,
+    default: 0
+  },
+  thirdPartyIntegration: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: false
+  },
+  adminId: {
+    type: String
   }
 }, { timestamps: true });
 
 // Hash password before saving
 adminSchema.pre('save', async function () {
   if (!this.isModified('password')) {
+    return;
+  }
+  // Prevent double-hashing if password is already a bcrypt hash
+  if (this.password && (this.password.startsWith('$2a$') || this.password.startsWith('$2b$'))) {
     return;
   }
   const salt = await bcrypt.genSalt(10);

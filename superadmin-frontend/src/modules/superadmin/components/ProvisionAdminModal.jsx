@@ -86,6 +86,46 @@ export default function ProvisionAdminModal({
                 </div>
               </div>
 
+              {/* MongoDB Connection URL */}
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">MongoDB Connection URL</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.dbUrl || ''} 
+                  onChange={e => setFormData({...formData, dbUrl: e.target.value})} 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
+                  placeholder="mongodb+srv://username:password@cluster.mongodb.net/dbname" 
+                />
+              </div>
+
+              {/* App Type & Deployment ID */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">App Type Calibration</label>
+                  <select 
+                    value={formData.appType || 'Admin'} 
+                    onChange={e => setFormData({...formData, appType: e.target.value})} 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-500 focus:outline-none transition-all"
+                  >
+                    <option value="Admin">Admin Portal</option>
+                    <option value="POS">POS System</option>
+                    <option value="KDS">KDS Screen</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Deployment ID</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={formData.adminId || ''} 
+                    onChange={e => setFormData({...formData, adminId: e.target.value})} 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
+                    placeholder="e.g. DEP-ROYAL01" 
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Creation Limit</label>

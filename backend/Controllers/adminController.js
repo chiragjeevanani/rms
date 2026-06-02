@@ -158,6 +158,13 @@ const updateTheme = async (req, res) => {
     if (fontFamily) admin.theme.fontFamily = fontFamily;
 
     await admin.save();
+
+    // Broadcast theme changes to all connected clients (POS, KDS, Staff, Customer)
+    const io = req.app.get('socketio');
+    if (io) {
+      io.emit('themeUpdated', admin.theme);
+    }
+
     res.json({ message: 'Theme updated successfully', theme: admin.theme });
   } catch (error) {
     console.error('Update Theme Error:', error);

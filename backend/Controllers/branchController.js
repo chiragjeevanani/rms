@@ -7,6 +7,8 @@ exports.createBranch = async (req, res) => {
     // Enforce branch creation limit
     const Restaurant = require('../Models/Restaurant');
     let targetLimit = 5;
+    let finalRestaurantId = restaurantId;
+
     if (restaurantId) {
       const restaurant = await Restaurant.findById(restaurantId);
       if (restaurant) {
@@ -16,10 +18,15 @@ exports.createBranch = async (req, res) => {
       const restaurant = await Restaurant.findOne();
       if (restaurant) {
         targetLimit = restaurant.branchLimit !== undefined ? restaurant.branchLimit : 5;
+        finalRestaurantId = restaurant._id;
       }
     }
 
-    const branchCount = await Branch.countDocuments(restaurantId ? { restaurantId } : {});
+    if (!finalRestaurantId) {
+      return res.status(400).json({ success: false, message: 'Branch validation failed: restaurantId is required.' });
+    }
+
+    const branchCount = await Branch.countDocuments({ restaurantId: finalRestaurantId });
     if (branchCount >= targetLimit) {
       return res.status(400).json({ success: false, message: `Branch creation limit reached. Maximum allowed is ${targetLimit}.` });
     }
@@ -29,7 +36,7 @@ exports.createBranch = async (req, res) => {
     const branchCode = `BR-${(count + 1).toString().padStart(3, '0')}`;
 
     const newBranch = new Branch({
-      restaurantId,
+      restaurantId: finalRestaurantId,
       branchName,
       branchCode,
       branchEmail,

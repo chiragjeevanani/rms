@@ -6,32 +6,53 @@ import { useOutletContext } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export default function DashboardOverview() {
-  const { admins, accentColor } = useOutletContext();
+  const { admins, accentColor, socket } = useOutletContext();
   const [registrationPeriod, setRegistrationPeriod] = useState('weekly');
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch Dashboard Stats on Mount
-  const fetchStats = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/dashboard-stats`);
-      const result = await res.json();
-      if (result.success) {
-        setStats(result.data);
-      }
-    } catch (err) {
-      toast.error('Failed to fetch platform metrics');
-    } finally {
-      setLoading(false);
+  const fetchStats = () => {
+    if (socket) {
+      socket.emit('request_dashboard_stats');
     }
   };
 
   useEffect(() => {
+    if (!socket) return;
+
+    const handleResponse = (result) => {
+      if (result.success) {
+        setStats(result.data);
+      }
+      setLoading(false);
+    };
+
+    socket.on('response_dashboard_stats', handleResponse);
+
+    return () => {
+      socket.off('response_dashboard_stats', handleResponse);
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+    
     fetchStats();
+    
+    const handleUpdate = () => {
+      fetchStats();
+    };
+
+    window.addEventListener('superadmin_stats_updated', handleUpdate);
+
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchStats, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      window.removeEventListener('superadmin_stats_updated', handleUpdate);
+      clearInterval(interval);
+    };
+  }, [socket]);
 
   // Stats Calculations from admins array fallback
   const activeAdminsCount = admins.filter(a => (a.status || '').toLowerCase() !== 'inactive').length;
@@ -95,9 +116,68 @@ export default function DashboardOverview() {
 
   if (loading || !stats) {
     return (
-      <div className="py-20 flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-[3px] border-slate-200 border-t-slate-800 rounded-full animate-spin" style={{ borderTopColor: accentColor }} />
-        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Syncing Platform Metrics...</span>
+      <div className="space-y-8 animate-pulse">
+        {/* 1. StatCard Skeletons */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white p-6 border border-slate-200 rounded-[2rem] shadow-sm flex items-center justify-between">
+              <div className="space-y-3 flex-1">
+                <div className="h-2.5 bg-slate-200 rounded w-24 animate-pulse" />
+                <div className="h-8 bg-slate-200 rounded w-16 animate-pulse" />
+                <div className="h-4 bg-slate-200 rounded w-28 animate-pulse" />
+              </div>
+              <div className="w-14 h-14 bg-slate-200 rounded-2xl animate-pulse" />
+            </div>
+          ))}
+        </div>
+
+        {/* 2. Mini Resource Card Skeletons */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white p-5 border border-slate-200 rounded-2xl shadow-sm flex items-center gap-4">
+              <div className="w-10 h-10 bg-slate-200 rounded-xl animate-pulse" />
+              <div className="space-y-2 flex-1">
+                <div className="h-2 bg-slate-200 rounded w-20 animate-pulse" />
+                <div className="h-4 bg-slate-200 rounded w-24 animate-pulse" />
+                <div className="h-2 bg-slate-200 rounded w-32 animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 3. Chart & Donut Skeletons */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm h-[380px] flex flex-col justify-between">
+            <div className="flex justify-between items-center">
+              <div className="space-y-2">
+                <div className="h-4 bg-slate-200 rounded w-32 animate-pulse" />
+                <div className="h-2.5 bg-slate-200 rounded w-48 animate-pulse" />
+              </div>
+              <div className="w-24 h-8 bg-slate-200 rounded-xl animate-pulse" />
+            </div>
+            <div className="h-[250px] bg-slate-100 rounded-2xl w-full animate-pulse" />
+          </div>
+          <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm h-[380px] flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="h-4 bg-slate-200 rounded w-40 animate-pulse" />
+              <div className="h-2.5 bg-slate-200 rounded w-28 animate-pulse" />
+            </div>
+            <div className="w-36 h-36 bg-slate-200 rounded-full mx-auto animate-pulse" />
+            <div className="flex justify-center gap-6 mt-4">
+              <div className="h-3 bg-slate-200 rounded w-16 animate-pulse" />
+              <div className="h-3 bg-slate-200 rounded w-16 animate-pulse" />
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Table Skeleton */}
+        <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
+          <div className="space-y-2 mb-6">
+            <div className="h-4 bg-slate-200 rounded w-64 animate-pulse" />
+            <div className="h-2.5 bg-slate-200 rounded w-48 animate-pulse" />
+          </div>
+          <div className="h-64 bg-slate-50 rounded-2xl w-full animate-pulse" />
+        </div>
       </div>
     );
   }

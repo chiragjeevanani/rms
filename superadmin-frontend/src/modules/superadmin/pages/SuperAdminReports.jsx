@@ -5,18 +5,24 @@ import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 
 export default function SuperAdminReports() {
-  const { accentColor } = useOutletContext();
+  const { accentColor, socket } = useOutletContext();
   const [reportType, setReportType] = useState('branches'); // 'branches' | 'database' | 'activity'
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState('all');
 
   // Fetch stats to populate reports
-  const fetchReportData = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/dashboard-stats`);
-      const result = await res.json();
+  const fetchReportData = () => {
+    if (socket) {
+      setIsLoading(true);
+      socket.emit('request_dashboard_stats');
+    }
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleResponse = (result) => {
       if (result.success) {
         if (reportType === 'branches') {
           // Format branch utilization reports
@@ -55,16 +61,20 @@ export default function SuperAdminReports() {
           setRecords(activityLogs);
         }
       }
-    } catch (err) {
-      toast.error('Failed to compile reports metadata');
-    } finally {
       setIsLoading(false);
-    }
-  };
+    };
+
+    socket.on('response_dashboard_stats', handleResponse);
+
+    return () => {
+      socket.off('response_dashboard_stats', handleResponse);
+    };
+  }, [socket, reportType]);
 
   useEffect(() => {
+    if (!socket) return;
     fetchReportData();
-  }, [reportType]);
+  }, [socket, reportType]);
 
   // Export to CSV
   const handleExportCSV = () => {
@@ -264,10 +274,51 @@ export default function SuperAdminReports() {
       <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
         <div className="overflow-x-auto rounded-2xl border border-slate-100 bg-white">
           {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-2">
-              <Loader className="animate-spin text-slate-400" size={24} style={{ color: accentColor }} />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Generating analytical reports...</span>
-            </div>
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-slate-50/75 border-b border-slate-100">
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                    {reportType === 'activity' ? 'Activity ID' : 'Restaurant Identity'}
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+                    {reportType === 'activity' ? 'Node Name' : reportType === 'branches' ? 'Allocated Limits' : 'Orders Records'}
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+                    {reportType === 'activity' ? 'Operator' : reportType === 'branches' ? 'Used Branches' : 'Staff Records'}
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+                    {reportType === 'activity' ? 'Operation Dispatched' : reportType === 'branches' ? 'Available Pool' : 'Tables Records'}
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">
+                    {reportType === 'activity' ? 'Timestamp' : reportType === 'branches' ? 'Pool Utilization' : 'Combined Resource Score'}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {[...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-4">
+                      <div className="space-y-2 animate-pulse">
+                        <div className="h-3.5 bg-slate-200 rounded w-28" />
+                        <div className="h-2 bg-slate-200 rounded w-20" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="h-3.5 bg-slate-200 rounded w-16 mx-auto animate-pulse" />
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="h-3.5 bg-slate-200 rounded w-12 mx-auto animate-pulse" />
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="h-3.5 bg-slate-200 rounded w-20 mx-auto animate-pulse" />
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="h-6 bg-slate-200 rounded-lg w-24 ml-auto animate-pulse" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           ) : (
             <table className="w-full text-left border-collapse min-w-[800px]">
               {reportType === 'branches' && (

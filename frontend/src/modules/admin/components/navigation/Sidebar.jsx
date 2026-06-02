@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Store, Utensils, Box, Users, 
@@ -17,12 +17,24 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const adminInfo = useMemo(() => {
+  const [adminInfo, setAdminInfo] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('admin_info') || '{}');
     } catch (e) {
       return {};
     }
+  });
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        setAdminInfo(JSON.parse(localStorage.getItem('admin_info') || '{}'));
+      } catch (e) {}
+    };
+    window.addEventListener('admin_info_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('admin_info_updated', handleUpdate);
+    };
   }, []);
 
   const navGroups = useMemo(() => {
@@ -45,7 +57,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
               { label: 'Categories', path: '/admin/menu/categories' },
               { label: 'Items', path: '/admin/menu/items' },
               { label: 'Modifiers', path: '/admin/menu/modifiers' },
-              { label: 'Combo Meals', path: '/admin/menu/combos' },
+              { label: 'Combo Meals', path: '/admin/menu/xcombos' },
             ]
           },
         ]
@@ -117,7 +129,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
             subItems: [
               { label: 'Sales Reports', path: '/admin/reports/sales' },
               { label: 'Inventory Reports', path: '/admin/reports/inventory' },
-              ...(adminInfo.thirdPartyApi ? [{ label: 'Integrations', path: '/admin/settings/integrations' }] : []),
+              { label: 'Integrations', path: '/admin/settings/integrations' },
               { label: 'System Settings', path: '/admin/settings/profile' },
             ]
           },

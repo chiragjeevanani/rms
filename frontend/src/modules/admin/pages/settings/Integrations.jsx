@@ -14,6 +14,28 @@ import {
 import toast from 'react-hot-toast';
 
 export default function Integrations() {
+  const [adminInfo, setAdminInfo] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('admin_info') || '{}');
+    } catch (e) {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        setAdminInfo(JSON.parse(localStorage.getItem('admin_info') || '{}'));
+      } catch (e) {}
+    };
+    window.addEventListener('admin_info_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('admin_info_updated', handleUpdate);
+    };
+  }, []);
+
+  const isIntegrationEnabled = adminInfo.thirdPartyApi;
+
   const [branches, setBranches] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -248,6 +270,76 @@ export default function Integrations() {
     if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
     return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   };
+
+  if (!isIntegrationEnabled) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="max-w-md w-full bg-white border border-slate-200/80 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden"
+        >
+          {/* Decorative gradients */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col items-center text-center space-y-8 relative z-10">
+            {/* Lock Icon Wrapper */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-indigo-100 rounded-3xl blur-md scale-110 opacity-70 animate-pulse" />
+              <div className="w-20 h-20 bg-indigo-50 border border-indigo-100/50 text-indigo-600 rounded-3xl flex items-center justify-center shadow-inner relative">
+                {/* Lock icon with a key icon mini badge */}
+                <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-orange-500 text-white text-[10px] font-black rounded-lg flex items-center justify-center shadow-lg border border-orange-400">
+                  PRO
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-9 h-9">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Title & Description */}
+            <div className="space-y-3">
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase italic">
+                Swiggy & Zomato <span className="text-indigo-600">Integrations</span>
+              </h2>
+              <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest bg-amber-50 border border-amber-100/50 px-3 py-1.5 rounded-full inline-block">
+                Feature Locked
+              </p>
+              <p className="text-slate-500 text-sm font-medium leading-relaxed italic max-w-sm pt-2">
+                Manage your catalog, sync menus, and accept delivery orders directly through your RMS dashboard. Contact us to activate this feature for your account.
+              </p>
+            </div>
+
+            {/* Support Action Section */}
+            <div className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center justify-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <span className="w-8 h-px bg-slate-200" />
+                Contact support to unlock
+                <span className="w-8 h-px bg-slate-200" />
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <a 
+                  href="tel:9311472355" 
+                  className="w-full py-4 bg-slate-950 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-all flex items-center justify-center gap-3 cursor-pointer group"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.387a12.035 12.035 0 0 1-7.108-7.108c-.145-.44.02-.927.387-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                  </svg>
+                  Call +91 93114 72355
+                </a>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                  Support hours: 9 AM - 9 PM
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-10">

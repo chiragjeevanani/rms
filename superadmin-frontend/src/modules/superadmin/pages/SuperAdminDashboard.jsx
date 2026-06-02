@@ -6,6 +6,7 @@ import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useSuperAdminTheme } from '../context/SuperAdminThemeContext';
+import { io } from 'socket.io-client';
 
 // Provision Modal remains in the layout shell
 import ProvisionAdminModal from '../components/ProvisionAdminModal';
@@ -23,11 +24,25 @@ export default function SuperAdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [socket, setSocket] = useState(null);
 
   // Forms
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', branchLimit: 5, status: 'Active', thirdPartyApi: false
+    name: '', email: '', phone: '', branchLimit: 0, status: 'Inactive', thirdPartyIntegration: false,
+    dbUrl: '', appType: 'Admin', adminId: ''
   });
+
+  useEffect(() => {
+    if (isCreateModalOpen) {
+      const randomDepId = `DEP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+      setFormData(prev => ({
+        ...prev,
+        adminId: randomDepId,
+        dbUrl: '',
+        appType: 'Admin'
+      }));
+    }
+  }, [isCreateModalOpen]);
   
   const [passFormData, setPassFormData] = useState({
     currentPassword: '', newPassword: '', confirmPassword: ''
@@ -43,23 +58,57 @@ export default function SuperAdminDashboard() {
   });
 
   // ── Sync Database ───────────────────────────────────────────────────────────
-  const fetchData = async () => {
-    setIsSyncing(true);
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/global-admins`);
-      const data = await res.json();
-      if (data.success) setAdmins(data.data);
-    } catch (err) {
-      toast.error('Failed to sync node data');
-    } finally {
-      setTimeout(() => setIsSyncing(false), 800);
+  const fetchData = () => {
+    if (socket) {
+      setIsSyncing(true);
+      socket.emit('request_all_admins');
     }
   };
 
   useEffect(() => {
     const token = localStorage.getItem('superadmin_token');
     if (!token) navigate('/login');
-    fetchData();
+
+    const socketUrl = (import.meta.env.VITE_API_URL || '').replace('/api', '');
+    const socketInstance = io(socketUrl);
+    setSocket(socketInstance);
+
+    socketInstance.on('response_all_admins', (result) => {
+      if (result.success) {
+        setAdmins(result.data);
+      }
+      setIsSyncing(false);
+    });
+
+    socketInstance.on('admin_created', (data) => {
+      console.log('⚡ Admin created in real-time via socket:', data);
+      socketInstance.emit('request_all_admins');
+      window.dispatchEvent(new Event('superadmin_admins_updated'));
+    });
+
+    socketInstance.on('admin_updated', (data) => {
+      console.log('⚡ Admin updated in real-time via socket:', data);
+      socketInstance.emit('request_all_admins');
+      window.dispatchEvent(new Event('superadmin_admins_updated'));
+    });
+
+    socketInstance.on('admin_deleted', (data) => {
+      console.log('⚡ Admin deleted in real-time via socket:', data);
+      socketInstance.emit('request_all_admins');
+      window.dispatchEvent(new Event('superadmin_admins_updated'));
+    });
+
+    socketInstance.on('dashboard_stats_updated', () => {
+      console.log('⚡ Dashboard stats updated in real-time via socket');
+      window.dispatchEvent(new Event('superadmin_stats_updated'));
+    });
+
+    // Initial request
+    socketInstance.emit('request_all_admins');
+
+    return () => {
+      socketInstance.disconnect();
+    };
   }, []);
 
   // ── Provision Node (Admin Management) ───────────────────────────────────────
@@ -74,15 +123,18 @@ export default function SuperAdminDashboard() {
           name: formData.name,
           email: formData.email,
           branchLimit: formData.branchLimit,
-          thirdPartyApi: formData.thirdPartyApi,
+          thirdPartyIntegration: formData.thirdPartyIntegration,
           mobileNumber: formData.phone,
-          status: formData.status
+          status: formData.status,
+          dbUrl: formData.dbUrl,
+          appType: formData.appType,
+          adminId: formData.adminId
         })
       });
       const data = await res.json();
       if (data.success) {
         toast.success('Node Admin Provisioned Successfully');
-        setFormData({ name: '', email: '', phone: '', branchLimit: 5, status: 'Active', thirdPartyApi: false });
+        setFormData({ name: '', email: '', phone: '', branchLimit: 0, status: 'Inactive', thirdPartyIntegration: false, dbUrl: '', appType: 'Admin', adminId: '' });
         setIsCreateModalOpen(false);
         fetchData();
       } else {
@@ -283,7 +335,8 @@ export default function SuperAdminDashboard() {
                 setShowPasswords,
                 handlePasswordChange,
                 loading,
-                fetchData
+                fetchData,
+                socket
               }} />
             </motion.div>
           </AnimatePresence>

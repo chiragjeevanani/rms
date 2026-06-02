@@ -8,7 +8,8 @@ export default function AdminManagement() {
   const { 
     accentColor,
     toggleApi,
-    fetchData: syncGlobalData // kept to sync context if needed
+    fetchData: syncGlobalData, // kept to sync context if needed
+    socket
   } = useOutletContext();
 
   // Local Paginated States
@@ -24,23 +25,29 @@ export default function AdminManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editAdminEmail, setEditAdminEmail] = useState('');
   const [editFormData, setEditFormData] = useState({
-    name: '', email: '', phone: '', branchLimit: 5, status: 'Active', thirdPartyApi: false
+    name: '', email: '', phone: '', branchLimit: 5, status: 'Active', thirdPartyIntegration: false,
+    dbUrl: '', appType: 'Admin', adminId: ''
   });
   const [actionLoading, setActionLoading] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(null); // stores email being resent
 
   // Fetch paginated global admins
-  const fetchPaginatedAdmins = async () => {
-    setIsLoading(true);
-    try {
-      const queryParams = new URLSearchParams({
+  const fetchPaginatedAdmins = () => {
+    if (socket) {
+      setIsLoading(true);
+      socket.emit('request_global_admins', {
         page: currentPage,
         limit,
         search,
         status: statusFilter
       });
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/global-admins?${queryParams}`);
-      const result = await res.json();
+    }
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleResponse = (result) => {
       if (result.success) {
         setAdmins(result.data);
         if (result.pagination) {
@@ -48,16 +55,31 @@ export default function AdminManagement() {
           setTotalCount(result.pagination.totalCount || 0);
         }
       }
-    } catch (err) {
-      toast.error('Failed to load provisioned administrators');
-    } finally {
       setIsLoading(false);
-    }
-  };
+    };
+
+    socket.on('response_global_admins', handleResponse);
+
+    return () => {
+      socket.off('response_global_admins', handleResponse);
+    };
+  }, [socket]);
 
   useEffect(() => {
+    if (!socket) return;
     fetchPaginatedAdmins();
-  }, [currentPage, search, statusFilter]);
+  }, [socket, currentPage, search, statusFilter]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleUpdate = () => {
+      fetchPaginatedAdmins();
+    };
+    window.addEventListener('superadmin_admins_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('superadmin_admins_updated', handleUpdate);
+    };
+  }, [socket, currentPage, search, statusFilter]);
 
   // Reset page on search/filter changes
   const handleSearchChange = (val) => {
@@ -99,9 +121,12 @@ export default function AdminManagement() {
       name: admin.name ? admin.name.replace('Admin - ', '') : '',
       email: admin.email,
       phone: admin.mobileNumber || '',
-      branchLimit: admin.branchLimit || 5,
-      status: admin.status ? (admin.status.charAt(0).toUpperCase() + admin.status.slice(1)) : 'Active',
-      thirdPartyApi: admin.thirdPartyApi || false
+      branchLimit: admin.branchLimit ?? 0,
+      status: admin.status ? (admin.status.charAt(0).toUpperCase() + admin.status.slice(1)) : 'Inactive',
+      thirdPartyIntegration: admin.thirdPartyIntegration || false,
+      dbUrl: admin.dbUrl || '',
+      appType: admin.appType || 'Admin',
+      adminId: admin.adminId || ''
     });
     setIsEditModalOpen(true);
   };
@@ -120,7 +145,10 @@ export default function AdminManagement() {
           mobileNumber: editFormData.phone,
           branchLimit: editFormData.branchLimit,
           status: editFormData.status,
-          thirdPartyApi: editFormData.thirdPartyApi
+          thirdPartyIntegration: editFormData.thirdPartyIntegration,
+          dbUrl: editFormData.dbUrl,
+          appType: editFormData.appType,
+          adminId: editFormData.adminId
         })
       });
       const data = await res.json();
@@ -226,62 +254,103 @@ export default function AdminManagement() {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          style={{ backgroundColor: accentColor }}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-black uppercase tracking-widest text-[10px] shadow-lg transition-all hover:brightness-95 active:scale-[0.98] cursor-pointer shrink-0"
-        >
-          <Plus size={16} />
-          <span>Create Admin</span>
-        </button>
+     
       </div>
 
       {/* Admin List Table */}
       <div className="p-6">
         <div className="overflow-x-auto rounded-[2rem] border border-slate-200 bg-white shadow-sm no-scrollbar">
-          {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-2">
-              <Loader className="animate-spin text-slate-400" size={24} />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Querying central databases...</span>
-            </div>
-          ) : (
-            <table className="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr className="bg-slate-50/75 border-b border-slate-200">
-                  <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Administrator</th>
-                  <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Email Address</th>
-                  <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Mobile Number</th>
-                  <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Branch Allocation</th>
-                  <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">API Protocol</th>
-                  <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Node Status</th>
-                  <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {admins.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="px-8 py-20 text-center text-slate-300 italic text-[11px]">No node admins provisioned matching the filters.</td>
+          <table className="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr className="bg-slate-50/75 border-b border-slate-200">
+                <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Deployment / Admin</th>
+                <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Deployment Details</th>
+                <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Database URL</th>
+                <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Branch Allocation</th>
+                <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">API Protocol</th>
+                <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Node Status</th>
+                <th className="px-8 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {isLoading ? (
+                [...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-3 animate-pulse">
+                        <div className="w-10 h-10 rounded-xl bg-slate-200" />
+                        <div className="space-y-2 flex-1">
+                          <div className="h-3 bg-slate-200 rounded w-28" />
+                          <div className="h-2 bg-slate-200 rounded w-20" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="space-y-2 animate-pulse">
+                        <div className="h-3 bg-slate-200 rounded w-36" />
+                        <div className="h-2 bg-slate-200 rounded w-24" />
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="h-5 bg-slate-200 rounded w-32 animate-pulse" />
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="space-y-1.5 flex flex-col items-center animate-pulse">
+                        <div className="h-3 bg-slate-200 rounded w-8" />
+                        <div className="h-2 bg-slate-200 rounded w-12" />
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-center">
+                      <div className="h-8 bg-slate-200 rounded-xl w-20 mx-auto animate-pulse" />
+                    </td>
+                    <td className="px-8 py-5 text-center">
+                      <div className="h-6 bg-slate-200 rounded-full w-20 mx-auto animate-pulse" />
+                    </td>
+                    <td className="px-8 py-5 text-center">
+                      <div className="flex justify-center gap-3 animate-pulse">
+                        <div className="w-8 h-8 rounded-xl bg-slate-200" />
+                        <div className="w-8 h-8 rounded-xl bg-slate-200" />
+                        <div className="w-8 h-8 rounded-xl bg-slate-200" />
+                        <div className="w-8 h-8 rounded-xl bg-slate-200" />
+                      </div>
+                    </td>
                   </tr>
-                ) : (
-                  admins.map(admin => (
+                ))
+              ) : admins.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="px-8 py-20 text-center text-slate-300 italic text-[11px]">No node admins provisioned matching the filters.</td>
+                </tr>
+              ) : (
+                admins.map(admin => (
                     <tr key={admin._id} className="hover:bg-slate-50/30 transition-all duration-200">
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-3">
-                          {admin.profileImg ? (
-                            <img src={admin.profileImg} className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-sm" alt="admin" />
-                          ) : (
-                            <div 
-                              style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}
-                              className="w-10 h-10 rounded-xl text-white font-black text-sm flex items-center justify-center shadow-sm"
-                            >
-                              {admin.name ? admin.name.replace('Admin - ', '').charAt(0).toUpperCase() : 'A'}
-                            </div>
-                          )}
-                          <span className="text-[12px] font-black text-slate-800 uppercase tracking-tight">{admin.name ? admin.name.replace('Admin - ', '') : 'N/A'}</span>
+                          <div 
+                            style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}
+                            className="w-10 h-10 rounded-xl text-white font-black text-[9px] flex flex-col items-center justify-center shadow-sm"
+                          >
+                            <span className="opacity-75 font-black uppercase tracking-tighter">{admin.appType || 'ADMIN'}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[12px] font-black text-slate-800 uppercase tracking-tight">{admin.name ? admin.name.replace('Admin - ', '') : 'N/A'}</span>
+                            <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase mt-0.5">{admin.adminId || 'N/A'}</span>
+                          </div>
                         </div>
                       </td>
-                      <td className="px-8 py-5 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">{admin.email}</td>
-                      <td className="px-8 py-5 text-[11px] font-extrabold text-slate-500 tracking-wider">{admin.mobileNumber || 'N/A'}</td>
+                      <td className="px-8 py-5">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-extrabold text-slate-800 tracking-wider">{admin.email}</span>
+                          <span className="text-[9px] font-bold text-slate-400 tracking-wide mt-0.5">{admin.mobileNumber || 'NO PHONE'}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5">
+                        <span 
+                          title={admin.dbUrl}
+                          className="text-[10px] font-mono bg-slate-50 px-2 py-1 border border-slate-100 rounded-md text-slate-500 max-w-[180px] inline-block truncate hover:text-slate-850 transition-colors"
+                        >
+                          {admin.dbUrl || 'N/A'}
+                        </span>
+                      </td>
                       
                       {/* Branch limit / Allocation progress display */}
                       <td className="px-8 py-5">
@@ -294,11 +363,11 @@ export default function AdminManagement() {
                       <td className="px-8 py-5 text-center">
                         <button 
                           onClick={() => toggleApi(admin.email)}
-                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl transition-all border shadow-sm cursor-pointer ${admin.thirdPartyApi ? 'text-slate-800' : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-655 hover:bg-slate-100'}`}
-                          style={admin.thirdPartyApi ? { color: accentColor, borderColor: `${accentColor}44`, backgroundColor: `${accentColor}0f` } : {}}
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl transition-all border shadow-sm cursor-pointer ${admin.thirdPartyIntegration ? 'text-slate-800' : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-655 hover:bg-slate-100'}`}
+                          style={admin.thirdPartyIntegration ? { color: accentColor, borderColor: `${accentColor}44`, backgroundColor: `${accentColor}0f` } : {}}
                         >
                           <Zap size={13} className="stroke-[2.5]" />
-                          <span className="text-[8px] font-black uppercase tracking-wider">{admin.thirdPartyApi ? 'Active' : 'Disabled'}</span>
+                          <span className="text-[8px] font-black uppercase tracking-wider">{admin.thirdPartyIntegration ? 'Active' : 'Disabled'}</span>
                         </button>
                       </td>
                       <td className="px-8 py-5 text-center">
@@ -363,7 +432,6 @@ export default function AdminManagement() {
                 )}
               </tbody>
             </table>
-          )}
         </div>
 
         {/* Backend-Driven Pagination Controls */}
@@ -480,6 +548,46 @@ export default function AdminManagement() {
                       <option>Active</option>
                       <option>Inactive</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* MongoDB Connection URL */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">MongoDB Connection URL</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={editFormData.dbUrl || ''} 
+                    onChange={e => setEditFormData({...editFormData, dbUrl: e.target.value})} 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
+                    placeholder="mongodb+srv://username:password@cluster.mongodb.net/dbname" 
+                  />
+                </div>
+
+                {/* App Type & Deployment ID */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">App Type Calibration</label>
+                    <select 
+                      value={editFormData.appType || 'Admin'} 
+                      onChange={e => setEditFormData({...editFormData, appType: e.target.value})} 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-505 focus:outline-none transition-all"
+                    >
+                      <option value="Admin">Admin Portal</option>
+                      <option value="POS">POS System</option>
+                      <option value="KDS">KDS Screen</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Deployment ID</label>
+                    <input 
+                      type="text" 
+                      required 
+                      value={editFormData.adminId || ''} 
+                      onChange={e => setEditFormData({...editFormData, adminId: e.target.value})} 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-350" 
+                      placeholder="e.g. DEP-ROYAL01" 
+                    />
                   </div>
                 </div>
 

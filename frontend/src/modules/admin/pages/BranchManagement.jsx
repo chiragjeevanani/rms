@@ -14,6 +14,7 @@ export default function BranchManagement() {
   const [editingBranch, setEditingBranch] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [branchLimit, setBranchLimit] = useState(5);
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -35,7 +36,22 @@ export default function BranchManagement() {
 
   useEffect(() => {
     fetchBranches();
+    fetchBranchLimit();
   }, []);
+
+  const fetchBranchLimit = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/profile`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setBranchLimit(data.branchLimit ?? 5);
+      }
+    } catch (err) {
+      console.error('Failed to fetch branch limit:', err);
+    }
+  };
 
   const fetchBranches = async () => {
     try {
@@ -56,6 +72,9 @@ export default function BranchManagement() {
   };
 
   const handleOpenModal = (branch = null) => {
+    if (!branch && branches.length >= branchLimit) {
+      return toast.error(`Branch creation limit reached. Maximum allowed is ${branchLimit}. Contact support to increase the limit.`);
+    }
     if (branch) {
       setEditingBranch(branch);
       setFormData({
@@ -86,6 +105,9 @@ export default function BranchManagement() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!editingBranch && branches.length >= branchLimit) {
+      return toast.error(`Branch creation limit reached. Maximum allowed is ${branchLimit}. Contact support to increase the limit.`);
+    }
     const url = editingBranch 
       ? `${import.meta.env.VITE_API_URL}/branches/${editingBranch._id}`
       : `${import.meta.env.VITE_API_URL}/branches`;
@@ -93,7 +115,13 @@ export default function BranchManagement() {
     const method = editingBranch ? 'PUT' : 'POST';
 
     // Get restaurantId from logged-in admin's localStorage
-    const restaurantId = localStorage.getItem('admin_restaurantId');
+    let restaurantId = localStorage.getItem('admin_restaurantId');
+    if (!restaurantId || restaurantId === 'undefined' || restaurantId === 'null') {
+      try {
+        const info = JSON.parse(localStorage.getItem('admin_info') || '{}');
+        restaurantId = info.restaurantId;
+      } catch (err) {}
+    }
     const payload = { 
       ...formData, 
       restaurantId: restaurantId || formData.restaurantId
@@ -142,6 +170,9 @@ export default function BranchManagement() {
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Manage restaurant locations, contact info and status</p>
         </div>
         <div className="flex items-center gap-4">
+          <div className="bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg text-slate-700 text-[10px] font-black uppercase tracking-widest">
+            Branches: {branches.length} / {branchLimit}
+          </div>
           <button 
             onClick={() => handleOpenModal()}
             className="h-10 px-6 bg-slate-900 text-white rounded-lg text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all"

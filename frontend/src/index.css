@@ -17,6 +17,19 @@
   --color-brand-800: color-mix(in srgb, var(--primary-color, #ff7a00), black 40%);
   --color-brand-900: color-mix(in srgb, var(--primary-color, #ff7a00), black 55%);
 
+  /* Orange overrides to support dynamic theme color */
+  --color-orange-50: color-mix(in srgb, var(--primary-color, #ff7a00) 5%, white);
+  --color-orange-100: color-mix(in srgb, var(--primary-color, #ff7a00) 10%, white);
+  --color-orange-200: color-mix(in srgb, var(--primary-color, #ff7a00) 30%, white);
+  --color-orange-300: color-mix(in srgb, var(--primary-color, #ff7a00) 50%, white);
+  --color-orange-400: color-mix(in srgb, var(--primary-color, #ff7a00) 70%, white);
+  --color-orange-500: var(--primary-color, #ff7a00);
+  --color-orange-600: color-mix(in srgb, var(--primary-color, #ff7a00), black 10%);
+  --color-orange-700: color-mix(in srgb, var(--primary-color, #ff7a00), black 25%);
+  --color-orange-800: color-mix(in srgb, var(--primary-color, #ff7a00), black 40%);
+  --color-orange-900: color-mix(in srgb, var(--primary-color, #ff7a00), black 55%);
+  --color-orange-950: color-mix(in srgb, var(--primary-color, #ff7a00), black 70%);
+
   /* Surfaces */
   --color-cream-50: #fffaf5;
   --color-cream-100: #fff4e8;
@@ -150,6 +163,82 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-family-sans); }
 
 .border-amber-500, .border-\[\#ff7a00\] {
   border-color: var(--admin-primary) !important;
+}
+
+/* Global Arbitrary Override classes for POS, KDS, Staff, Customer */
+.bg-\[\#ff7a00\],
+[class*="bg-[#ff7a00]"] {
+  background-color: var(--primary-color) !important;
+}
+.hover\:bg-\[\#ff7a00\]:hover,
+[class*="hover:bg-[#ff7a00]"]:hover {
+  background-color: var(--primary-color) !important;
+}
+.text-\[\#ff7a00\],
+[class*="text-[#ff7a00]"] {
+  color: var(--primary-color) !important;
+}
+.border-\[\#ff7a00\],
+.border-t-\[\#ff7a00\],
+[class*="border-[#ff7a00]"],
+[class*="border-t-[#ff7a00]"] {
+  border-color: var(--primary-color) !important;
+}
+
+/* Darker hover/active colors (ea6c00 is KDS dashboard/sidebar hover) */
+.bg-\[\#ea6c00\],
+.hover\:bg-\[\#ea6c00\]:hover {
+  background-color: color-mix(in srgb, var(--primary-color), black 10%) !important;
+}
+.text-\[\#ea6c00\] {
+  color: color-mix(in srgb, var(--primary-color), black 10%) !important;
+}
+
+/* Semi-transparent background/text variants */
+.bg-\[\#ff7a00\]\/5 {
+  background-color: color-mix(in srgb, var(--primary-color) 5%, transparent) !important;
+}
+.bg-\[\#ff7a00\]\/10 {
+  background-color: color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+}
+.bg-\[\#ff7a00\]\/20 {
+  background-color: color-mix(in srgb, var(--primary-color) 20%, transparent) !important;
+}
+.bg-\[\#ff7a00\]\/30 {
+  background-color: color-mix(in srgb, var(--primary-color) 30%, transparent) !important;
+}
+.text-\[\#ff7a00\]\/10 {
+  color: color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+}
+.text-\[\#ff7a00\]\/20 {
+  color: color-mix(in srgb, var(--primary-color) 20%, transparent) !important;
+}
+
+/* Shadow variants */
+.shadow-\[\#ff7a00\]\/20 {
+  --tw-shadow-color: color-mix(in srgb, var(--primary-color) 20%, transparent) !important;
+}
+.shadow-\[\#ff7a00\]\/30 {
+  --tw-shadow-color: color-mix(in srgb, var(--primary-color) 30%, transparent) !important;
+}
+.shadow-\[\#ff7a00\]\/40 {
+  --tw-shadow-color: color-mix(in srgb, var(--primary-color) 40%, transparent) !important;
+}
+
+/* Focus and active classes */
+.focus\:border-\[\#ff7a00\]:focus {
+  border-color: var(--primary-color) !important;
+}
+.focus\:ring-\[\#ff7a00\]\/20:focus {
+  --tw-ring-color: color-mix(in srgb, var(--primary-color) 20%, transparent) !important;
+}
+.group-hover\:text-\[\#ff7a00\]:hover,
+.group:hover .group-hover\:text-\[\#ff7a00\] {
+  color: var(--primary-color) !important;
+}
+.group-hover\:bg-\[\#ff7a00\]:hover,
+.group:hover .group-hover\:bg-\[\#ff7a00\] {
+  background-color: var(--primary-color) !important;
 }
 
 /* Admin Sidebar Variants */

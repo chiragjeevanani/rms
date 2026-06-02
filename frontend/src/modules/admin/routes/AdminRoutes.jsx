@@ -128,14 +128,7 @@ export default function AdminRoutes() {
           <Route path="settings" element={<SystemSettings />} />
           <Route path="settings/profile" element={<AccountSettings />} />
           <Route path="settings/security" element={<AccountSettings />} />
-          {(() => {
-            try {
-              const info = JSON.parse(localStorage.getItem('admin_info') || '{}');
-              return info?.thirdPartyApi ? (
-                <Route path="settings/integrations" element={<Integrations />} />
-              ) : null;
-            } catch (e) { return null; }
-          })()}
+          <Route path="settings/integrations" element={<Integrations />} />
           <Route path="settings/:section" element={<SystemSettings />} />
 
           {/* Handle missing sub-routes by redirecting to Admin Dashboard */}
