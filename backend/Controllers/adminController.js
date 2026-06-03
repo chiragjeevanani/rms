@@ -23,7 +23,7 @@ const loginAdmin = async (req, res) => {
     // Check account status via Restaurant record
     const Restaurant = require('../Models/Restaurant');
     const restaurant = await Restaurant.findOne({ email });
-    if (restaurant && restaurant.status === 'inactive') {
+    if (restaurant && restaurant.isActive === false) {
       return res.status(403).json({
         message: 'Your account has been deactivated. Please contact your system administrator to regain access.',
         code: 'ACCOUNT_INACTIVE'
