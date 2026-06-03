@@ -201,6 +201,11 @@ export default function Categories() {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size cannot exceed 10MB');
+      return;
+    }
+
     const uploadData = new FormData();
     uploadData.append('profileImg', file); // API expects 'profileImg' key from previous setup
 

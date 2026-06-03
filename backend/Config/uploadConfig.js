@@ -11,8 +11,9 @@ if (!fs.existsSync(uploadDir)) {
 // Use memory storage to process image before saving
 const storage = multer.memoryStorage();
 
-const upload = multer({
+const rawUpload = multer({
   storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
     const filetypes = /jpeg|jpg|png|webp|gif|avif|heic|heif/;
     const mimetype = filetypes.test(file.mimetype);
@@ -24,6 +25,24 @@ const upload = multer({
     cb(new Error('Only images are allowed (jpeg, jpg, png, webp, gif, avif, etc.)'));
   }
 });
+
+// Custom upload object that wraps single() to handle Multer errors gracefully
+const upload = {
+  single: (fieldName) => {
+    const middleware = rawUpload.single(fieldName);
+    return (req, res, next) => {
+      middleware(req, res, (err) => {
+        if (err) {
+          if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ message: 'Image size cannot exceed 10MB' });
+          }
+          return res.status(400).json({ message: err.message });
+        }
+        next();
+      });
+    };
+  }
+};
 
 // Middleware to process image: Convert to WebP and save locally
 const processImage = async (req, res, next) => {

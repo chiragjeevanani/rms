@@ -52,7 +52,9 @@ export default function StaffList() {
 
   const fetchRoles = async () => {
      try {
-       const res = await fetch(`${import.meta.env.VITE_API_URL}/role`);
+       const res = await fetch(`${import.meta.env.VITE_API_URL}/role`, {
+         headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
+       });
        const data = await res.json();
        setRoles(Array.isArray(data) ? data.filter(r => r.status === 'Published') : []);
      } catch (err) {

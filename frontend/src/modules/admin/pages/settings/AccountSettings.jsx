@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, Camera, Save, Loader2, Lock, 
-  ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Package
+  ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Package, Sliders
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useAdminTheme } from '../../context/AdminThemeContext';
 
 export default function AccountSettings() {
   
   // Profile State
+  const { primaryColor, setPrimaryColor } = useAdminTheme();
   const [admin, setAdmin] = useState({ name: '', email: '', profileImg: '', restaurantName: '', mobileNumber: '', address: '' });
   const [branchLimit, setBranchLimit] = useState(5);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
@@ -58,6 +60,11 @@ export default function AccountSettings() {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size cannot exceed 10MB');
+      return;
+    }
 
     const formData = new FormData();
     formData.append('profileImg', file);
@@ -383,6 +390,64 @@ export default function AccountSettings() {
             </form>
           </motion.div>
 
+          {/* Theme Customization Card */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-stone-200"
+          >
+            <div className="bg-[#2C2C2C] px-8 py-8 text-white relative flex items-center justify-between">
+              <div>
+                 <h2 className="text-xl font-black uppercase tracking-widest leading-tight">Theme Studio</h2>
+                 <p className="text-amber-400 text-[9px] font-bold uppercase tracking-[0.3em] mt-1">Aesthetics & Accent Color</p>
+              </div>
+              <Sliders size={24} className="text-white/20" />
+            </div>
+
+            <div className="p-8 space-y-6">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-500">Color Palette</p>
+                <div className="relative">
+                  <input 
+                    type="color" 
+                    value={primaryColor} 
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                  />
+                  <div className="flex items-center gap-2 bg-stone-50 px-4 py-2 rounded-2xl border border-stone-200 shadow-sm cursor-pointer hover:bg-white transition-all">
+                    <div className="w-4 h-4 rounded-full shadow-inner" style={{ backgroundColor: primaryColor }} />
+                    <span className="text-[9px] font-black text-stone-800 uppercase tracking-widest">Custom Tint</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                {[
+                  { color: '#ff7a00', name: 'RMS Orange' },
+                  { color: '#2C2C2C', name: 'Charcoal Black' },
+                  { color: '#3B82F6', name: 'Electric Blue' },
+                  { color: '#EF4444', name: 'Passion Red' },
+                  { color: '#10B981', name: 'Emerald Green' },
+                  { color: '#8B5CF6', name: 'Royal Purple' },
+                  { color: '#EC4899', name: 'Ruby Pink' },
+                  { color: '#06B6D4', name: 'Ocean Cyan' }
+                ].map((preset) => (
+                  <button
+                    key={preset.color}
+                    type="button"
+                    onClick={() => setPrimaryColor(preset.color)}
+                    className="group relative aspect-square rounded-2xl transition-all duration-300 hover:scale-105 flex items-center justify-center shadow-sm cursor-pointer border border-stone-100"
+                    style={{ backgroundColor: preset.color }}
+                    title={preset.name}
+                  >
+                    {primaryColor === preset.color && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-white shadow-xl animate-pulse" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
 
         </div>
       </div>

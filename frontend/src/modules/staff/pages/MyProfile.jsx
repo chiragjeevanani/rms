@@ -112,6 +112,11 @@ export default function MyProfile() {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size cannot exceed 10MB');
+      return;
+    }
+
     setIsUploading(true);
     const formDataUpload = new FormData();
     formDataUpload.append('profileImg', file);
