@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const SUPERADMIN_DB_URL = "mongodb://superadmin123!%23:superadmin%40123@210.56.147.234:27017/RMS-Superadmin?authSource=admin";
+const SUPERADMIN_DB_URL = "SUPERADMIN_DB_URL=mongodb://superadmin:SuperAdmin123@210.56.147.234:27017/RMS-Superadmin?authSource=admin";
 
 const connectDB = async () => {
   try {
