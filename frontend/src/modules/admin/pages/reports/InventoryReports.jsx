@@ -4,7 +4,7 @@ import {
   TrendingDown, TrendingUp, Search, Calendar, Filter, Activity,
   Trash2, ArrowUpRight, ChevronRight, Layers, Box
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import BranchSelector from '../../components/BranchSelector';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -149,13 +149,13 @@ export default function InventoryReports() {
         
         <div className="flex items-center gap-3">
           <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
-             <button 
+             <button type="button" 
                 onClick={() => setView('distribution')}
                 className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'distribution' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
              >
                 Capital Dist.
              </button>
-             <button 
+             <button type="button" 
                 onClick={() => setView('wastage')}
                 className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'wastage' ? 'bg-rose-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
              >
@@ -170,7 +170,7 @@ export default function InventoryReports() {
           />
 
           <div className="relative">
-            <button 
+            <button type="button" 
               onClick={() => setIsExportOpen(!isExportOpen)}
               className="h-[58px] px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
             >
@@ -181,13 +181,13 @@ export default function InventoryReports() {
 
             <AnimatePresence>
               {isExportOpen && (
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
                   className="absolute right-0 mt-3 w-48 bg-white rounded-3xl shadow-2xl border border-slate-100 p-2 z-50"
                 >
-                  <button 
+                  <button type="button" 
                     onClick={handleExportCSV}
                     className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-3"
                   >
@@ -196,7 +196,7 @@ export default function InventoryReports() {
                     </div>
                     CSV Format
                   </button>
-                  <button 
+                  <button type="button" 
                     onClick={handleExportPDF}
                     className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-3"
                   >
@@ -205,7 +205,7 @@ export default function InventoryReports() {
                     </div>
                     PDF Document
                   </button>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
@@ -305,7 +305,7 @@ export default function InventoryReports() {
                        <span className="text-[10px] font-black text-slate-400">{cat.items} SKUs</span>
                     </div>
                     <div className="w-full h-2 bg-slate-50 rounded-full overflow-hidden">
-                       <motion.div 
+                       <m.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${(cat.value / Math.max(...categories.map(c => c.value))) * 100}%` }}
                           className="h-full bg-slate-900 group-hover:bg-indigo-500 transition-colors"

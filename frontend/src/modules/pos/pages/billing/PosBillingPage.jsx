@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Minus, X, Check, CreditCard, Banknote, Smartphone, Receipt, Printer, Pause, Spline, Trash2, Clock, User, Phone, MapPin, Truck, ChevronRight, Hash, ShoppingCart } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function PosBillingPage() {
@@ -76,7 +76,7 @@ export default function PosBillingPage() {
         <div className="p-4 border-b border-slate-200 bg-slate-50 shrink-0">
           <div className="flex bg-slate-200/50 p-1 rounded-xl mb-4">
             {['dine_in', 'delivery', 'pick_up'].map(tab => (
-              <button 
+              <button type="button" 
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === tab ? 'bg-white text-[var(--primary-color)] shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
@@ -87,7 +87,7 @@ export default function PosBillingPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            <motion.div 
+            <m.div 
               key={activeTab}
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
@@ -145,7 +145,7 @@ export default function PosBillingPage() {
                   </div>
                 </>
               )}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
 
@@ -159,7 +159,7 @@ export default function PosBillingPage() {
           ) : (
             <AnimatePresence>
               {cart.map((item) => (
-                <motion.div 
+                <m.div 
                   key={item.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -173,18 +173,18 @@ export default function PosBillingPage() {
                   
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
-                      <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 flex items-center justify-center bg-white rounded shadow-sm text-slate-600 hover:text-[var(--primary-color)]"><Minus size={14}/></button>
+                      <button type="button" onClick={() => updateQty(item.id, -1)} className="w-7 h-7 flex items-center justify-center bg-white rounded shadow-sm text-slate-600 hover:text-[var(--primary-color)]"><Minus size={14}/></button>
                       <span className="w-6 text-center text-sm font-bold">{item.qty}</span>
-                      <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 flex items-center justify-center bg-white rounded shadow-sm text-slate-600 hover:text-[var(--primary-color)]"><Plus size={14}/></button>
+                      <button type="button" onClick={() => updateQty(item.id, 1)} className="w-7 h-7 flex items-center justify-center bg-white rounded shadow-sm text-slate-600 hover:text-[var(--primary-color)]"><Plus size={14}/></button>
                     </div>
                     <div className="w-16 text-right">
                       <span className="text-sm font-black text-slate-800">₹ {item.price * item.qty}</span>
                     </div>
-                    <button onClick={() => removeItem(item.id)} className="text-slate-300 hover:text-red-500 transition-colors">
+                    <button type="button" onClick={() => removeItem(item.id)} className="text-slate-300 hover:text-red-500 transition-colors">
                       <Trash2 size={16} />
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               ))}
             </AnimatePresence>
           )}
@@ -209,7 +209,7 @@ export default function PosBillingPage() {
           
           <div className="grid grid-cols-5 gap-2 mb-4">
             {[{icon: Banknote, label: 'Cash'}, {icon: CreditCard, label: 'Card'}, {icon: Smartphone, label: 'UPI'}, {icon: Spline, label: 'Split'}, {icon: Clock, label: 'Due'}].map(method => (
-              <button key={method.label} className="flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-slate-200 hover:border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 text-slate-600 hover:text-[var(--primary-color)] transition-all">
+              <button type="button" key={method.label} className="flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-slate-200 hover:border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 text-slate-600 hover:text-[var(--primary-color)] transition-all">
                 <method.icon size={18} className="mb-1" />
                 <span className="text-[9px] font-black uppercase tracking-wider">{method.label}</span>
               </button>
@@ -217,14 +217,14 @@ export default function PosBillingPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-             <button onClick={() => handleAction('KOT')} className="py-3 bg-slate-800 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 shadow-lg active:scale-95 transition-all">KOT</button>
-             <button onClick={() => handleAction('KOT & Print')} className="py-3 bg-slate-800 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">KOT <Printer size={14}/></button>
-             <button onClick={() => handleAction('Save')} className="py-3 bg-[var(--primary-color)] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[var(--primary-color)]/30 active:scale-95 transition-all">Save Bill</button>
-             <button onClick={() => handleAction('Save & Print')} className="py-3 bg-[var(--primary-color)] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[var(--primary-color)]/30 active:scale-95 transition-all flex items-center justify-center gap-2">Save <Printer size={14}/></button>
+             <button type="button" onClick={() => handleAction('KOT')} className="py-3 bg-slate-800 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 shadow-lg active:scale-95 transition-all">KOT</button>
+             <button type="button" onClick={() => handleAction('KOT & Print')} className="py-3 bg-slate-800 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">KOT <Printer size={14}/></button>
+             <button type="button" onClick={() => handleAction('Save')} className="py-3 bg-[var(--primary-color)] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[var(--primary-color)]/30 active:scale-95 transition-all">Save Bill</button>
+             <button type="button" onClick={() => handleAction('Save & Print')} className="py-3 bg-[var(--primary-color)] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[var(--primary-color)]/30 active:scale-95 transition-all flex items-center justify-center gap-2">Save <Printer size={14}/></button>
           </div>
           <div className="flex gap-2 mt-2">
-            <button onClick={() => handleAction('Hold')} className="flex-1 py-2 bg-amber-500 text-white rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-amber-600 transition-all flex items-center justify-center gap-1"><Pause size={12}/> Hold</button>
-            <button onClick={() => handleAction('Clear Table')} className="flex-1 py-2 bg-red-500 text-white rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-1"><X size={12}/> Clear</button>
+            <button type="button" onClick={() => handleAction('Hold')} className="flex-1 py-2 bg-amber-500 text-white rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-amber-600 transition-all flex items-center justify-center gap-1"><Pause size={12}/> Hold</button>
+            <button type="button" onClick={() => handleAction('Clear Table')} className="flex-1 py-2 bg-red-500 text-white rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-1"><X size={12}/> Clear</button>
           </div>
         </div>
       </div>
@@ -247,7 +247,7 @@ export default function PosBillingPage() {
         <div className="px-4 pt-4 pb-0 shrink-0 overflow-x-auto no-scrollbar">
           <div className="flex gap-2">
             {categories.map(cat => (
-              <button 
+              <button type="button" 
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-[var(--primary-color)] text-white shadow-lg shadow-[var(--primary-color)]/30' : 'bg-white text-slate-500 hover:bg-slate-200'}`}
@@ -261,7 +261,7 @@ export default function PosBillingPage() {
         <div className="flex-1 overflow-y-auto p-4">
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {filteredItems.map(item => (
-              <motion.button
+              <m.button
                 layout
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -280,7 +280,7 @@ export default function PosBillingPage() {
                     <Plus size={16} />
                   </div>
                 </div>
-              </motion.button>
+              </m.button>
             ))}
             {filteredItems.length === 0 && (
               <div className="col-span-full py-12 flex flex-col items-center justify-center text-slate-400">

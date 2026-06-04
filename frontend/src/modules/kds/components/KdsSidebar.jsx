@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, LogOut,
   Bell, Monitor, Clock
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const NAV_ITEMS = [
   {
@@ -91,7 +91,7 @@ export default function KdsSidebar({ isCollapsed, setIsCollapsed }) {
                     
                     {/* Active Indicator */}
                     {isActive && (
-                      <motion.div 
+                      <m.div 
                         layoutId="active-pill"
                         className="absolute left-0 w-1 h-6 bg-[#D4AF37] rounded-r-full"
                       />
@@ -120,7 +120,7 @@ export default function KdsSidebar({ isCollapsed, setIsCollapsed }) {
 
       {/* Footer Actions */}
       <div className="p-4 border-t border-white/5 bg-[#ea6c00]/50 space-y-2">
-        <button 
+        <button type="button" 
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="w-full h-10 flex items-center justify-center gap-3 rounded-xl border border-white/5 text-stone-400 hover:text-white hover:bg-white/5 transition-all outline-none"
         >
@@ -131,7 +131,7 @@ export default function KdsSidebar({ isCollapsed, setIsCollapsed }) {
             </>
           )}
         </button>
-        <button 
+        <button type="button" 
           onClick={() => {
             localStorage.removeItem('kds_access');
             navigate('/kds/login');

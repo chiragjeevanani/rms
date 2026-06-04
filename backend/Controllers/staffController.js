@@ -55,7 +55,7 @@ const createStaff = async (req, res) => {
                 <p style="color: #64748b; font-size: 14px; margin-bottom: 32px;">Hello ${name}, your operational identity has been successfully enrolled.</p>
                 
                 <div style="background-color: #f8fafc; border-radius: 16px; padding: 24px; border: 1px solid #f1f5f9; text-align: center;">
-                  <p style="color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Your 4-Digit Access Code</p>
+                  <p style="color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Your Password / Terminal PIN</p>
                   <p style="color: #2563eb; font-size: 32px; font-weight: 800; letter-spacing: 8px; margin: 0;">${staffPIN}</p>
                 </div>
 
@@ -142,28 +142,45 @@ const forgotPassword = async (req, res) => {
     const staff = await Staff.findOne({ email });
     if (!staff) return res.status(404).json({ message: 'Staff not found with this email' });
 
-    // Generate 6 Digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    staff.resetOTP = otp;
-    staff.resetOTPExpire = Date.now() + 10 * 60 * 1000; // 10 Minutes
+    // Generate a new 4-digit password / PIN
+    const newPass = Math.floor(1000 + Math.random() * 9000).toString();
+    staff.pin = newPass;
+    staff.password = newPass;
+    
+    // Clear any OTP fields if any
+    staff.resetOTP = undefined;
+    staff.resetOTPExpire = undefined;
+    
     await staff.save();
 
     await sendEmail({
       email: staff.email,
-      subject: 'RMS - Staff Password Reset OTP',
+      subject: 'RMS - Your Staff Access Credentials',
       html: `
-        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 600px;">
-          <h2 style="color: #2C2C2C;">Password Reset Request</h2>
-          <p>Your 6-digit OTP for password reset is:</p>
-          <div style="background: #FACC15 text-align: center; padding: 15px; font-size: 24px; font-weight: bold; border-radius: 8px;">
-            ${otp}
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background-color: #fcfcfc;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;">
+            <div style="padding: 40px;">
+              <h1 style="color: #0f172a; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.5px; margin-bottom: 8px;">Security Update</h1>
+              <p style="color: #64748b; font-size: 14px; margin-bottom: 32px;">Hello ${staff.name}, your credentials have been reset as requested.</p>
+              
+              <div style="background-color: #f8fafc; border-radius: 16px; padding: 24px; border: 1px solid #f1f5f9; text-align: center;">
+                <p style="color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Your New Password / Terminal PIN</p>
+                <p style="color: #2563eb; font-size: 32px; font-weight: 800; letter-spacing: 8px; margin: 0;">${newPass}</p>
+              </div>
+
+              <div style="margin-top: 32px; padding-top: 32px; border-top: 1px solid #f1f5f9;">
+                <p style="color: #94a3b8; font-size: 11px; line-height: 1.6;"><strong>Security Protocol:</strong> Use this new code to log in to the POS terminal and your portal. Please keep this code confidential.</p>
+              </div>
+            </div>
+            <div style="padding: 20px; background-color: #0f172a; text-align: center;">
+              <p style="color: #94a3b8; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;">RMS OPERATIONAL SIGNAL</p>
+            </div>
           </div>
-          <p style="color: #999; font-size: 11px; margin-top: 20px;">This OTP will expire in 10 minutes.</p>
         </div>
       `
     });
 
-    res.json({ message: 'OTP sent to your registered email' });
+    res.json({ message: 'New password sent directly to your registered email' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -213,13 +230,21 @@ const resetPassword = async (req, res) => {
 
 const updateStaff = async (req, res) => {
   try {
-    const staff = await Staff.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { returnDocument: 'after' }
-    ).populate('role');
+    const staff = await Staff.findById(req.params.id);
     if (!staff) return res.status(404).json({ message: 'Staff not found' });
-    res.json(staff);
+
+    // Update only the fields provided in request body
+    if (req.body.name !== undefined) staff.name = req.body.name;
+    if (req.body.email !== undefined) staff.email = req.body.email;
+    if (req.body.role !== undefined) staff.role = req.body.role;
+    if (req.body.status !== undefined) staff.status = req.body.status;
+    if (req.body.branchId !== undefined) staff.branchId = req.body.branchId;
+    if (req.body.pin !== undefined) staff.pin = req.body.pin;
+    if (req.body.password !== undefined) staff.password = req.body.password;
+
+    await staff.save();
+    const populated = await staff.populate('role');
+    res.json(populated);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

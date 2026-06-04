@@ -4,7 +4,7 @@ import {
   Eye, Receipt, ArrowUpDown, Calendar, RefreshCcw, Menu
 } from 'lucide-react';
 import { usePos } from '../../context/PosContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import dbClient from '../../../../config/dbClient';
 
@@ -60,7 +60,7 @@ export default function CompletedOrders() {
       <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-6">
-            <button onClick={toggleSidebar} className="p-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10">
+            <button type="button" onClick={toggleSidebar} className="p-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10">
               <Menu size={18} />
             </button>
             <div>
@@ -69,7 +69,7 @@ export default function CompletedOrders() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-             <button 
+             <button type="button" 
               onClick={fetchCompletedOrders}
               disabled={loading}
               className="h-10 px-4 bg-slate-100 text-slate-500 rounded text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-100 flex items-center gap-2 outline-none disabled:opacity-50"
@@ -77,11 +77,11 @@ export default function CompletedOrders() {
               <RefreshCcw size={14} className={loading ? 'animate-spin' : ''} />
               Re-Sync Data
             </button>
-            <button className="h-10 px-4 bg-slate-100 text-slate-500 rounded text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-100 flex items-center gap-2 outline-none">
+            <button type="button" className="h-10 px-4 bg-slate-100 text-slate-500 rounded text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-100 flex items-center gap-2 outline-none">
               <Calendar size={14} />
               Date Filter
             </button>
-            <button className="h-10 px-4 bg-slate-900 text-white rounded text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2 outline-none">
+            <button type="button" className="h-10 px-4 bg-slate-900 text-white rounded text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2 outline-none">
               <Download size={14} />
               Export CSV
             </button>
@@ -99,7 +99,7 @@ export default function CompletedOrders() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button className="h-12 px-6 bg-white border border-slate-200 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest hover:text-slate-900 flex items-center gap-2 transition-all outline-none">
+          <button type="button" className="h-12 px-6 bg-white border border-slate-200 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest hover:text-slate-900 flex items-center gap-2 transition-all outline-none">
             <Filter size={14} />
             Applied Filters
           </button>
@@ -122,7 +122,7 @@ export default function CompletedOrders() {
             <tbody className="divide-y divide-slate-50">
               <AnimatePresence>
                 {filteredOrders.map((order) => (
-                  <motion.tr 
+                  <m.tr 
                     key={order._id} 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -164,11 +164,11 @@ export default function CompletedOrders() {
                     </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                        <button className="p-2 bg-white border border-slate-100 text-slate-400 hover:text-blue-500 hover:border-blue-200 rounded-lg transition-all shadow-sm"><Eye size={14} /></button>
-                        <button className="p-2 bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-300 rounded-lg transition-all shadow-sm"><Receipt size={14} /></button>
+                        <button type="button" className="p-2 bg-white border border-slate-100 text-slate-400 hover:text-blue-500 hover:border-blue-200 rounded-lg transition-all shadow-sm"><Eye size={14} /></button>
+                        <button type="button" className="p-2 bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-300 rounded-lg transition-all shadow-sm"><Receipt size={14} /></button>
                       </div>
                     </td>
-                  </motion.tr>
+                  </m.tr>
                 ))}
               </AnimatePresence>
             </tbody>

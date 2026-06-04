@@ -23,6 +23,7 @@ const swiggyRoutes = require('./Routers/swiggyRoutes');
 const weraRoutes = require('./Routers/weraRoutes');
 const syncRoutes = require('./Routers/syncRoutes');
 const internalRoutes = require('./Routers/internalRoutes');
+const customerRoutes = require('./Routers/customerRoutes');
 
 // Attach sub-routes to the main router
 router.use('/admin', adminRoutes);
@@ -46,5 +47,6 @@ router.use('/table', tableRoutes);
 router.use('/reservations', reservationRoutes);
 router.use('/branches', branchRoutes);
 router.use('/sync', syncRoutes);
+router.use('/customers', customerRoutes);
 
 module.exports = router;

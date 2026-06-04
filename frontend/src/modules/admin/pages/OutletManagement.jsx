@@ -6,7 +6,7 @@ import {
   Building2, Globe, Clock, Star, X, Save,
   AlertCircle, ShieldAlert, Edit3, Trash2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const MOCK_OUTLETS = [
   { id: 1, name: 'RMS Primary - Main Hall', location: 'Indiranagar, Bangalore', manager: 'Anita Verma', staff: 12, revenue: '₹4.2L', rating: 4.8, status: 'active' },
@@ -72,7 +72,7 @@ export default function OutletManagement() {
            <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900">Enterprise Network Control</h1>
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Global management of all restaurant branches and outlets</p>
         </div>
-        <button 
+        <button type="button" 
           onClick={() => handleOpenModal()}
           className="h-9 px-4 bg-slate-900 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
         >
@@ -162,13 +162,13 @@ export default function OutletManagement() {
                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mgr: {outlet.manager}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                     <button 
+                     <button type="button" 
                        onClick={() => handleOpenModal(outlet)}
                        className="p-2 text-slate-300 hover:text-slate-900 transition-colors bg-slate-50 rounded-sm border border-slate-100"
                      >
                        <Edit3 size={14} />
                      </button>
-                     <button 
+                     <button type="button" 
                        onClick={() => handleDelete(outlet.id)}
                        className="p-2 text-slate-300 hover:text-rose-600 transition-colors bg-slate-50 rounded-sm border border-slate-100"
                      >
@@ -184,14 +184,14 @@ export default function OutletManagement() {
        <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -209,7 +209,7 @@ export default function OutletManagement() {
                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Enterprise Protocol v2.4.0</p>
                       </div>
                   </div>
-                  <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
                </div>
 
                <form onSubmit={handleSave} className="p-8 space-y-6">
@@ -287,7 +287,7 @@ export default function OutletManagement() {
                       </button>
                    </div>
                </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Timer, Target, Clock, AlertCircle, Save } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
@@ -22,7 +22,7 @@ export default function PreparationTime() {
           </div>
         </div>
 
-        <button className="flex items-center gap-2 px-6 py-2 bg-[#D4AF37] text-[#ff7a00] font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#C5A028] transition-all shadow-lg shadow-[#D4AF37]/20">
+        <button type="button" className="flex items-center gap-2 px-6 py-2 bg-[#D4AF37] text-[#ff7a00] font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#C5A028] transition-all shadow-lg shadow-[#D4AF37]/20">
           <Save size={14} strokeWidth={3} />
           Save Configuration
         </button>
@@ -38,30 +38,30 @@ export default function PreparationTime() {
             <div className={`p-8 rounded-[2rem] border transition-all ${isDarkMode ? 'bg-white/5 border-white/5' : 'bg-white border-stone-100 shadow-sm'}`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                  <label className="text-[9px] font-black text-stone-500 uppercase tracking-widest mb-3 block">Ideal Window</label>
+                  <label htmlFor="idealWindow" className="text-[9px] font-black text-stone-500 uppercase tracking-widest mb-3 block">Ideal Window</label>
                   <div className="flex items-end gap-3">
-                    <input type="number" defaultValue="12" className={`text-4xl font-black bg-transparent border-b-2 outline-none w-24 ${isDarkMode ? 'border-white/10 text-white' : 'border-stone-200 text-[#ff7a00]'}`} />
+                    <input id="idealWindow" type="number" defaultValue="12" className={`text-4xl font-black bg-transparent border-b-2 outline-none w-24 ${isDarkMode ? 'border-white/10 text-white' : 'border-stone-200 text-[#ff7a00]'}`} />
                     <span className="text-xl font-black text-stone-400 mb-1">MINS</span>
                   </div>
                 </div>
                 <div>
-                    <label className="text-[9px] font-black text-stone-500 uppercase tracking-widest mb-3 block">Warning Spike</label>
+                    <label htmlFor="warningSpike" className="text-[9px] font-black text-stone-500 uppercase tracking-widest mb-3 block">Warning Spike</label>
                     <div className="flex items-end gap-3">
-                      <input type="number" defaultValue="18" className={`text-4xl font-black bg-transparent border-b-2 outline-none w-24 border-amber-500/30 text-amber-600`} />
+                      <input id="warningSpike" type="number" defaultValue="18" className={`text-4xl font-black bg-transparent border-b-2 outline-none w-24 border-amber-500/30 text-amber-600`} />
                       <span className="text-xl font-black text-stone-400 mb-1">MINS</span>
                     </div>
                   </div>
                   <div>
-                    <label className="text-[9px] font-black text-stone-500 uppercase tracking-widest mb-3 block">Critical Breach</label>
+                    <label htmlFor="criticalBreach" className="text-[9px] font-black text-stone-500 uppercase tracking-widest mb-3 block">Critical Breach</label>
                     <div className="flex items-end gap-3">
-                      <input type="number" defaultValue="25" className={`text-4xl font-black bg-transparent border-b-2 outline-none w-24 border-red-500/30 text-red-600`} />
+                      <input id="criticalBreach" type="number" defaultValue="25" className={`text-4xl font-black bg-transparent border-b-2 outline-none w-24 border-red-500/30 text-red-600`} />
                       <span className="text-xl font-black text-stone-400 mb-1">MINS</span>
                     </div>
                   </div>
               </div>
             </div>
           </section>
-
+ 
           {/* Station Specifics */}
           <section>
             <h2 className="text-[10px] font-black text-stone-500 uppercase tracking-[0.3em] mb-6 px-1">Station Performance SLOs</h2>
@@ -81,8 +81,8 @@ export default function PreparationTime() {
                     { name: 'MAIN KITCHEN', target: '20m', avg: '22.5m', drift: '+2.5m', color: 'red' },
                     { name: 'SALAD & COLD', target: '10m', avg: '8.4m', drift: '-1.6m', color: 'emerald' },
                     { name: 'BEVERAGES', target: '5m', avg: '4.8m', drift: '-0.2m', color: 'emerald' },
-                  ].map((row, idx) => (
-                    <tr key={idx} className={`transition-colors ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-stone-50'}`}>
+                  ].map((row) => (
+                    <tr key={row.name} className={`transition-colors ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-stone-50'}`}>
                       <td className={`px-8 py-6 font-black text-xs uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>{row.name}</td>
                       <td className="px-8 py-6 text-sm font-bold text-stone-500">{row.target}</td>
                       <td className={`px-8 py-6 text-sm font-black ${isDarkMode ? 'text-stone-200' : 'text-stone-900'}`}>{row.avg}</td>

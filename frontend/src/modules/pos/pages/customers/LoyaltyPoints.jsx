@@ -5,7 +5,7 @@ import {
   ArrowUpRight, ArrowDownLeft, Gift,
   ShieldCheck, Calculator
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 const MOCK_LOYALTY = [
   { id: 'L-982', name: 'Rahul Khanna', action: 'Dine-in Credit', points: '+150', date: 'TODAY 14:20', balance: 5120 },
@@ -103,7 +103,7 @@ export default function LoyaltyPoints() {
 
       <footer className="h-16 bg-white border-t border-slate-200 px-8 flex items-center justify-between shrink-0">
         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Last Synced: Just now</span>
-        <button className="h-9 px-6 bg-slate-900 text-white rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 outline-none">
+        <button type="button" className="h-9 px-6 bg-slate-900 text-white rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 outline-none">
           Manual Adjust Points
         </button>
       </footer>

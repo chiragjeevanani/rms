@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -93,7 +93,7 @@ export default function KdsDashboard() {
           { label: 'Preparing', value: finalStats.preparing, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
           { label: 'Completed', value: finalStats.completed, icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
         ].map((item, idx) => (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
@@ -111,7 +111,7 @@ export default function KdsDashboard() {
             <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center`}>
               <item.icon className={item.color} size={28} />
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
@@ -188,7 +188,7 @@ export default function KdsDashboard() {
              <div className="w-1.5 h-10 bg-[#D4AF37] rounded-full shadow-[0_0_15px_rgba(212,175,55,0.4)]" />
              <h3 className="text-3xl font-black uppercase tracking-tighter">Active Orders</h3>
           </div>
-          <button 
+          <button type="button" 
             onClick={() => { fetchOrders(); fetchAnalytics(); }}
             className="flex items-center gap-3 px-6 py-3 bg-[#ff7a00] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#ea6c00] transition-all"
           >
@@ -225,7 +225,7 @@ function KdsDashboardOrderCard({ order, onUpdate }) {
   const navigate = useNavigate();
   
   return (
-    <motion.div layout className={`p-7 rounded-[2.5rem] border transition-all flex flex-col ${isDarkMode ? 'bg-[#1a1c1e] border-white/5' : 'bg-white border-stone-100 shadow-sm'}`}>
+    <m.div layout className={`p-7 rounded-[2.5rem] border transition-all flex flex-col ${isDarkMode ? 'bg-[#1a1c1e] border-white/5' : 'bg-white border-stone-100 shadow-sm'}`}>
       <div className="flex items-center justify-between mb-6">
         <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border ${isDarkMode ? 'bg-black/40 border-white/5 text-[#D4AF37]' : 'bg-stone-50 border-stone-100 text-[#ff7a00]'}`}>
           #{order.orderNum}
@@ -247,23 +247,23 @@ function KdsDashboardOrderCard({ order, onUpdate }) {
 
       <div className="pt-6 border-t border-stone-100 dark:border-white/5 space-y-3">
         {(order.status?.toLowerCase() === 'pending' || order.status?.toLowerCase() === 'billed') && (
-          <button onClick={() => onUpdate(order.id, 'Preparing')} className="w-full bg-[#ff7a00] text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-[#ea6c00] transition-all">
+          <button type="button" onClick={() => onUpdate(order.id, 'Preparing')} className="w-full bg-[#ff7a00] text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-[#ea6c00] transition-all">
             {order.status?.toLowerCase() === 'billed' ? 'Prepare Billed Order' : 'Start Preparing'}
           </button>
         )}
         {order.status?.toLowerCase() === 'preparing' && (
-          <button onClick={() => onUpdate(order.id, 'Ready')} className="w-full bg-emerald-600 text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-emerald-500 transition-all">
+          <button type="button" onClick={() => onUpdate(order.id, 'Ready')} className="w-full bg-emerald-600 text-white py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-emerald-500 transition-all">
             Mark Ready
           </button>
         )}
-        <button 
+        <button type="button" 
           onClick={() => navigate(`/kds/orders/${order.id}`)}
           className="w-full bg-black/5 dark:bg-white/5 text-stone-500 py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-black/10 transition-all"
         >
           View Detail
         </button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

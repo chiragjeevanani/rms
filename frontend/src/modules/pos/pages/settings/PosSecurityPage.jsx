@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Shield, Lock, Eye, EyeOff, Key, Save, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PosTopNavbar from '../../components/PosTopNavbar';
@@ -85,7 +85,7 @@ export default function PosSecurityPage() {
           </div>
         </header>
 
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden"
@@ -231,7 +231,7 @@ export default function PosSecurityPage() {
               </div>
             )}
 
-            <button
+            <button type="button"
               disabled={isLoading || (isElectron && !isOnline)}
               style={{ 
                 backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))', 
@@ -244,7 +244,7 @@ export default function PosSecurityPage() {
               {isLoading ? <RefreshCw size={18} className="animate-spin" /> : <><Save size={18} /> Update Password</>}
             </button>
           </form>
-        </motion.div>
+        </m.div>
       </div>
     </div>
    </div>

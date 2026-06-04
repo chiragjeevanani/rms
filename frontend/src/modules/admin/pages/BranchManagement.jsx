@@ -5,7 +5,7 @@ import {
   Building2, Globe, Clock, Star, X, Save,
   AlertCircle, ShieldAlert, Edit3, Trash2, Mail, Phone, Hash, LayoutGrid, List, Eye
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -173,7 +173,7 @@ export default function BranchManagement() {
           <div className="bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg text-slate-700 text-[10px] font-black uppercase tracking-widest">
             Branches: {branches.length} / {branchLimit}
           </div>
-          <button 
+          <button type="button" 
             onClick={() => handleOpenModal()}
             className="h-10 px-6 bg-slate-900 text-white rounded-lg text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
           >
@@ -194,7 +194,7 @@ export default function BranchManagement() {
           </div>
           <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">No Branches Found</h3>
           <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-1 mb-6">Your restaurant network is currently empty</p>
-          <button 
+          <button type="button" 
             onClick={() => handleOpenModal()}
             className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all"
           >
@@ -245,16 +245,16 @@ export default function BranchManagement() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button 
+                      <button type="button" 
                         onClick={() => navigate(`/admin/branches/${branch._id}`)}
                         className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
                       >
                         <Eye size={16} />
                       </button>
-                      <button onClick={() => handleOpenModal(branch)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors">
+                      <button type="button" onClick={() => handleOpenModal(branch)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors">
                         <Edit3 size={16} />
                       </button>
-                      <button onClick={() => handleDelete(branch._id)} className="p-2 text-slate-400 hover:text-rose-600 transition-colors">
+                      <button type="button" onClick={() => handleDelete(branch._id)} className="p-2 text-slate-400 hover:text-rose-600 transition-colors">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -270,80 +270,80 @@ export default function BranchManagement() {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <m.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <h3 className="text-[14px] font-black uppercase tracking-tight text-slate-900">
                     {editingBranch ? 'Update Branch Details' : 'Add New Branch'}
                   </h3>
-                  <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={20} /></button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={20} /></button>
                </div>
 
                <form onSubmit={handleSave} className="p-8 overflow-y-auto no-scrollbar space-y-6">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Branch Name</label>
-                    <input type="text" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.branchName} onChange={e => setFormData({...formData, branchName: e.target.value})} placeholder="e.g. Downtown Outlet" />
+                    <label htmlFor="branchName" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Branch Name</label>
+                    <input id="branchName" type="text" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.branchName} onChange={e => setFormData({...formData, branchName: e.target.value})} placeholder="e.g. Downtown Outlet" />
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Address</label>
-                      <input type="email" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.branchEmail} onChange={e => setFormData({...formData, branchEmail: e.target.value})} placeholder="branch@restaurant.com" />
+                      <label htmlFor="branchEmail" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Address</label>
+                      <input id="branchEmail" type="email" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.branchEmail} onChange={e => setFormData({...formData, branchEmail: e.target.value})} placeholder="branch@restaurant.com" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number</label>
-                      <input type="text" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+91 98765 43210" />
+                      <label htmlFor="branchPhone" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number</label>
+                      <input id="branchPhone" type="text" required className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+91 98765 43210" />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Address</label>
-                    <textarea required rows="2" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all resize-none" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Store number, Building name, Street..." />
+                    <label htmlFor="branchAddress" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Address</label>
+                    <textarea id="branchAddress" required rows="2" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all resize-none" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Store number, Building name, Street..." />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Policy (Terms & Conditions)</label>
-                    <textarea rows="3" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all resize-none" value={formData.invoicePolicy} onChange={e => setFormData({...formData, invoicePolicy: e.target.value})} placeholder="e.g. 1. Goods once sold cannot be returned. 2. Interest @18% will be charged if payment is not made on time." />
+                    <label htmlFor="invoicePolicy" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Policy (Terms & Conditions)</label>
+                    <textarea id="invoicePolicy" rows="3" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all resize-none" value={formData.invoicePolicy} onChange={e => setFormData({...formData, invoicePolicy: e.target.value})} placeholder="e.g. 1. Goods once sold cannot be returned. 2. Interest @18% will be charged if payment is not made on time." />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">City</label>
-                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                      <label htmlFor="branchCity" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">City</label>
+                      <input id="branchCity" type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">State</label>
-                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+                      <label htmlFor="branchState" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">State</label>
+                      <input id="branchState" type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pincode</label>
-                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} />
+                      <label htmlFor="branchPincode" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pincode</label>
+                      <input id="branchPincode" type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">GST Number</label>
-                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.gstNumber} onChange={e => setFormData({...formData, gstNumber: e.target.value.toUpperCase()})} placeholder="Optional" />
+                      <label htmlFor="branchGst" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">GST Number</label>
+                      <input id="branchGst" type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.gstNumber} onChange={e => setFormData({...formData, gstNumber: e.target.value.toUpperCase()})} placeholder="Optional" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Branch Manager</label>
-                      <input type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.managerName} onChange={e => setFormData({...formData, managerName: e.target.value})} />
+                      <label htmlFor="branchManager" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Branch Manager</label>
+                      <input id="branchManager" type="text" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" value={formData.managerName} onChange={e => setFormData({...formData, managerName: e.target.value})} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Open Time</label>
-                      <input type="time" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.openingTime} onChange={e => setFormData({...formData, openingTime: e.target.value})} />
+                      <label htmlFor="branchOpenTime" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Open Time</label>
+                      <input id="branchOpenTime" type="time" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.openingTime} onChange={e => setFormData({...formData, openingTime: e.target.value})} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Close Time</label>
-                      <input type="time" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.closingTime} onChange={e => setFormData({...formData, closingTime: e.target.value})} />
+                      <label htmlFor="branchCloseTime" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Close Time</label>
+                      <input id="branchCloseTime" type="time" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.closingTime} onChange={e => setFormData({...formData, closingTime: e.target.value})} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</label>
-                      <select className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
+                      <label htmlFor="branchStatus" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</label>
+                      <select id="branchStatus" className="w-full bg-slate-50 border border-slate-100 p-2.5 text-[12px] font-bold rounded-lg" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
                         <option value="active">ACTIVE</option>
                         <option value="inactive">INACTIVE</option>
                       </select>
@@ -357,7 +357,7 @@ export default function BranchManagement() {
                     </button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

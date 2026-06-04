@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Clock, Printer, CheckCircle, 
   AlertCircle, ChefHat, User, Hash, Utensils,
@@ -68,7 +68,7 @@ export default function KdsOrderDetailsPage() {
           <h2 className="text-4xl font-black uppercase tracking-tighter mb-2">Registry Mismatch</h2>
           <p className="text-stone-500 font-bold uppercase tracking-widest text-xs">The requested Order ID does not exist in the active buffer.</p>
         </div>
-        <button onClick={() => navigate(-1)} className="px-10 py-4 bg-[#ff7a00] text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-2xl shadow-[#ff7a00]/40 hover:scale-105 transition-all">
+        <button type="button" onClick={() => navigate(-1)} className="px-10 py-4 bg-[#ff7a00] text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-2xl shadow-[#ff7a00]/40 hover:scale-105 transition-all">
           Return to Queue
         </button>
       </div>
@@ -87,7 +87,7 @@ export default function KdsOrderDetailsPage() {
         isDarkMode ? 'bg-[#121416] border-white/5' : 'bg-white border-stone-200'
       }`}>
         <div className="flex items-center gap-4">
-           <button 
+           <button type="button" 
              onClick={() => navigate(-1)}
              className={`w-10 h-10 rounded-xl flex items-center justify-center hover:bg-stone-500/10 transition-colors ${
                isDarkMode ? 'text-stone-400' : 'text-stone-600'
@@ -116,7 +116,7 @@ export default function KdsOrderDetailsPage() {
               </div>
            </div>
            <div className="h-10 w-px bg-stone-500/20" />
-           <button className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all ${
+           <button type="button" className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all ${
              isDarkMode ? 'bg-white/5 border-white/5 hover:border-white/10' : 'bg-stone-100 border-stone-200'
            }`}>
              <Printer size={20} />
@@ -131,7 +131,7 @@ export default function KdsOrderDetailsPage() {
            <div className="max-w-4xl mx-auto space-y-8">
               
               {/* Table Identity Billboard */}
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="flex items-start justify-between"
@@ -167,13 +167,13 @@ export default function KdsOrderDetailsPage() {
                    <div className="text-4xl font-black leading-none">{order.items.length}</div>
                    <span className="text-[8px] font-bold text-stone-500 uppercase tracking-widest mt-1">Total Qty</span>
                 </div>
-              </motion.div>
+              </m.div>
 
               {/* Items Cluster */}
               <div className="grid gap-6">
                 <AnimatePresence mode="popLayout">
                   {order.items.map((item, idx) => (
-                    <motion.button 
+                    <m.button 
                       key={item.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -235,7 +235,7 @@ export default function KdsOrderDetailsPage() {
                       {item.status === 'completed' && (
                          <div className="absolute inset-x-0 bottom-0 h-1.5 bg-emerald-500" />
                       )}
-                    </motion.button>
+                    </m.button>
                   ))}
                 </AnimatePresence>
               </div>
@@ -256,7 +256,7 @@ export default function KdsOrderDetailsPage() {
                   <div className="space-y-4">
                     
                     {order.status === 'preparing' && (
-                      <button 
+                      <button type="button" 
                         onClick={() => handleStatusChange('Ready')}
                         className="w-full h-20 bg-emerald-600 border-2 border-emerald-500 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
                       >

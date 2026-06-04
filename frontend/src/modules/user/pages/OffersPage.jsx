@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -28,7 +28,7 @@ export default function OffersPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white selection:bg-brand-500 selection:text-charcoal-900 transition-colors duration-300">
       <div className="max-w-lg mx-auto px-6 pt-8 pb-40">
         <header className="flex items-center gap-6 mb-12">
-           <button 
+           <button type="button" 
              onClick={() => navigate(-1)}
              className="w-12 h-12 bg-white border border-charcoal-900/10 dark:bg-white/5 dark:border-white/5 rounded-2xl flex items-center justify-center text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white transition-colors shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
            >
@@ -39,7 +39,7 @@ export default function OffersPage() {
 
         <main className="space-y-6">
           {MOCK_OFFERS.map((offer) => (
-            <motion.div
+            <m.div
               key={offer.id}
               whileHover={{ scale: 1.02 }}
               className="bg-white dark:bg-charcoal-800 rounded-[2.5rem] p-8 border border-charcoal-900/10 dark:border-white/5 shadow-sm relative overflow-hidden group"
@@ -70,14 +70,14 @@ export default function OffersPage() {
                   <span className="text-xs font-black tracking-widest font-mono">{offer.code}</span>
                   <Ticket size={16} className="text-charcoal-400" />
                 </div>
-                <button 
+                <button type="button" 
                   onClick={() => copyToClipboard(offer.code)}
                   className="bg-charcoal-900 dark:bg-brand-500 text-white dark:text-charcoal-900 px-6 rounded-2xl flex items-center justify-center hover:scale-105 transition-transform"
                 >
                   <Copy size={18} />
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           ))}
 
           <div className="bg-brand-500/10 border-2 border-dashed border-brand-500/20 rounded-[2.5rem] p-10 flex flex-col items-center text-center gap-4">

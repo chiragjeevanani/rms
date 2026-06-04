@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
@@ -17,27 +17,18 @@ export default function AdminDashboard() {
    const [data, setData] = useState(null);
    const [loading, setLoading] = useState(true);
    const [revenueFilter, setRevenueFilter] = useState('daily');
-   const [branches, setBranches] = useState([]);
+    const [branches, setBranches] = useState(() => {
+      try {
+         const saved = localStorage.getItem('admin_branches');
+         return saved ? JSON.parse(saved) : [];
+      } catch {
+         return [];
+      }
+    });
    const [selectedBranch, setSelectedBranch] = useState('all');
     const [view, setView] = useState('dashboard');
     const [orderTypeFilter, setOrderTypeFilter] = useState('all');
     const navigate = useNavigate();
-
-   const fetchBranches = async () => {
-      try {
-         const restaurantId = localStorage.getItem('admin_restaurantId');
-         const url = restaurantId 
-            ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${restaurantId}`
-            : `${import.meta.env.VITE_API_URL}/branches`;
-         const response = await fetch(url);
-         const result = await response.json();
-         if (result.success) {
-            setBranches(result.data);
-         }
-      } catch (error) {
-         console.error('Fetch Branches Error:', error);
-      }
-   };
 
    const fetchDashboardData = async () => {
       try {
@@ -71,9 +62,23 @@ export default function AdminDashboard() {
       }
    };
 
-   useEffect(() => {
-      fetchBranches();
-   }, []);
+    useEffect(() => {
+       let active = true;
+       const restaurantId = localStorage.getItem('admin_restaurantId');
+       loadBranchesForAdmin(restaurantId)
+          .then(result => {
+             if (active && result.success) {
+                setBranches(result.data);
+                localStorage.setItem('admin_branches', JSON.stringify(result.data));
+             }
+          })
+          .catch(err => {
+             console.error('Fetch Branches Error:', err);
+          });
+       return () => {
+          active = false;
+       };
+    }, []);
 
    useEffect(() => {
       fetchDashboardData();
@@ -150,7 +155,7 @@ export default function AdminDashboard() {
                   <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">System Live</span>
                </div>
 
-               <button
+               <button type="button"
                   onClick={fetchDashboardData}
                   className="h-[42px] flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all text-xs font-bold uppercase tracking-widest shadow-lg shadow-slate-900/10 active:scale-95"
                >
@@ -160,7 +165,7 @@ export default function AdminDashboard() {
          </div>
             {/* Row 1: Primary KPI Cards (Clickable) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
-               <motion.div 
+               <m.div 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   onClick={() => navigate('/admin/reports/sales')}
                   className="bg-white p-5 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] group hover:border-slate-800 hover:shadow-xl transition-all cursor-pointer active:scale-[0.98]"
@@ -172,9 +177,9 @@ export default function AdminDashboard() {
                   </div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Revenue</p>
                   <div className="text-xl font-black text-slate-900 tracking-tighter leading-none">₹{metrics?.todayRevenue?.toLocaleString() || 0}</div>
-               </motion.div>
+               </m.div>
 
-               <motion.div 
+               <m.div 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                   onClick={() => navigate('/admin/orders/all')}
                   className="bg-white p-5 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] group hover:border-slate-800 hover:shadow-xl transition-all cursor-pointer active:scale-[0.98]"
@@ -196,9 +201,9 @@ export default function AdminDashboard() {
                         <span className="text-[6px] font-black text-slate-400 uppercase">Takeaway</span>
                      </div>
                   </div>
-               </motion.div>
+               </m.div>
 
-               <motion.div 
+               <m.div 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                   onClick={() => setView('incoming')}
                   className={`bg-white p-5 rounded-2xl border ${view === 'incoming' ? 'border-slate-800 shadow-xl' : 'border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)]'} group hover:border-slate-800 transition-all cursor-pointer active:scale-[0.98]`}
@@ -210,9 +215,9 @@ export default function AdminDashboard() {
                   </div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Reserved</p>
                   <div className="text-xl font-black text-slate-900 tracking-tighter leading-none">{orders?.pending || 0}</div>
-               </motion.div>
+               </m.div>
 
-               <motion.div 
+               <m.div 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                   onClick={() => setView('preparing')}
                   className={`bg-white p-5 rounded-2xl border ${view === 'preparing' ? 'border-slate-800 shadow-xl' : 'border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)]'} group hover:border-slate-800 transition-all cursor-pointer active:scale-[0.98]`}
@@ -224,9 +229,9 @@ export default function AdminDashboard() {
                   </div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Preparation</p>
                   <div className="text-xl font-black text-slate-900 tracking-tighter leading-none">{orders?.preparing || 0}</div>
-               </motion.div>
+               </m.div>
 
-               <motion.div 
+               <m.div 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
                   onClick={() => setView('completed')}
                   className={`bg-white p-5 rounded-2xl border ${view === 'completed' ? 'border-slate-800 shadow-xl' : 'border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)]'} group hover:border-slate-800 transition-all cursor-pointer active:scale-[0.98]`}
@@ -238,9 +243,9 @@ export default function AdminDashboard() {
                   </div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Completed</p>
                   <div className="text-xl font-black text-slate-900 tracking-tighter leading-none">{orders?.completed || 0}</div>
-               </motion.div>
+               </m.div>
 
-               <motion.div 
+               <m.div 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
                   onClick={() => setView('completed')}
                   className={`bg-white p-5 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] group hover:border-slate-800 transition-all cursor-pointer active:scale-[0.98]`}
@@ -252,9 +257,9 @@ export default function AdminDashboard() {
                   </div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Settled</p>
                   <div className="text-xl font-black text-slate-900 tracking-tighter leading-none">{orders?.settled || 0}</div>
-               </motion.div>
+               </m.div>
 
-               <motion.div 
+               <m.div 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
                   onClick={() => setView('cancelled')}
                   className={`bg-white p-5 rounded-2xl border ${view === 'cancelled' ? 'border-slate-800 shadow-xl' : 'border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)]'} group hover:border-slate-800 transition-all cursor-pointer active:scale-[0.98]`}
@@ -266,7 +271,7 @@ export default function AdminDashboard() {
                   </div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cancelled</p>
                   <div className="text-xl font-black text-rose-600 tracking-tighter leading-none">{orders?.cancelled || 0}</div>
-               </motion.div>
+               </m.div>
             </div>
 
             {/* Row 2: Menu Resource Grid (Clickable) */}
@@ -318,7 +323,7 @@ export default function AdminDashboard() {
                      </div>
                      <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
                         {['Daily', 'Weekly', 'Monthly'].map((f) => (
-                           <button
+                           <button type="button"
                               key={f}
                               onClick={() => setRevenueFilter(f.toLowerCase())}
                               className={`px-5 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${revenueFilter === f.toLowerCase()
@@ -390,7 +395,7 @@ export default function AdminDashboard() {
                            { id: 'completed', label: 'Done', icon: CheckCircle2 },
                            { id: 'cancelled', label: 'Void', icon: Trash2 },
                         ].map((tab) => (
-                           <button
+                           <button type="button"
                               key={tab.id}
                               onClick={() => setView(tab.id)}
                               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${
@@ -446,7 +451,7 @@ export default function AdminDashboard() {
                         
                         return true;
                      }).map((order, i) => (
-                        <motion.div
+                        <m.div
                            key={i}
                            whileHover={{ x: 5 }}
                            onClick={() => navigate('/admin/orders/all')}
@@ -470,7 +475,7 @@ export default function AdminDashboard() {
                            <div className="text-right">
                               <p className="text-base font-black text-slate-900">₹{order.grandTotal}</p>
                            </div>
-                        </motion.div>
+                        </m.div>
                      ))}
                      {(recentOrders || []).length === 0 && (
                         <div className="h-full flex flex-col items-center justify-center py-20 opacity-20 grayscale">
@@ -480,7 +485,7 @@ export default function AdminDashboard() {
                      )}
                   </div>
 
-                  <button
+                  <button type="button"
                      onClick={() => navigate('/admin/orders/all')}
                      className="mt-10 w-full py-5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-3 active:scale-95"
                   >
@@ -494,7 +499,7 @@ export default function AdminDashboard() {
 
 function DashboardSummaryBtn({ label, count, active, onClick, color }) {
    return (
-      <button
+      <button type="button"
          onClick={onClick}
          className={`flex-1 py-2 px-3 rounded-xl border transition-all text-left ${active
                ? 'bg-slate-900 border-slate-900 shadow-md'
@@ -506,6 +511,15 @@ function DashboardSummaryBtn({ label, count, active, onClick, color }) {
       </button>
    );
 }
+
+const loadBranchesForAdmin = async (restaurantId) => {
+   const url = restaurantId 
+      ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${restaurantId}`
+      : `${import.meta.env.VITE_API_URL}/branches`;
+   const response = await fetch(url);
+   if (!response.ok) throw new Error('Failed to fetch branches');
+   return response.json();
+};
 
 
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Utensils, Search, Plus, Filter, MoreVertical, Edit2, Trash2, ChevronRight, Save, Camera, Loader2, Image as ImageIcon, LayoutGrid, List, X, Building2, Upload, Download } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import Skeleton from '../../components/ui/Skeleton';
@@ -325,14 +325,14 @@ export default function Categories() {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Manage your food and drink categories</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button type="button" 
             onClick={downloadCategoryTemplate}
             className="h-12 px-6 bg-amber-50 text-amber-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-amber-200 hover:bg-amber-100 active:scale-95 transition-all outline-none"
           >
             <Download size={16} />
             Download Sample
           </button>
-          <button 
+          <button type="button" 
             onClick={() => handleOpenModal()}
             className="h-12 px-8 bg-[#2C2C2C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black active:scale-95 transition-all outline-none"
           >
@@ -357,7 +357,7 @@ export default function Categories() {
           
           <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-2xl w-full md:w-auto">
             {['All', 'Published', 'Draft'].map((status) => (
-              <button
+              <button type="button"
                 key={status}
                 onClick={() => setFilterStatus(status)}
                 className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${filterStatus === status ? 'bg-[#2C2C2C] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
@@ -398,14 +398,14 @@ export default function Categories() {
           <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
 
           <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-2xl">
-            <button
+            <button type="button"
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white text-[#2C2C2C] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               title="Grid View"
             >
               <LayoutGrid size={16} />
             </button>
-            <button
+            <button type="button"
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white text-[#2C2C2C] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               title="List View"
@@ -469,7 +469,7 @@ export default function Categories() {
                   return branchId === selectedBranchFilter;
                 })
                 .map((cat) => (
-                <motion.div 
+                <m.div 
                   key={cat._id}
                   whileHover={{ y: -6 }}
                   className="bg-white border border-slate-100 p-5 rounded-[2rem] shadow-xl hover:shadow-2xl hover:border-amber-200 transition-all group relative overflow-hidden"
@@ -488,7 +488,7 @@ export default function Categories() {
                         </div>
                       )}
                       <div className="absolute top-3 left-3">
-                        <button 
+                        <button type="button" 
                           onClick={() => toggleStatus(cat)}
                           className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-lg transition-all ${cat.status === 'Published' ? 'bg-emerald-500 text-white' : 'bg-slate-500 text-white opacity-90'}`}
                         >
@@ -509,21 +509,21 @@ export default function Categories() {
                     </p>
                     
                      <div className="mt-4 pt-4 border-t border-stone-50 flex items-center justify-center gap-3">
-                        <button 
+                        <button type="button" 
                            onClick={() => handleOpenModal(cat)}
                            className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm"
                            title="Edit"
                         >
                           <Edit2 size={16} />
                         </button>
-                        <button 
+                        <button type="button" 
                            onClick={() => handleDelete(cat)}
                            className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                            title="Delete"
                         >
                           <Trash2 size={16} />
                         </button>
-                        <button 
+                        <button type="button" 
                            onClick={() => toggleStatus(cat)}
                            className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 shadow-sm ${cat.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
                            title={`Status: ${cat.status}`}
@@ -532,7 +532,7 @@ export default function Categories() {
                         </button>
                      </div>
                   </div>
-                </motion.div>
+                </m.div>
               ))}
             </div>
           ) : (
@@ -546,7 +546,7 @@ export default function Categories() {
                   return branchId === selectedBranchFilter;
                 })
                 .map((cat) => (
-                  <motion.div 
+                  <m.div 
                     key={cat._id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -578,7 +578,7 @@ export default function Categories() {
                      </div>
 
                      <div className="flex items-center gap-8">
-                        <button 
+                        <button type="button" 
                           onClick={() => toggleStatus(cat)}
                           className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${cat.status === 'Published' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}
                         >
@@ -586,21 +586,21 @@ export default function Categories() {
                         </button>
 
                          <div className="flex gap-3">
-                            <button 
+                            <button type="button" 
                                onClick={() => handleOpenModal(cat)}
                                className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-amber-500 hover:text-white text-slate-400 rounded-xl transition-all shadow-sm"
                                title="Edit"
                             >
                               <Edit2 size={16} />
                             </button>
-                            <button 
+                            <button type="button" 
                                onClick={() => handleDelete(cat)}
                                className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-rose-500 hover:text-white text-slate-400 rounded-xl transition-all shadow-sm"
                                title="Delete"
                             >
                               <Trash2 size={16} />
                             </button>
-                            <button 
+                            <button type="button" 
                                onClick={() => toggleStatus(cat)}
                                className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 shadow-sm ${cat.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
                                title={`Status: ${cat.status}`}
@@ -609,7 +609,7 @@ export default function Categories() {
                             </button>
                          </div>
                      </div>
-                  </motion.div>
+                  </m.div>
                 ))}
             </div>
           )}

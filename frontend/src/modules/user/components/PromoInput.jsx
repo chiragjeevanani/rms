@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Tag, CheckCircle, XCircle, X, Loader2 } from 'lucide-react';
 
 const VALID_PROMOS = {
@@ -38,7 +38,7 @@ export function PromoInput({ onApply, onRemove, appliedCode }) {
 
   if (appliedCode) {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between bg-green-50 border border-green-200 rounded-2xl px-4 py-3"
@@ -50,10 +50,10 @@ export function PromoInput({ onApply, onRemove, appliedCode }) {
             <p className="text-xs text-green-600">{VALID_PROMOS[appliedCode]?.label}</p>
           </div>
         </div>
-        <button onClick={handleRemove} className="text-green-500 hover:text-green-700 cursor-pointer transition-colors">
+        <button type="button" onClick={handleRemove} className="text-green-500 hover:text-green-700 cursor-pointer transition-colors">
           <X size={16} />
         </button>
-      </motion.div>
+      </m.div>
     );
   }
 
@@ -71,7 +71,7 @@ export function PromoInput({ onApply, onRemove, appliedCode }) {
             className="w-full pl-10 pr-4 py-3 bg-charcoal-100 border border-transparent focus:border-brand-300 focus:bg-white rounded-2xl text-sm font-medium text-charcoal-900 placeholder:text-charcoal-400 outline-none transition-all duration-200"
           />
         </div>
-        <motion.button
+        <m.button
           onClick={handleApply}
           disabled={state === 'loading' || !code.trim()}
           whileTap={{ scale: 0.95 }}
@@ -79,12 +79,12 @@ export function PromoInput({ onApply, onRemove, appliedCode }) {
         >
           {state === 'loading' ? <Loader2 size={16} className="animate-spin" /> : null}
           Apply
-        </motion.button>
+        </m.button>
       </div>
 
       <AnimatePresence>
         {message && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -98,7 +98,7 @@ export function PromoInput({ onApply, onRemove, appliedCode }) {
             <span className={`text-xs font-medium ${state === 'success' ? 'text-green-600' : 'text-red-500'}`}>
               {message}
             </span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { 
   ArrowLeft, FileText, History, Globe, ClipboardList, 
   Users, Wallet, TrendingDown, Landmark, Banknote, 
@@ -51,7 +51,7 @@ export default function OperationsDashboard() {
       {/* Top Header */}
       <div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
-           <button 
+           <button type="button" 
              onClick={() => { playClickSound(); navigate(-1); }}
              className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
            >
@@ -100,7 +100,7 @@ export default function OperationsDashboard() {
       <div className="flex-1 overflow-y-auto p-6 no-scrollbar">
          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
             {operationTiles.map((tile, idx) => (
-              <motion.div
+              <m.div
                 key={idx}
                 whileHover={{ y: -4, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)' }}
                 whileTap={{ scale: 0.98 }}
@@ -121,7 +121,7 @@ export default function OperationsDashboard() {
                  <span className="text-[11px] font-black text-gray-600 uppercase tracking-tight leading-tight px-2 group-hover:text-gray-800 transition-colors">
                     {tile.label}
                  </span>
-              </motion.div>
+              </m.div>
             ))}
          </div>
       </div>

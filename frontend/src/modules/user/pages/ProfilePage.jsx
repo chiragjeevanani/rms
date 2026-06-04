@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { 
   User, 
   Settings, 
@@ -40,7 +40,7 @@ export default function ProfilePage() {
                  <p className="text-brand-500 font-black uppercase text-[10px] tracking-[0.2em] mt-1">Prime Member</p>
               </div>
            </div>
-           <button 
+           <button type="button" 
              onClick={() => {
                localStorage.removeItem('user_token');
                navigate('/login');
@@ -60,7 +60,7 @@ export default function ProfilePage() {
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-500 mb-8 px-2">Account Dashboard</h3>
               <div className="bg-white dark:bg-charcoal-800 rounded-[2.5rem] border border-charcoal-900/10 dark:border-white/5 overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-2xl">
                  {menuItems.map((item, idx) => (
-                   <motion.button
+                   <m.button
                      key={item.label}
                      whileHover={{ backgroundColor: 'var(--hover-bg, rgba(0,0,0,0.02))' }}
                      onClick={() => item.path && navigate(item.path)}
@@ -78,7 +78,7 @@ export default function ProfilePage() {
                          </div>
                       </div>
                       <ChevronRight size={18} className="text-charcoal-400 dark:text-charcoal-700 group-hover:translate-x-1 group-hover:text-brand-500 transition-all" />
-                   </motion.button>
+                   </m.button>
                  ))}
               </div>
            </div>

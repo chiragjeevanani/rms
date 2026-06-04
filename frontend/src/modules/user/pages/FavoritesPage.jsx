@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -22,7 +22,7 @@ export default function FavoritesPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white selection:bg-brand-500 selection:text-charcoal-900 transition-colors duration-300">
       <div className="max-w-lg mx-auto px-6 pt-8 pb-40">
         <header className="flex items-center gap-6 mb-12">
-           <button 
+           <button type="button" 
              onClick={() => navigate(-1)}
              className="w-12 h-12 bg-white border border-charcoal-900/10 dark:bg-white/5 dark:border-white/5 rounded-2xl flex items-center justify-center text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white transition-colors"
            >
@@ -33,7 +33,7 @@ export default function FavoritesPage() {
 
         <main className="space-y-6">
           {FAVORITES.map((item) => (
-            <motion.div
+            <m.div
               key={item.id}
               whileHover={{ x: 5 }}
               className="bg-white dark:bg-charcoal-800 rounded-[2.5rem] p-6 border border-charcoal-900/10 dark:border-white/5 shadow-sm flex items-center justify-between group"
@@ -53,10 +53,10 @@ export default function FavoritesPage() {
                    </div>
                 </div>
               </div>
-              <button className="w-12 h-12 bg-charcoal-900 dark:bg-white/5 rounded-2xl flex items-center justify-center text-white dark:text-white group-hover:bg-brand-500 group-hover:text-charcoal-900 transition-all">
+              <button type="button" className="w-12 h-12 bg-charcoal-900 dark:bg-white/5 rounded-2xl flex items-center justify-center text-white dark:text-white group-hover:bg-brand-500 group-hover:text-charcoal-900 transition-all">
                  <Plus size={20} />
               </button>
-            </motion.div>
+            </m.div>
           ))}
 
           {FAVORITES.length === 0 && (

@@ -1,18 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Plus, Search, Filter, ArrowUpRight, ArrowDownLeft, AlertCircle, Edit2, Trash2, Save, Package, Truck, Database, ChevronRight, X, ChevronLeft, Building2, Upload, Download, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import BranchSelector from '../../components/BranchSelector';
 
 export default function StockManagement() {
-  const [stock, setStock] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [dataState, setDataState] = useState({
+    stock: [],
+    branches: [],
+    isLoading: true
+  });
 
-  // CSV Import States and Functions for Stock
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [isImporting, setIsImporting] = useState(false);
+  const [filterState, setFilterState] = useState({
+    searchQuery: '',
+    selectedBranchFilter: 'all',
+    currentPage: 1
+  });
+
+  const [modalState, setModalState] = useState({
+    isImportModalOpen: false,
+    importFile: null,
+    isImporting: false,
+    isModalOpen: false,
+    editingItem: null,
+    isDeleteModalOpen: false,
+    itemToDelete: null,
+    formData: {
+      name: '',
+      quantity: '',
+      unit: 'Kgs',
+      minLevel: '',
+      category: 'Dry Grocery',
+      price: '',
+      branchId: ''
+    }
+  });
+
+  const itemsPerPage = 5;
+
+  const { stock, branches, isLoading } = dataState;
+  const { searchQuery, selectedBranchFilter, currentPage } = filterState;
+  const { isImportModalOpen, importFile, isImporting, isModalOpen, editingItem, isDeleteModalOpen, itemToDelete, formData } = modalState;
+
+  const setStock = (val) => setDataState(prev => ({ ...prev, stock: typeof val === 'function' ? val(prev.stock) : val }));
+  const setBranches = (val) => setDataState(prev => ({ ...prev, branches: typeof val === 'function' ? val(prev.branches) : val }));
+  const setIsLoading = (val) => setDataState(prev => ({ ...prev, isLoading: typeof val === 'function' ? val(prev.isLoading) : val }));
+
+  const setSearchQuery = (val) => setFilterState(prev => ({ ...prev, searchQuery: typeof val === 'function' ? val(prev.searchQuery) : val }));
+  const setSelectedBranchFilter = (val) => setFilterState(prev => ({ ...prev, selectedBranchFilter: typeof val === 'function' ? val(prev.selectedBranchFilter) : val }));
+  const setCurrentPage = (val) => setFilterState(prev => ({ ...prev, currentPage: typeof val === 'function' ? val(prev.currentPage) : val }));
+
+  const setIsImportModalOpen = (val) => setModalState(prev => ({ ...prev, isImportModalOpen: typeof val === 'function' ? val(prev.isImportModalOpen) : val }));
+  const setImportFile = (val) => setModalState(prev => ({ ...prev, importFile: typeof val === 'function' ? val(prev.importFile) : val }));
+  const setIsImporting = (val) => setModalState(prev => ({ ...prev, isImporting: typeof val === 'function' ? val(prev.isImporting) : val }));
+  const setIsModalOpen = (val) => setModalState(prev => ({ ...prev, isModalOpen: typeof val === 'function' ? val(prev.isModalOpen) : val }));
+  const setEditingItem = (val) => setModalState(prev => ({ ...prev, editingItem: typeof val === 'function' ? val(prev.editingItem) : val }));
+  const setIsDeleteModalOpen = (val) => setModalState(prev => ({ ...prev, isDeleteModalOpen: typeof val === 'function' ? val(prev.isDeleteModalOpen) : val }));
+  const setItemToDelete = (val) => setModalState(prev => ({ ...prev, itemToDelete: typeof val === 'function' ? val(prev.itemToDelete) : val }));
+  const setFormData = (val) => setModalState(prev => ({ ...prev, formData: typeof val === 'function' ? val(prev.formData) : val }));
 
   const parseCSV = (text) => {
     const lines = text.split('\n');
@@ -125,27 +171,7 @@ export default function StockManagement() {
     };
     reader.readAsText(importFile);
   };
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [branches, setBranches] = useState([]);
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
-
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
-  const [formData, setFormData] = useState({
-    name: '',
-    quantity: '',
-    unit: 'Kgs',
-    minLevel: '',
-    category: 'Dry Grocery',
-    price: '',
-    branchId: ''
-  });
+  // Pagination/Redundant states consolidated above
 
   useEffect(() => {
     fetchData();
@@ -293,21 +319,21 @@ export default function StockManagement() {
         </div>
         
         <div className="flex items-center gap-3">
-           <button 
+           <button type="button" 
              onClick={downloadStockTemplate}
              className="h-14 px-6 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-100 active:scale-95 transition-all outline-none"
            >
              <Download size={16} />
              Download Sample
            </button>
-           <button 
+           <button type="button" 
              onClick={() => setIsImportModalOpen(true)}
              className="h-14 px-6 bg-slate-100 text-slate-700 border border-slate-200 rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-200 active:scale-95 transition-all outline-none"
            >
              <Upload size={16} />
              Import CSV
            </button>
-           <button 
+           <button type="button" 
              onClick={() => handleOpenModal()}
              className="h-14 px-8 bg-[#2C2C2C] text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all group"
            >
@@ -326,7 +352,7 @@ export default function StockManagement() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder="Search items by name or category..."
+              placeholder="Search items by name or category…"
               className="w-full bg-white border-none rounded-2xl py-4 pl-12 pr-4 text-[11px] font-bold uppercase tracking-widest focus:ring-4 focus:ring-slate-900/5 transition-all outline-none shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -398,7 +424,7 @@ export default function StockManagement() {
         <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-slate-200">
            <Package size={64} className="mx-auto text-slate-200 mb-6" strokeWidth={1} />
            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No items found in stock</p>
-           <button onClick={() => handleOpenModal()} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Add Your First Item</button>
+           <button type="button" onClick={() => handleOpenModal()} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Add Your First Item</button>
         </div>
       ) : (
         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden overflow-x-auto no-scrollbar">
@@ -438,13 +464,13 @@ export default function StockManagement() {
                   </td>
                   <td className="px-8 py-6">
                      <div className="flex items-center justify-end gap-2">
-                        <button 
+                        <button type="button" 
                           onClick={() => handleOpenModal(item)}
                           className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                         >
                            <Edit2 size={14} strokeWidth={2.5} />
                         </button>
-                        <button 
+                        <button type="button" 
                           onClick={() => handleDeleteClick(item)}
                            className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                         >
@@ -466,7 +492,7 @@ export default function StockManagement() {
              Showing <span className="text-slate-900">{indexOfFirstItem + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastItem, filteredStock.length)}</span> of <span className="text-slate-900">{filteredStock.length}</span> items
            </p>
            <div className="flex items-center gap-2">
-              <button 
+              <button type="button" 
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="p-3 bg-white text-slate-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-900 hover:text-white transition-all border border-slate-100 shadow-sm"
@@ -476,7 +502,7 @@ export default function StockManagement() {
               
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
-                  <button 
+                  <button type="button" 
                     key={i}
                     onClick={() => handlePageChange(i + 1)}
                     className={`w-10 h-10 rounded-xl text-[10px] font-black uppercase transition-all
@@ -487,7 +513,7 @@ export default function StockManagement() {
                 ))}
               </div>
 
-              <button 
+              <button type="button" 
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="p-3 bg-white text-slate-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-900 hover:text-white transition-all border border-slate-100 shadow-sm"
@@ -500,56 +526,60 @@ export default function StockManagement() {
 
       {/* Modals */}
       <AdminModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingItem ? 'Edit Stock Item' : 'Add New Item'}
+        isOpen={modalState.isModalOpen}
+        onClose={() => setModalState({...modalState, isModalOpen: false, editingItem: null})}
+        title={modalState.editingItem ? 'Edit Stock Item' : 'Add New Item'}
         subtitle="Manage item details and stock levels"
         onSubmit={handleSave}
       >
         <div className="space-y-6">
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Item Name</label>
+              <label htmlFor="itemName" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Item Name</label>
               <input 
+                id="itemName"
                 type="text" 
                 required
                 className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 rounded-2xl transition-all"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value.toUpperCase()})}
+                value={modalState.formData.name}
+                onChange={(e) => setModalState({...modalState, formData: {...modalState.formData, name: e.target.value.toUpperCase()}})}
                 placeholder="e.g. TRUFFLE OIL (5L)"
               />
            </div>
 
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
+              <label htmlFor="branchAllocation" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Allocation</label>
               <select 
+                id="branchAllocation"
                 className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold uppercase outline-none focus:border-slate-900 rounded-2xl appearance-none"
-                value={formData.branchId}
+                value={modalState.formData.branchId}
                 required
-                onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                onChange={(e) => setModalState({...modalState, formData: {...modalState.formData, branchId: e.target.value}})}
               >
                 <option value="">Select Target Branch</option>
-                {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+                {dataState.branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
               </select>
            </div>
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Quantity</label>
+                <label htmlFor="currentQuantity" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Quantity</label>
                 <input 
+                  id="currentQuantity"
                   type="number" 
                   required
                   className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold outline-none focus:border-slate-900 rounded-2xl"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                  value={modalState.formData.quantity}
+                  onChange={(e) => setModalState({...modalState, formData: {...modalState.formData, quantity: e.target.value}})}
                   placeholder="0"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Measurement Unit</label>
+                <label htmlFor="measurementUnit" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Measurement Unit</label>
                 <select 
+                  id="measurementUnit"
                   className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold uppercase outline-none focus:border-slate-900 rounded-2xl appearance-none"
-                  value={formData.unit}
-                  onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                  value={modalState.formData.unit}
+                  onChange={(e) => setModalState({...modalState, formData: {...modalState.formData, unit: e.target.value}})}
                 >
                   <option value="Kgs">Kilograms (Kgs)</option>
                   <option value="Ltrs">Liters (Ltrs)</option>
@@ -561,22 +591,24 @@ export default function StockManagement() {
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Min Stock Level</label>
+                <label htmlFor="minStockLevel" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Min Stock Level</label>
                 <input 
+                  id="minStockLevel"
                   type="number" 
                   required
                   className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold outline-none focus:border-slate-900 rounded-2xl"
-                  value={formData.minLevel}
-                  onChange={(e) => setFormData({...formData, minLevel: e.target.value})}
-                  placeholder="Low stock alert at..."
+                  value={modalState.formData.minLevel}
+                  onChange={(e) => setModalState({...modalState, formData: {...modalState.formData, minLevel: e.target.value}})}
+                  placeholder="Low stock alert at…"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Item Category</label>
+                <label htmlFor="itemCategory" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Item Category</label>
                 <select 
+                  id="itemCategory"
                   className="w-full bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold uppercase outline-none focus:border-slate-900 rounded-2xl appearance-none"
-                  value={formData.category}
-                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  value={modalState.formData.category}
+                  onChange={(e) => setModalState({...modalState, formData: {...modalState.formData, category: e.target.value}})}
                 >
                   <option value="Dry Grocery">Dry Grocery</option>
                   <option value="Oils & Fats">Oils & Fats</option>
@@ -604,11 +636,11 @@ export default function StockManagement() {
               </p>
            </div>
            <div className="flex gap-3">
-              <button 
+              <button type="button" 
                 onClick={() => setIsDeleteModalOpen(false)}
                 className="flex-1 py-4 bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-100 transition-all shadow-sm"
               >Cancel</button>
-              <button 
+              <button type="button" 
                 onClick={confirmDelete}
                 className="flex-[2] py-4 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-rose-600 transition-all shadow-xl shadow-rose-200"
               >Confirm Delete</button>
@@ -642,8 +674,9 @@ export default function StockManagement() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select CSV File</label>
+            <label htmlFor="selectCsvFile" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select CSV File</label>
             <input 
+              id="selectCsvFile"
               type="file"
               accept=".csv"
               required

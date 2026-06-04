@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ChefHat, Bell, UtensilsCrossed, CheckCircle2 } from 'lucide-react';
 
 export function OrderTimeline({ status }) {
@@ -15,7 +15,7 @@ export function OrderTimeline({ status }) {
     <div className="relative pt-8 pb-12 px-2">
       <div className="flex justify-between relative">
         <div className="absolute top-5 left-0 w-full h-[2px] bg-charcoal-900/10 dark:bg-white/5 rounded-full overflow-hidden">
-          <motion.div
+          <m.div
             className="h-full bg-brand-500 shadow-[0_0_15px_rgba(255,122,0,0.5)]"
             initial={{ width: 0 }}
             animate={{ width: `${(currentIdx / (steps.length - 1)) * 100}%` }}
@@ -29,7 +29,7 @@ export function OrderTimeline({ status }) {
 
           return (
             <div key={step.id} className="relative z-10 flex flex-col items-center group w-20">
-              <motion.div
+              <m.div
                 initial={false}
                 animate={{
                   scale: isActive ? 1.2 : 1,
@@ -41,7 +41,7 @@ export function OrderTimeline({ status }) {
                 }`}
               >
                 <step.icon size={18} />
-              </motion.div>
+              </m.div>
               <div className="mt-4 text-center">
                  <span className={`text-[9px] font-black uppercase tracking-wider leading-tight block ${isActive ? 'text-brand-500' : 'text-charcoal-400 dark:text-charcoal-600'}`}>
                   {step.label}

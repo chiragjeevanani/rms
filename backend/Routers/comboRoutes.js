@@ -13,11 +13,11 @@ const { protectAdmin } = require('../Middleware/authMiddleware');
 router.post('/bulk', protectAdmin, bulkCreateCombos);
 
 router.route('/')
-  .get(protectAdmin, getCombos)
+  .get(getCombos)
   .post(protectAdmin, createCombo);
 
 router.route('/:id')
-  .get(protectAdmin, getCombo)
+  .get(getCombo)
   .put(protectAdmin, updateCombo)
   .delete(protectAdmin, deleteCombo);
 

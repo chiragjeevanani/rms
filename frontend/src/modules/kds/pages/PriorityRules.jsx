@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ShieldAlert, Zap, Users, ShoppingBag, ArrowUpCircle, Info, Save } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
@@ -22,7 +22,7 @@ export default function PriorityRules() {
           </div>
         </div>
 
-        <button className="flex items-center gap-2 px-6 py-2 bg-[#ff7a00] text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#ea6c00] transition-all shadow-lg shadow-[#ff7a00]/20">
+        <button type="button" className="flex items-center gap-2 px-6 py-2 bg-[#ff7a00] text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#ea6c00] transition-all shadow-lg shadow-[#ff7a00]/20">
           <Save size={14} strokeWidth={3} />
           Deploy Rules
         </button>

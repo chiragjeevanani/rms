@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Search, Users, Star, Plus, Phone, Calendar, ChevronRight } from 'lucide-react';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { useNavigate } from 'react-router-dom';
@@ -28,13 +28,13 @@ export default function CustomerList() {
             <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Guests</h1>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Customer Directory</p>
           </div>
-          <motion.button
+          <m.button
             whileTap={{ scale: 0.9 }}
             onClick={() => navigate('/staff/customers/add')}
             className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg shadow-slate-900/20"
           >
             <Plus size={24} />
-          </motion.button>
+          </m.button>
         </div>
 
         <div className="relative group">
@@ -58,7 +58,7 @@ export default function CustomerList() {
             </div>
           ) : (
             filteredCustomers.map((customer) => (
-              <motion.div
+              <m.div
                 key={customer.id}
                 whileTap={{ scale: 0.98 }}
                 className="p-5 rounded-[2rem] border border-slate-100 bg-slate-50/50 flex items-center justify-between group hover:bg-white hover:shadow-xl hover:shadow-slate-900/5 transition-all"
@@ -89,7 +89,7 @@ export default function CustomerList() {
                   </div>
                   <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-900 transition-colors" />
                 </div>
-              </motion.div>
+              </m.div>
             ))
           )}
         </div>

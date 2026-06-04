@@ -4,7 +4,7 @@ import {
   Trash2, RefreshCcw, Eye, ShieldAlert, Menu, Receipt, History
 } from 'lucide-react';
 import { usePos } from '../../context/PosContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import dbClient from '../../../../config/dbClient';
 
@@ -60,7 +60,7 @@ export default function CancelledOrders() {
       <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center justify-between mb-8">
            <div className="flex items-center gap-6">
-            <button onClick={toggleSidebar} className="p-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10">
+            <button type="button" onClick={toggleSidebar} className="p-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10">
               <Menu size={18} />
             </button>
             <div>
@@ -85,7 +85,7 @@ export default function CancelledOrders() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button 
+          <button type="button" 
             onClick={fetchCancelledOrders}
             disabled={loading}
             className="h-12 px-6 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center gap-3 outline-none disabled:opacity-50"
@@ -111,7 +111,7 @@ export default function CancelledOrders() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
               {filteredOrders.map((order) => (
-                <motion.div 
+                <m.div 
                   key={order._id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -144,14 +144,14 @@ export default function CancelledOrders() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                     <button className="flex-1 h-12 bg-slate-50 text-slate-900 rounded-xl border border-slate-100 flex items-center justify-center gap-2 font-black text-[9px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all active:scale-95">
+                     <button type="button" className="flex-1 h-12 bg-slate-50 text-slate-900 rounded-xl border border-slate-100 flex items-center justify-center gap-2 font-black text-[9px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all active:scale-95">
                         <History size={14} /> Audit Trace
                      </button>
-                     <button className="h-12 w-12 bg-white border border-slate-100 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all hover:border-rose-100 flex items-center justify-center active:scale-95">
+                     <button type="button" className="h-12 w-12 bg-white border border-slate-100 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all hover:border-rose-100 flex items-center justify-center active:scale-95">
                         <Eye size={18} />
                      </button>
                   </div>
-                </motion.div>
+                </m.div>
               ))}
             </AnimatePresence>
           </div>

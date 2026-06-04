@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Search, Users, Clock, AlertCircle, RefreshCw, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import BranchSelector from '../components/BranchSelector';
 
@@ -109,7 +109,7 @@ export default function OccupiedTables() {
             <p className="text-sm font-black text-amber-500">{tables.length}</p>
           </div>
           
-          <button onClick={fetchOccupiedTables} className="p-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-md active:scale-95">
+          <button type="button" onClick={fetchOccupiedTables} className="p-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-md active:scale-95">
             <RefreshCw size={16} />
           </button>
         </div>
@@ -130,7 +130,7 @@ export default function OccupiedTables() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 content-start">
             <AnimatePresence mode="popLayout">
               {filteredTables.map((table) => (
-                <motion.div
+                <m.div
                   layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -159,7 +159,7 @@ export default function OccupiedTables() {
                     </div>
                   </div>
 
-                  <button 
+                  <button type="button" 
                     onClick={() => clearTable(table._id, table.tableName)}
                     className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[8px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
                   >
@@ -169,7 +169,7 @@ export default function OccupiedTables() {
 
                   {/* Tiny background indicator */}
                   <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full opacity-10 ${table.status === 'Reserved' ? 'bg-blue-900' : 'bg-amber-900'}`} />
-                </motion.div>
+                </m.div>
               ))}
             </AnimatePresence>
           </div>

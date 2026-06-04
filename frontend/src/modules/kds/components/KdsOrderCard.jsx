@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Clock, AlertCircle, ShoppingBag, Hash, CheckCircle } from 'lucide-react';
 import { useKdsTimer } from '../hooks/useKdsTimer';
 import { useTheme } from '../../user/context/ThemeContext';
@@ -32,7 +32,7 @@ export function KdsOrderCard({ order, onClick, onStatusChange, hideActions }) {
   const isFinalized = ['ready', 'completed', 'served', 'cancelled', 'paid'].includes(order.status);
 
   return (
-    <motion.div
+    <m.div
       layout
       whileHover={{ y: -2 }}
       onClick={() => onClick(order)}
@@ -136,7 +136,7 @@ export function KdsOrderCard({ order, onClick, onStatusChange, hideActions }) {
         {/* Quick Action Button */}
         {!isFinalized && !hideActions && (
           <div className="flex gap-2 w-full">
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 const nextStatus = ['pending', 'confirmed', 'new'].includes(order.status) ? 'Preparing' : 'Ready';
@@ -150,7 +150,7 @@ export function KdsOrderCard({ order, onClick, onStatusChange, hideActions }) {
             >
               {['pending', 'confirmed', 'new'].includes(order.status) ? 'Start Preparing' : 'Mark Ready'}
             </button>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 if(window.confirm('Are you sure you want to cancel this order from kitchen?')) {
@@ -167,7 +167,7 @@ export function KdsOrderCard({ order, onClick, onStatusChange, hideActions }) {
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

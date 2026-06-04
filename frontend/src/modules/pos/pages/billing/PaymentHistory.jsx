@@ -6,7 +6,7 @@ import {
   FileText, Printer, ArrowDown, BadgeCheck, X,
   ArrowRight, Download, Receipt
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { usePos } from '../../context/PosContext';
 import PosTopNavbar from '../../components/PosTopNavbar';
@@ -203,7 +203,7 @@ export default function PaymentHistory() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-           <button 
+           <button type="button" 
              onClick={handlePrintPDF}
              style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
              className="h-11 px-6 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-sm flex items-center gap-2"
@@ -211,7 +211,7 @@ export default function PaymentHistory() {
               <Printer size={16} />
               Save Audit Report
            </button>
-           <button onClick={fetchHistory} className="p-2.5 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100 transition-all active:rotate-180 duration-700">
+           <button type="button" onClick={fetchHistory} className="p-2.5 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100 transition-all active:rotate-180 duration-700">
               <RefreshCw size={18} />
            </button>
         </div>
@@ -250,7 +250,7 @@ export default function PaymentHistory() {
                </div>
                <div className="flex gap-2 p-1.5 bg-white rounded-xl border border-slate-200 shadow-sm">
                   {['All', 'Cash', 'UPI', 'Card'].map(m => (
-                     <button 
+                     <button type="button" 
                        key={m}
                        onClick={() => setFilterMethod(m)}
                        style={filterMethod === m ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
@@ -318,14 +318,14 @@ export default function PaymentHistory() {
                              </td>
                              <td className="px-8 py-5 text-right">
                                 <div className="flex justify-end gap-2">
-                                   <button 
+                                   <button type="button" 
                                      onClick={() => printSingleReceipt(p)}
                                      className="p-2.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                                      title="Print Receipt"
                                    >
                                       <Printer size={16} />
                                    </button>
-                                   <button 
+                                   <button type="button" 
                                      onClick={() => generatePDF(p)}
                                      className="p-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                      title="Download PDF"

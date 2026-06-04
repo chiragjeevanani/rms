@@ -6,7 +6,7 @@ import {
   PieChart, Activity, DollarSign, X, Save,
   AlertCircle
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const MOCK_EXPENSES = [
   { id: 1, date: '2024-03-14', category: 'Raw Materials', vendor: 'Global Fresh Produce', amount: 12450, status: 'paid' },
@@ -59,14 +59,14 @@ export default function FinancialManagement() {
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Expense monitoring, tax configuration, and fiscal reports</p>
         </div>
         <div className="flex items-center gap-3">
-           <button 
+           <button type="button" 
              onClick={() => window.alert('FISCAL PROTOCOL: Generating consolidated PDF report...')}
              className="h-9 px-4 bg-white border border-slate-200 text-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all"
            >
               <Download size={14} />
               Export Fiscal
            </button>
-           <button 
+           <button type="button" 
              onClick={handleOpenModal}
              className="h-9 px-4 bg-slate-900 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
            >
@@ -115,8 +115,8 @@ export default function FinancialManagement() {
          <div className="p-4 border-b border-slate-50 flex items-center justify-between">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Expense Audit Log</h3>
             <div className="flex bg-slate-50 p-1 border border-slate-100 rounded-sm">
-               <button className="px-3 py-1 text-[8px] font-black uppercase tracking-widest bg-white border border-slate-200 text-slate-900 shadow-sm rounded-sm">All Time</button>
-               <button className="px-3 py-1 text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors">This Month</button>
+               <button type="button" className="px-3 py-1 text-[8px] font-black uppercase tracking-widest bg-white border border-slate-200 text-slate-900 shadow-sm rounded-sm">All Time</button>
+               <button type="button" className="px-3 py-1 text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors">This Month</button>
             </div>
          </div>
          <div className="overflow-x-auto no-scrollbar">
@@ -164,14 +164,14 @@ export default function FinancialManagement() {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -187,7 +187,7 @@ export default function FinancialManagement() {
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Fiscal Protocol v2.4.0</p>
                      </div>
                   </div>
-                  <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
                </div>
 
                <form onSubmit={handleSave} className="p-8 space-y-6">
@@ -278,7 +278,7 @@ export default function FinancialManagement() {
                      </button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

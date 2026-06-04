@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   ClipboardList, 
@@ -61,7 +61,7 @@ export default function MyOrdersPage() {
           
           <div className="bg-white dark:bg-charcoal-800 p-1.5 rounded-[1.5rem] border border-charcoal-900/5 dark:border-white/5 flex gap-1 shadow-sm">
             {['active', 'history'].map((tab) => (
-              <button
+              <button type="button"
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${
@@ -69,7 +69,7 @@ export default function MyOrdersPage() {
                 }`}
               >
                 {activeTab === tab && (
-                  <motion.div
+                  <m.div
                     layoutId="active-tab-bg"
                     className="absolute inset-0 bg-brand-500 dark:bg-brand-500 rounded-xl -z-0"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
@@ -83,7 +83,7 @@ export default function MyOrdersPage() {
 
         <main>
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={activeTab}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ export default function MyOrdersPage() {
               className="space-y-4"
             >
               {MOCK_ORDERS[activeTab].map((order) => (
-                <motion.div
+                <m.div
                   key={order.id}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => activeTab === 'active' && navigate('/order-tracking')}
@@ -140,16 +140,16 @@ export default function MyOrdersPage() {
                   </div>
 
                   {activeTab === 'active' && (
-                    <motion.div 
+                    <m.div 
                       className="absolute bottom-0 left-0 h-1 bg-brand-500"
                       initial={{ width: '30%' }}
                       animate={{ width: order.status === 'preparing' ? '60%' : '10%' }}
                       transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
                     />
                   )}
-                </motion.div>
+                </m.div>
               ))}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </main>
       </div>

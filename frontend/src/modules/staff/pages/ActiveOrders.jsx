@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Clock, CheckCircle, ChefHat, Search, Filter, Hash, User, Calendar, X, MoreHorizontal } from 'lucide-react';
 import { useOrders } from '../../../context/OrderContext';
 import { StaffNavbar } from '../components/StaffNavbar';
@@ -82,7 +82,7 @@ export default function ActiveOrders() {
              {/* Dynamic Status Filters */}
              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {['all', 'pending', 'preparing', 'ready', 'completed'].map((s) => (
-                   <button
+                   <button type="button"
                      key={s}
                      onClick={() => setFilter(s)}
                      className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${
@@ -102,7 +102,7 @@ export default function ActiveOrders() {
            <div className="flex flex-col gap-8">
               <AnimatePresence mode="popLayout">
                 {filteredOrders.length === 0 ? (
-                  <motion.div 
+                  <m.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center justify-center py-24 text-center"
@@ -111,15 +111,15 @@ export default function ActiveOrders() {
                        <Filter size={24} className="text-slate-200" />
                     </div>
                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">No Orders Match Criteria</p>
-                    <button onClick={() => {setFilter('all'); setSearch('')}} className="mt-4 text-[10px] font-black uppercase tracking-widest text-teal-500 underline underline-offset-4">Reset Node</button>
-                  </motion.div>
+                    <button type="button" onClick={() => {setFilter('all'); setSearch('')}} className="mt-4 text-[10px] font-black uppercase tracking-widest text-teal-500 underline underline-offset-4">Reset Node</button>
+                  </m.div>
                 ) : (
                   filteredOrders.map((order) => {
                     const config = statusConfig[order.status] || statusConfig.pending;
                     const StatusIcon = config.icon;
                     
                     return (
-                      <motion.div
+                      <m.div
                         key={order.id}
                         layout
                         initial={{ opacity: 0, scale: 0.98 }}
@@ -204,7 +204,7 @@ export default function ActiveOrders() {
                               <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 italic">Kitchen Processing</span>
                            </div>
                         </div>
-                      </motion.div>
+                      </m.div>
                     );
                   })
                 )}

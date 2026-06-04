@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChefHat, Search, RefreshCw } from 'lucide-react';
 import { KdsOrderCard } from './KdsOrderCard';
@@ -64,7 +64,7 @@ export default function KdsOrderQueueTemplate({
               className="bg-transparent border-none outline-none pl-10 pr-4 py-2 text-[10px] font-black uppercase tracking-widest text-stone-400 placeholder:text-stone-600 w-32 focus:w-48 transition-all"
             />
           </div>
-          <button 
+          <button type="button" 
             onClick={fetchOrders}
             className={`p-2.5 rounded-xl border transition-all ${
               isDarkMode ? 'bg-white/5 text-stone-400 border-white/5 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50 hover:text-[#ff7a00]'

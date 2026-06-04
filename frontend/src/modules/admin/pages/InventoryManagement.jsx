@@ -6,7 +6,7 @@ import {
   History, Receipt, TrendingDown, X, Save,
   CheckCircle2, Scale
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const MOCK_INVENTORY = [
   { id: 1, name: 'Paneer (Fresh)', stock: 12.5, unit: 'kg', minLevel: 5, category: 'Dairy', status: 'normal' },
@@ -76,13 +76,13 @@ export default function InventoryManagement() {
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Manage and track your restaurant's stock levels</p>
         </div>
         <div className="flex bg-white p-1 border border-slate-200 rounded-sm">
-           <button 
+           <button type="button" 
              onClick={() => setActiveTab('stock')}
              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'stock' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-900'}`}
            >
               Active Stock
            </button>
-           <button 
+           <button type="button" 
              onClick={() => setActiveTab('wastage')}
              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'wastage' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-900'}`}
            >
@@ -129,11 +129,11 @@ export default function InventoryManagement() {
                </div>
             </div>
             <div className="flex items-center gap-2">
-               <button className="h-8 px-3 border border-slate-200 text-slate-900 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all">
+               <button type="button" className="h-8 px-3 border border-slate-200 text-slate-900 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all">
                   <Receipt size={12} />
                   Log Purchase
                </button>
-               <button 
+               <button type="button" 
                  onClick={() => handleOpenModal()}
                  className="h-8 px-3 bg-slate-900 text-white rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
                >
@@ -178,12 +178,12 @@ export default function InventoryManagement() {
                         </td>
                         <td className="px-6 py-4">
                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button 
+                              <button type="button" 
                                 onClick={() => handleOpenModal(item)}
                                 className="p-1.5 text-slate-300 hover:text-slate-900 hover:bg-white rounded-sm transition-all border border-transparent hover:border-slate-100"
                               ><Edit3 size={12} /></button>
-                              <button className="p-1.5 text-slate-300 hover:text-blue-500 hover:bg-white rounded-sm transition-all border border-transparent hover:border-slate-100"><History size={12} /></button>
-                              <button 
+                              <button type="button" className="p-1.5 text-slate-300 hover:text-blue-500 hover:bg-white rounded-sm transition-all border border-transparent hover:border-slate-100"><History size={12} /></button>
+                              <button type="button" 
                                 onClick={() => handleDelete(item.id)}
                                 className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-white rounded-sm transition-all border border-transparent hover:border-slate-100"
                               ><Trash2 size={12} /></button>
@@ -200,14 +200,14 @@ export default function InventoryManagement() {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -225,7 +225,7 @@ export default function InventoryManagement() {
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Manage stock details</p>
                      </div>
                   </div>
-                  <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
                </div>
 
                <form onSubmit={handleSave} className="p-8 space-y-6">
@@ -324,7 +324,7 @@ export default function InventoryManagement() {
                      </button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

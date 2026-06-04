@@ -7,7 +7,7 @@ import {
   Plus, ShoppingBag, ShoppingCart, CreditCard, ChevronDown, Check,
   Minus, Layout, Sparkles, Wand2, Phone, Shield, Train, Lock, Hash, MapPin, AlertTriangle, CheckSquare, Truck
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
 import { usePos } from '../../context/PosContext';
@@ -372,7 +372,7 @@ export default function ActiveOrders() {
               <span style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }} className="text-[10px] font-extrabold uppercase tracking-widest font-black">{orders.length} Total Orders</span>
             </div>
            
-            <button 
+            <button type="button" 
               onClick={fetchAllOrders}
               className="p-2.5 bg-gray-50 border border-slate-200 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-all"
             >
@@ -410,7 +410,7 @@ export default function ActiveOrders() {
              </div>
 
              {filteredOrders.map(order => (
-               <motion.div 
+               <m.div 
                  key={order._id}
                  initial={{ opacity: 0, y: 10 }}
                  animate={{ opacity: 1, y: 0 }}
@@ -496,7 +496,7 @@ export default function ActiveOrders() {
                      
                      {(order.status?.toLowerCase() === 'pending' || order.status?.toLowerCase() === 'preparing') && (
                        <div className="flex gap-2">
-                         <button 
+                         <button type="button" 
                            onClick={(e) => {
                              e.stopPropagation();
                              handlePrint(order);
@@ -505,7 +505,7 @@ export default function ActiveOrders() {
                          >
                             <Printer size={10} /> Print Bill
                          </button>
-                         <button 
+                         <button type="button" 
                            onClick={(e) => {
                              e.stopPropagation();
                              if (window.confirm('Are you sure you want to cancel this order?')) {
@@ -521,7 +521,7 @@ export default function ActiveOrders() {
                      
                      {order.status?.toLowerCase() === 'ready' && (
                         <div className="flex gap-2">
-                           <button 
+                           <button type="button" 
                              onClick={(e) => {
                                e.stopPropagation();
                                handlePrint(order);
@@ -530,7 +530,7 @@ export default function ActiveOrders() {
                            >
                               <Printer size={10} /> Print Bill
                            </button>
-                           <button 
+                           <button type="button" 
                              onClick={(e) => {
                                e.stopPropagation();
                                if (window.confirm('Mark this order as Settled?')) {
@@ -624,7 +624,7 @@ export default function ActiveOrders() {
                       )}
                     </div>
                   )}
-               </motion.div>
+               </m.div>
              ))}
           </div>
          )}
@@ -632,7 +632,7 @@ export default function ActiveOrders() {
 
       <AnimatePresence>
         {selectedOrder && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -643,7 +643,7 @@ export default function ActiveOrders() {
               }
             }}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
@@ -698,7 +698,7 @@ export default function ActiveOrders() {
                     </span>
                   </div>
 
-                  <button 
+                  <button type="button" 
                     onClick={() => setSelectedOrder(null)}
                     className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 rounded-full transition-all"
                   >
@@ -813,7 +813,7 @@ export default function ActiveOrders() {
                         </div>
 
                         {!customerDetails && (
-                          <button
+                          <button type="button"
                             onClick={() => fetchCustomerNumber(selectedOrder._id)}
                             disabled={fetchingCustomer}
                             style={{
@@ -839,7 +839,7 @@ export default function ActiveOrders() {
                         <MapPin size={14} className="text-emerald-600" /> Delivery Agent Tracking
                       </h4>
 
-                      <button
+                      <button type="button"
                         onClick={() => refreshRiderStatus(selectedOrder._id)}
                         disabled={refreshingRider}
                         className="p-1.5 hover:bg-slate-50 text-slate-400 hover:text-slate-900 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest"
@@ -915,7 +915,7 @@ export default function ActiveOrders() {
 
                             {c.status === 'pending' && (
                               <div className="flex gap-2 pt-2">
-                                <button
+                                <button type="button"
                                   onClick={() => {
                                     setSelectedComplaint(c);
                                     setComplaintRefundAmount(c.data?.refund_amount || 0);
@@ -925,7 +925,7 @@ export default function ActiveOrders() {
                                 >
                                   Accept Refund
                                 </button>
-                                <button
+                                <button type="button"
                                   onClick={() => {
                                     setSelectedComplaint(c);
                                     setComplaintRejectionId(2);
@@ -1037,7 +1037,7 @@ export default function ActiveOrders() {
                   <div className="space-y-3 shrink-0">
                     {selectedOrder.status?.toLowerCase() === 'pending' && (
                       <div className="flex gap-3">
-                        <button
+                        <button type="button"
                           onClick={() => {
                             setPrepTime(30);
                             setShowPrepTimeModal(true);
@@ -1051,7 +1051,7 @@ export default function ActiveOrders() {
                           <Check size={14} strokeWidth={3} />
                           Accept Order
                         </button>
-                        <button
+                        <button type="button"
                           onClick={() => {
                             setRejectionId(1);
                             setShowRejectModal(true);
@@ -1067,7 +1067,7 @@ export default function ActiveOrders() {
 
                     {selectedOrder.status?.toLowerCase() === 'preparing' && (
                       <div className="flex flex-col gap-3">
-                        <button
+                        <button type="button"
                           onClick={() => foodReadyWera(selectedOrder._id)}
                           disabled={actionLoading}
                           className="w-full py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg"
@@ -1077,7 +1077,7 @@ export default function ActiveOrders() {
                         </button>
 
                         <div className="flex gap-3">
-                          <button
+                          <button type="button"
                             onClick={() => {
                               setSupportRemark('rider_not_arrived');
                               setShowSupportModal(true);
@@ -1096,7 +1096,7 @@ export default function ActiveOrders() {
                             Call Support
                           </button>
                           
-                          <button
+                          <button type="button"
                             onClick={() => handlePrint(selectedOrder)}
                             className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 border border-slate-200/50"
                           >
@@ -1114,7 +1114,7 @@ export default function ActiveOrders() {
                         </div>
 
                         <div className="flex gap-3">
-                          <button
+                          <button type="button"
                             onClick={() => updateStatus(selectedOrder._id, 'completed')}
                             className="flex-1 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md"
                           >
@@ -1122,7 +1122,7 @@ export default function ActiveOrders() {
                             Settle / Close Order
                           </button>
                           
-                          <button
+                          <button type="button"
                             onClick={() => handlePrint(selectedOrder)}
                             className="py-4 px-6 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-[0.98] transition-all flex items-center justify-center gap-2 border border-slate-200/50"
                           >
@@ -1133,7 +1133,7 @@ export default function ActiveOrders() {
                     )}
 
                     {(selectedOrder.status?.toLowerCase() === 'cancelled' || selectedOrder.status?.toLowerCase() === 'completed') && (
-                      <button
+                      <button type="button"
                         onClick={() => handlePrint(selectedOrder)}
                         className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-[0.98] transition-all flex items-center justify-center gap-2 border border-slate-200/50"
                       >
@@ -1155,7 +1155,7 @@ export default function ActiveOrders() {
 
                     <div className="grid grid-cols-3 gap-3">
                       {[15, 20, 25, 30, 40, 45].map((time) => (
-                        <button
+                        <button type="button"
                           key={time}
                           onClick={() => setPrepTime(time)}
                           className={`py-3.5 rounded-xl font-black text-xs transition-all ${
@@ -1171,7 +1171,7 @@ export default function ActiveOrders() {
                     </div>
 
                     <div className="flex gap-3 pt-3">
-                      <button
+                      <button type="button"
                         onClick={() => acceptWeraOrder(selectedOrder._id, prepTime)}
                         disabled={actionLoading}
                         className="flex-grow py-3 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]"
@@ -1179,7 +1179,7 @@ export default function ActiveOrders() {
                       >
                         {actionLoading ? 'Sending...' : 'Confirm Accept'}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => setShowPrepTimeModal(false)}
                         className="px-6 py-3 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
                       >
@@ -1214,14 +1214,14 @@ export default function ActiveOrders() {
                     </div>
 
                     <div className="flex gap-3 pt-3">
-                      <button
+                      <button type="button"
                         onClick={() => rejectWeraOrder(selectedOrder._id, rejectionId)}
                         disabled={actionLoading}
                         className="flex-grow py-3 bg-[#cb202d] hover:bg-red-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]"
                       >
                         {actionLoading ? 'Sending...' : 'Confirm Reject'}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => setShowRejectModal(false)}
                         className="px-6 py-3 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
                       >
@@ -1264,14 +1264,14 @@ export default function ActiveOrders() {
                     </div>
 
                     <div className="flex gap-3 pt-3">
-                      <button
+                      <button type="button"
                         onClick={() => callSupportWera(selectedOrder._id, supportRemark)}
                         disabled={actionLoading}
                         className="flex-grow py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]"
                       >
                         {actionLoading ? 'Connecting...' : 'Request Support'}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => setShowSupportModal(false)}
                         className="px-6 py-3 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
                       >
@@ -1302,14 +1302,14 @@ export default function ActiveOrders() {
                     </div>
 
                     <div className="flex gap-3 pt-3">
-                      <button
+                      <button type="button"
                         onClick={() => acceptComplaintWera(selectedOrder._id, selectedComplaint.id, complaintRefundAmount)}
                         disabled={actionLoading}
                         className="flex-grow py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]"
                       >
                         {actionLoading ? 'Accepting...' : 'Approve Refund'}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => setShowComplaintAcceptModal(false)}
                         className="px-6 py-3 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
                       >
@@ -1355,14 +1355,14 @@ export default function ActiveOrders() {
                     </div>
 
                     <div className="flex gap-3 pt-3">
-                      <button
+                      <button type="button"
                         onClick={() => rejectComplaintWera(selectedOrder._id, selectedComplaint.id, complaintRejectionId, complaintOtherReason)}
                         disabled={actionLoading}
                         className="flex-grow py-3 bg-[#cb202d] hover:bg-red-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]"
                       >
                         {actionLoading ? 'Rejecting...' : 'Dispute Claim'}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => setShowComplaintRejectModal(false)}
                         className="px-6 py-3 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
                       >
@@ -1373,8 +1373,8 @@ export default function ActiveOrders() {
                 </div>
               )}
 
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
@@ -1383,7 +1383,7 @@ export default function ActiveOrders() {
 
 function TabBtn({ active, onClick, label, count }) {
   return (
-    <button 
+    <button type="button" 
       onClick={onClick}
       style={active ? { color: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
       className={`pb-3 text-[10px] font-black uppercase tracking-[0.2em] relative transition-all flex items-center gap-2 ${active ? '' : 'text-slate-400 hover:text-slate-600'}`}
@@ -1398,7 +1398,7 @@ function TabBtn({ active, onClick, label, count }) {
         </span>
       )}
       {active && (
-        <motion.div 
+        <m.div 
           layoutId="activeTab" 
           style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
           className="absolute bottom-0 left-0 right-0 h-0.5" 

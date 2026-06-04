@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { 
   Cloud, 
   Settings2, 
@@ -274,7 +274,7 @@ export default function Integrations() {
   if (!isIntegrationEnabled) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-6">
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -336,7 +336,7 @@ export default function Integrations() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     );
   }
@@ -459,14 +459,14 @@ export default function Integrations() {
             </div>
 
             <div className="flex gap-4 pt-4 border-t border-slate-50">
-              <button 
+              <button type="button" 
                 onClick={handleSaveSettings}
                 disabled={loading}
                 className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-slate-100 hover:bg-slate-800 transition-all cursor-pointer"
               >
                 {loading ? 'Saving Protocol...' : 'Save Configuration'}
               </button>
-              <button 
+              <button type="button" 
                 onClick={testConnection}
                 disabled={connecting}
                 className="flex-1 py-4 border-2 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 cursor-pointer"
@@ -530,7 +530,7 @@ export default function Integrations() {
                   Sync menu catalog, push inventory updates, or import menu directly from Swiggy.
                 </p>
                 <div className="flex gap-2">
-                  <button 
+                  <button type="button" 
                     onClick={() => handlePushMenu('swiggy')}
                     disabled={pushingPlatform !== null}
                     className="flex-1 py-2.5 bg-slate-50 hover:bg-[#ff7a00] hover:text-white disabled:opacity-50 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer"
@@ -550,7 +550,7 @@ export default function Integrations() {
                   Zomato menu sync is currently disabled. Swiggy integration is active.
                 </p>
                 <div className="flex gap-2">
-                  <button
+                  <button type="button"
                     disabled
                     title="Zomato integration coming soon"
                     className="flex-1 py-2.5 bg-slate-100 text-slate-400 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-not-allowed"

@@ -13,6 +13,12 @@ const Branch = require('../Models/Branch');
  */
 const getAdminBranchFilter = async (req) => {
   const { branchId } = req.query;
+
+  if (req.staff && req.staff.branchId) {
+    const oid = new mongoose.Types.ObjectId(req.staff.branchId);
+    return { filter: { branchId: oid }, branchIds: [oid] };
+  }
+
   const restaurantId = req.admin?.restaurantId;
 
   // ── Specific branch selected ────────────────────────────────────────────────

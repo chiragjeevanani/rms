@@ -45,4 +45,38 @@ const protectStaff = (req, res, next) => {
   }
 };
 
-module.exports = { protectAdmin, protectStaff };
+const protectAdminOrStaff = async (req, res, next) => {
+  const token = req.header('Authorization')?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'No token, authorization denied' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    
+    // Check if admin is active
+    if (decoded.role === 'admin') {
+      if (decoded.restaurantId) {
+        const Restaurant = require('../Models/Restaurant');
+        const restaurant = await Restaurant.findById(decoded.restaurantId);
+        if (restaurant && restaurant.status === 'inactive') {
+          return res.status(403).json({ 
+            success: false, 
+            message: 'Your account has been deactivated. Please contact Super Admin.', 
+            code: 'ACCOUNT_INACTIVE' 
+          });
+        }
+      }
+      req.admin = decoded;
+    } else {
+      req.staff = decoded;
+    }
+
+    next();
+  } catch (err) {
+    res.status(401).json({ message: 'Token invalid' });
+  }
+};
+
+module.exports = { protectAdmin, protectStaff, protectAdminOrStaff };

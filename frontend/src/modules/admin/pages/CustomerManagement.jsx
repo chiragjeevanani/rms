@@ -6,7 +6,7 @@ import {
   TrendingUp, Activity, Smartphone, Award,
   Plus, X, Save, AlertCircle
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const MOCK_CUSTOMERS = [
   { id: 1, name: 'Vikram Sethi', phone: '9876540001', visits: 12, rating: 4.8, type: 'VIP', lastVisit: '2 days ago' },
@@ -51,7 +51,7 @@ export default function CustomerManagement() {
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Management of customer profiles, loyalty tiering, and feedback metrics</p>
         </div>
         <div className="flex items-center gap-3">
-           <button 
+           <button type="button" 
              onClick={() => window.alert('LOYALTY PROTOCOL v2.4 initialized. Accessing configuration matrix...')}
              className="h-9 px-4 bg-white border border-slate-200 text-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all"
            >
@@ -100,11 +100,11 @@ export default function CustomerManagement() {
                </div>
             </div>
             <div className="flex items-center gap-3">
-               <button className="h-8 px-3 text-slate-400 hover:text-slate-900 transition-colors text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+               <button type="button" className="h-8 px-3 text-slate-400 hover:text-slate-900 transition-colors text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
                   <Filter size={12} />
                   Tier Filter
                </button>
-               <button 
+               <button type="button" 
                  onClick={() => setIsModalOpen(true)}
                  className="h-8 px-3 bg-slate-900 text-white rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 active:scale-95 transition-all"
                >
@@ -166,7 +166,7 @@ export default function CustomerManagement() {
                         </td>
                         <td className="px-6 py-4">
                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="p-1.5 text-slate-400 hover:text-blue-500 transition-all"><Mail size={12} /></button>
+                              <button type="button" className="p-1.5 text-slate-400 hover:text-blue-500 transition-all"><Mail size={12} /></button>
                               <ChevronRight size={14} className="text-slate-200" />
                            </div>
                         </td>
@@ -181,14 +181,14 @@ export default function CustomerManagement() {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -204,7 +204,7 @@ export default function CustomerManagement() {
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">CRM Protocol v2.4.0</p>
                      </div>
                   </div>
-                  <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={18} /></button>
                </div>
 
                <form onSubmit={handleSave} className="p-8 space-y-6">
@@ -270,7 +270,7 @@ export default function CustomerManagement() {
                      </button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

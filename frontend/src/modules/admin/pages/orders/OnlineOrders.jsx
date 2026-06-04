@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Globe, Search, Filter, Smartphone, MapPin, CheckCircle, Truck, Eye, XCircle, Save } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 
 export default function OnlineOrders() {
@@ -110,7 +110,7 @@ export default function OnlineOrders() {
                 <div className="text-xs font-black text-blue-600 tracking-tighter underline decoration-transparent">₹{order.total}</div>
               </div>
               <div className="flex items-center gap-2 underline decoration-transparent">
-                <button 
+                <button type="button" 
                   onClick={() => handleOpenView(order)}
                   className="p-1.5 hover:bg-slate-50 rounded-sm text-slate-400 hover:text-slate-900 outline-none transition-colors"
                 ><Eye size={14} /></button>
@@ -131,7 +131,7 @@ export default function OnlineOrders() {
             Showing <span className="text-slate-900">{indexOfFirstRecord + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastRecord, onlineOrders.length)}</span> of <span className="text-slate-900">{onlineOrders.length}</span> digital signals
           </p>
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm border transition-all ${
@@ -144,7 +144,7 @@ export default function OnlineOrders() {
             </button>
             <div className="flex items-center gap-1">
               {[...Array(totalPages)].map((_, i) => (
-                <button
+                <button type="button"
                   key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
                   className={`w-7 h-7 text-[9px] font-black rounded-sm border transition-all ${
@@ -157,7 +157,7 @@ export default function OnlineOrders() {
                 </button>
               ))}
             </div>
-            <button
+            <button type="button"
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
               className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm border transition-all ${

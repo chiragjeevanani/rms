@@ -3,7 +3,7 @@ import {
   User, Mail, Camera, Save, Loader2, Lock, 
   ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Package, Sliders
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAdminTheme } from '../../context/AdminThemeContext';
 
@@ -181,7 +181,7 @@ export default function AccountSettings() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         
         {/* Profile Section */}
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-stone-200"
@@ -292,11 +292,11 @@ export default function AccountSettings() {
               {isSavingProfile ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> Save Changes</>}
             </button>
           </form>
-        </motion.div>
+        </m.div>
 
         {/* Security Section */}
         <div className="space-y-8">
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-stone-200"
@@ -388,10 +388,10 @@ export default function AccountSettings() {
                 </button>
               </div>
             </form>
-          </motion.div>
+          </m.div>
 
           {/* Theme Customization Card */}
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-stone-200"
@@ -447,7 +447,7 @@ export default function AccountSettings() {
                 ))}
               </div>
             </div>
-          </motion.div>
+          </m.div>
 
         </div>
       </div>

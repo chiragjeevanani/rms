@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { User, Phone, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +25,7 @@ export default function AddCustomer() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-safe pb-8">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-3 bg-slate-100 rounded-2xl text-slate-900 group">
+          <button type="button" onClick={() => navigate(-1)} className="p-3 bg-slate-100 rounded-2xl text-slate-900 group">
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           </button>
           <div>
@@ -37,7 +37,7 @@ export default function AddCustomer() {
 
       <main className="flex-1 max-w-lg mx-auto w-full bg-white shadow-xl shadow-slate-200/50 p-6 pb-32">
         {isSubmitted ? (
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center py-20 text-center"
@@ -47,7 +47,7 @@ export default function AddCustomer() {
             </div>
             <h2 className="text-xl font-black text-slate-900 mb-2">Guest Registered!</h2>
             <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">Redirecting to directory...</p>
-          </motion.div>
+          </m.div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-6">
@@ -96,13 +96,13 @@ export default function AddCustomer() {
               </div>
             </div>
 
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.95 }}
               type="submit"
               className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-slate-900/20"
             >
               Complete Registration
-            </motion.button>
+            </m.button>
           </form>
         )}
       </main>

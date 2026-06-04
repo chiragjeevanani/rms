@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Search, Map, Users, Clock, Plus, Filter, Sparkles } from 'lucide-react';
 import { usePos } from '../../../modules/pos/context/PosContext';
@@ -71,7 +71,7 @@ export default function MyTables() {
              <div className="flex items-center gap-3">
                 <div className="bg-slate-100 p-1 rounded-2xl flex border border-slate-200 flex-1">
                   {['all', 'available', 'occupied'].map((f) => (
-                    <button
+                    <button type="button"
                       key={f}
                       onClick={() => setFilter(f)}
                       className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
@@ -99,7 +99,7 @@ export default function MyTables() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <AnimatePresence mode="popLayout">
             {filteredTables.map((table) => (
-              <motion.div
+              <m.div
                 key={table.id}
                 layout
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -144,12 +144,12 @@ export default function MyTables() {
                   </div>
                 ) : (
                   <div className="pt-4 mt-auto border-t border-dashed border-slate-200 flex flex-col items-center">
-                    <button className="w-full flex items-center justify-center gap-2 bg-white/80 border border-slate-200 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-900 hover:bg-slate-900 hover:text-white transition-all">
+                    <button type="button" className="w-full flex items-center justify-center gap-2 bg-white/80 border border-slate-200 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-900 hover:bg-slate-900 hover:text-white transition-all">
                        <Plus size={14} /> Open Tab
                     </button>
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>

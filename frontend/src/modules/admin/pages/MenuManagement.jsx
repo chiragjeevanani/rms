@@ -5,7 +5,7 @@ import {
   Tag, Image as ImageIcon, CheckCircle2,
   X, Save, AlertCircle, Leaf, Flame, Clock
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { POS_CATEGORIES, POS_MENU_ITEMS as INITIAL_ITEMS } from '../../pos/data/posMenu';
 import { playClickSound } from '../../pos/utils/sounds';
 
@@ -125,13 +125,13 @@ export default function MenuManagement() {
            <p className="text-xs text-stone-400 font-semibold">Configure your restaurant menu, categories, and pricing</p>
         </div>
         <div className="flex bg-white p-1 border border-stone-200 rounded-lg shadow-sm">
-           <button 
+           <button type="button" 
              onClick={() => { playClickSound(); setActiveTab('items'); }}
              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${activeTab === 'items' ? 'bg-[#ff7a00] text-white shadow-md shadow-stone-100' : 'text-stone-400 hover:text-stone-700'}`}
            >
               Menu Items
            </button>
-           <button 
+           <button type="button" 
              onClick={() => { playClickSound(); setActiveTab('categories'); }}
              className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${activeTab === 'categories' ? 'bg-[#ff7a00] text-white shadow-md shadow-stone-100' : 'text-stone-400 hover:text-stone-700'}`}
            >
@@ -153,7 +153,7 @@ export default function MenuManagement() {
                  onChange={(e) => setSearchQuery(e.target.value)}
                />
             </div>
-            <button className="flex items-center gap-2 px-3 py-2 bg-stone-50 text-stone-400 rounded-lg hover:text-stone-900 transition-colors">
+            <button type="button" className="flex items-center gap-2 px-3 py-2 bg-stone-50 text-stone-400 rounded-lg hover:text-stone-900 transition-colors">
                <Filter size={14} />
                <span className="text-[9px] font-black uppercase tracking-widest">Filters</span>
             </button>
@@ -161,20 +161,20 @@ export default function MenuManagement() {
 
          <div className="flex items-center gap-3">
              <div className="flex items-center border border-stone-100 rounded-lg p-1 mr-4 bg-white shadow-sm">
-                <button 
+                <button type="button" 
                   onClick={() => { playClickSound(); setViewMode('grid'); }}
                   className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-[#424242] text-white' : 'text-stone-400 hover:text-stone-950'}`}
                 >
                    <LayoutGrid size={12} />
                 </button>
-                <button 
+                <button type="button" 
                   onClick={() => { playClickSound(); setViewMode('list'); }}
                   className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-[#424242] text-white' : 'text-stone-400 hover:text-stone-950'}`}
                 >
                    <List size={12} />
                 </button>
              </div>
-             <button 
+             <button type="button" 
                onClick={() => { playClickSound(); activeTab === 'items' ? handleOpenModal() : handleOpenCategoryModal(); }}
                className="h-9 px-6 bg-[#ff7a00] text-white rounded-lg text-[10px] font-bold uppercase tracking-[0.1em] flex items-center gap-2 shadow-lg shadow-stone-900/10 active:scale-95 transition-all hover:bg-[#ea6c00]"
              >
@@ -211,11 +211,11 @@ export default function MenuManagement() {
                         {categories.find(c => c.id === item.catId)?.name}
                       </p>
                       <div className="flex items-center gap-2 border-t border-stone-50 pt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
+                          <button type="button" 
                             onClick={() => { playClickSound(); handleOpenModal(item); }}
                             className="flex-1 py-1.5 bg-[#424242] text-white text-[8px] font-black uppercase tracking-widest rounded-lg hover:bg-black transition-all shadow-sm"
                           >Edit Item</button>
-                         <button 
+                         <button type="button" 
                            onClick={() => handleDelete(item.id)}
                            className="p-1.5 bg-stone-50 text-stone-400 hover:text-rose-600 rounded-lg transition-colors border border-stone-100"
                          ><Trash2 size={12} /></button>
@@ -248,11 +248,11 @@ export default function MenuManagement() {
                          <span className="text-[11px] font-black text-stone-800 tracking-tighter mt-0.5">₹{item.price}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                         <button 
+                         <button type="button" 
                            onClick={() => handleOpenModal(item)}
                            className="p-2 text-stone-300 hover:text-stone-800 transition-colors"
                          ><Edit3 size={14} /></button>
-                         <button 
+                         <button type="button" 
                            onClick={() => handleDelete(item.id)}
                            className="p-2 text-stone-300 hover:text-rose-600 transition-colors"
                          ><Trash2 size={14} /></button>
@@ -288,14 +288,14 @@ export default function MenuManagement() {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={handleCloseModal}
               className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -314,7 +314,7 @@ export default function MenuManagement() {
                         <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mt-0.5">Menu Configuration</p>
                      </div>
                   </div>
-                  <button onClick={() => { playClickSound(); handleCloseModal(); }} className="p-2 text-stone-500 hover:text-white transition-colors"><X size={18} /></button>
+                  <button type="button" onClick={() => { playClickSound(); handleCloseModal(); }} className="p-2 text-stone-500 hover:text-white transition-colors"><X size={18} /></button>
                </div>
 
                {/* Modal Body */}
@@ -448,7 +448,7 @@ export default function MenuManagement() {
                       </button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>
@@ -456,14 +456,14 @@ export default function MenuManagement() {
        <AnimatePresence>
          {isCategoryModalOpen && (
            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-             <motion.div 
+             <m.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
                exit={{ opacity: 0 }}
                onClick={handleCloseCategoryModal}
                className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
              />
-             <motion.div 
+             <m.div 
                initial={{ opacity: 0, scale: 0.95, y: 20 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
                exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -481,7 +481,7 @@ export default function MenuManagement() {
                          <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mt-0.5">Menu Structure</p>
                       </div>
                    </div>
-                   <button onClick={handleCloseCategoryModal} className="p-2 text-stone-500 hover:text-stone-100 transition-colors"><X size={18} /></button>
+                   <button type="button" onClick={handleCloseCategoryModal} className="p-2 text-stone-500 hover:text-stone-100 transition-colors"><X size={18} /></button>
                 </div>
 
                 <form onSubmit={handleSaveCategory} className="p-8 space-y-6">
@@ -529,7 +529,7 @@ export default function MenuManagement() {
                       </button>
                    </div>
                 </form>
-             </motion.div>
+             </m.div>
            </div>
          )}
        </AnimatePresence>

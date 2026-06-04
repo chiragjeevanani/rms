@@ -78,7 +78,7 @@ export function PosProvider({ children }) {
       }
 
       if (navigator.onLine) {
-        const token = localStorage.getItem('staff_access');
+        const token = localStorage.getItem('pos_access') || localStorage.getItem('staff_access');
         let branchId = null;
         if (token) {
           try {
@@ -240,9 +240,13 @@ export function PosProvider({ children }) {
     }
   };
 
-  const settleOrder = async (orderId, paymentDetails) => {
+  const settleOrder = async (orderId, paymentDetails, customerInfo = null) => {
     try {
-      const result = await dbClient.updateOrder(orderId, { payments: paymentDetails, isBilled: true, status: 'paid' });
+      const updates = { payments: paymentDetails, isBilled: true, status: 'paid' };
+      if (customerInfo) {
+        updates.customer = customerInfo;
+      }
+      const result = await dbClient.updateOrder(orderId, updates);
       if (result) {
         syncAll();
         return true;
@@ -313,7 +317,7 @@ export function PosProvider({ children }) {
 
   const fetchReservations = async () => {
     try {
-      const token = localStorage.getItem('staff_access');
+      const token = localStorage.getItem('pos_access') || localStorage.getItem('staff_access');
       let branchId = null;
       if (token) {
         try {

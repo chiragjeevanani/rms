@@ -1,11 +1,11 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Sparkles, Trophy, ChevronRight } from 'lucide-react';
 
 export function LoyaltyCard({ points, tier = 'Gold', nextTierPoints = 1000 }) {
   const progress = (points / nextTierPoints) * 100;
 
   return (
-    <motion.div
+    <m.div
       whileHover={{ y: -5 }}
       className="relative overflow-hidden rounded-[2.5rem] bg-white dark:bg-charcoal-800 p-8 text-charcoal-900 dark:text-white border border-charcoal-900/10 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-2xl"
     >
@@ -32,7 +32,7 @@ export function LoyaltyCard({ points, tier = 'Gold', nextTierPoints = 1000 }) {
             <span>{Math.round(progress)}%</span>
           </div>
           <div className="h-1.5 w-full bg-charcoal-900/5 dark:bg-white/5 rounded-full overflow-hidden">
-            <motion.div
+            <m.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 1.5, ease: 'easeOut' }}
@@ -41,11 +41,11 @@ export function LoyaltyCard({ points, tier = 'Gold', nextTierPoints = 1000 }) {
           </div>
         </div>
 
-        <button className="mt-10 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 hover:text-charcoal-900 dark:hover:text-white transition-colors">
+        <button type="button" className="mt-10 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 hover:text-charcoal-900 dark:hover:text-white transition-colors">
           Explore rewards <ChevronRight size={14} />
         </button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

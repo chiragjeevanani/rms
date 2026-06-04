@@ -5,7 +5,7 @@ import {
   MapPin, Calendar, Save, Trash2,
   X, ShieldCheck, CreditCard, Star
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export default function AddCustomer() {
   const [formData, setFormData] = useState({
@@ -24,7 +24,7 @@ export default function AddCustomer() {
             <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">Add New Guest Profile</h1>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Fill in details to register a new customer in the system</p>
           </div>
-          <button className="p-2 text-slate-300 hover:text-slate-900 transition-colors">
+          <button type="button" className="p-2 text-slate-300 hover:text-slate-900 transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -32,7 +32,7 @@ export default function AddCustomer() {
 
       <div className="flex-1 p-8 overflow-y-auto no-scrollbar">
         <div className="max-w-2xl mx-auto">
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white border border-slate-200 rounded-lg shadow-xl shadow-slate-900/5 overflow-hidden"
@@ -147,7 +147,7 @@ export default function AddCustomer() {
                 </button>
               </div>
             </form>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </div>

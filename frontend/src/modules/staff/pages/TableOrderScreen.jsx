@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Search, Plus, Minus, ShoppingCart, Trash2, Send, Eye, Clock, Sparkles, Box } from 'lucide-react';
 import { usePos } from '../../../modules/pos/context/PosContext';
 
@@ -130,7 +130,7 @@ export default function TableOrderScreen() {
         <div className="flex-[3] flex flex-col h-[60vh] md:h-full bg-white border-b md:border-b-0 md:border-r border-slate-200 overflow-hidden">
           <header className="p-6 border-b border-slate-200 bg-white shrink-0">
             <div className="flex items-center gap-4 mb-6">
-              <button onClick={() => navigate(-1)} className="p-3 bg-slate-100 rounded-2xl text-slate-900 group">
+              <button type="button" onClick={() => navigate(-1)} className="p-3 bg-slate-100 rounded-2xl text-slate-900 group">
                  <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
               </button>
               <div>
@@ -154,7 +154,7 @@ export default function TableOrderScreen() {
           </header>
 
           <div className="flex overflow-x-auto p-3 gap-2 no-scrollbar bg-slate-50 sticky top-0 z-10 shrink-0">
-             <button
+             <button type="button"
                onClick={() => setActiveCategory('all')}
                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all flex items-center gap-2 ${
                  activeCategory === 'all' 
@@ -166,7 +166,7 @@ export default function TableOrderScreen() {
              </button>
              
              {/* Dynamic Filter Badges */}
-             <button
+             <button type="button"
                onClick={() => setActiveCategory('popular')}
                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all flex items-center gap-2 ${
                  activeCategory === 'popular' 
@@ -177,7 +177,7 @@ export default function TableOrderScreen() {
                <Sparkles size={12} /> Popular
              </button>
 
-             <button
+             <button type="button"
                onClick={() => setActiveCategory('combos')}
                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all flex items-center gap-2 ${
                  activeCategory === 'combos' 
@@ -189,7 +189,7 @@ export default function TableOrderScreen() {
              </button>
 
              {categories.map((cat) => (
-                <button
+                <button type="button"
                   key={cat._id}
                   onClick={() => setActiveCategory(cat._id)}
                   className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all ${
@@ -205,7 +205,7 @@ export default function TableOrderScreen() {
 
           <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-4 auto-rows-max no-scrollbar">
              {filteredItemsResult.map((item) => (
-               <motion.div
+               <m.div
                  key={item._id}
                  whileTap={{ scale: 0.96 }}
                  onClick={() => addToOrder(item)}
@@ -213,29 +213,29 @@ export default function TableOrderScreen() {
                >
                  <AnimatePresence>
                    {feedback === item._id && (
-                     <motion.div 
+                     <m.div 
                         initial={{ opacity: 0, y: 10, scale: 0.8 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.1 }}
                         className="absolute inset-0 z-20 bg-emerald-500/90 backdrop-blur-sm flex flex-col items-center justify-center text-white p-4"
                      >
-                        <motion.div
+                        <m.div
                            initial={{ scale: 0.5 }}
                            animate={{ scale: 1 }}
                            transition={{ type: "spring", damping: 12 }}
                            className="w-10 h-10 bg-white rounded-full flex items-center justify-center mb-2 shadow-lg"
                         >
                            <Plus size={20} className="text-emerald-500 stroke-[3px]" />
-                        </motion.div>
+                        </m.div>
                         <span className="text-[10px] font-black uppercase tracking-widest italic">Added!</span>
-                     </motion.div>
+                     </m.div>
                    )}
                  </AnimatePresence>
 
                  <div className="w-full aspect-square rounded-[1.5rem] overflow-hidden mb-4 bg-slate-200 relative">
                     <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />
                     {!item.isCombo && (
-                      <button 
+                      <button type="button" 
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/staff/item/${item._id}`);
@@ -266,7 +266,7 @@ export default function TableOrderScreen() {
                        Add to Basket
                     </span>
                  </div>
-               </motion.div>
+               </m.div>
              ))}
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function TableOrderScreen() {
               ) : (
                 <AnimatePresence>
                   {currentOrder.map((item) => (
-                    <motion.div
+                    <m.div
                       key={item.id}
                       initial={{ x: 20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
@@ -303,34 +303,34 @@ export default function TableOrderScreen() {
                       className="bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center gap-4 group"
                     >
                       <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white font-black overflow-hidden">
-                         <img src={item.image} className="w-full h-full object-cover" />
+                         <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
                       </div>
                       <div className="flex-1 min-w-0">
                          <h4 className="text-sm font-bold text-white truncate">{item.name}</h4>
                          <p className="text-teal-400 font-black text-sm">₹{item.price * item.quantity}</p>
                       </div>
                       <div className="flex items-center gap-1">
-                         <button 
+                         <button type="button" 
                            onClick={() => updateQuantity(item.id, -1)}
                            className="w-8 h-8 rounded-lg bg-white/5 text-white flex items-center justify-center hover:bg-white/10"
                          >
                             <Minus size={14} />
                          </button>
                          <span className="w-8 text-center text-sm font-black text-white">{item.quantity}</span>
-                         <button 
+                         <button type="button" 
                            onClick={() => updateQuantity(item.id, 1)}
                            className="w-8 h-8 rounded-lg bg-white/5 text-white flex items-center justify-center hover:bg-white/10"
                          >
                             <Plus size={14} />
                          </button>
                       </div>
-                      <button 
+                      <button type="button" 
                         onClick={() => removeFromOrder(item.id)}
                         className="ml-2 p-2 text-white/20 hover:text-red-400 transition-colors"
                       >
                          <Trash2 size={16} />
                       </button>
-                    </motion.div>
+                    </m.div>
                   ))}
                 </AnimatePresence>
               )}
@@ -358,7 +358,7 @@ export default function TableOrderScreen() {
                  </div>
               </div>
 
-              <motion.button
+              <m.button
                 whileTap={{ scale: 0.95 }}
                 disabled={currentOrder.length === 0 || isSubmitting}
                 onClick={async () => {
@@ -379,7 +379,7 @@ export default function TableOrderScreen() {
                 className="w-full bg-teal-500 text-slate-900 py-5 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl hover:bg-teal-400 transition-all disabled:opacity-30 disabled:grayscale"
               >
                  {isSubmitting ? 'Processing...' : 'Confirm Order'} <Send size={18} />
-              </motion.button>
+              </m.button>
            </div>
         </div>
       </div>

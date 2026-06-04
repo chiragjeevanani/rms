@@ -9,7 +9,7 @@ import {
   Eye, LayoutDashboard, Share2, ClipboardCheck,
   Loader2, Calendar
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Skeleton from '../../components/ui/Skeleton';
 
@@ -306,7 +306,7 @@ export default function ItemDetails() {
         
         {/* Navigation Rail */}
         <header className="flex items-center justify-between">
-           <button 
+           <button type="button" 
              onClick={() => navigate('/admin/menu/items')}
              className="flex items-center gap-3 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all group"
            >
@@ -325,7 +325,7 @@ export default function ItemDetails() {
           <aside className="lg:col-span-4 space-y-8">
             {/* Visual Manifest */}
             <div className="relative group">
-               <motion.div 
+               <m.div 
                  initial={{ opacity: 0, y: 20 }}
                  animate={{ opacity: 1, y: 0 }}
                  className="aspect-square bg-white dark:bg-slate-800 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 p-4"
@@ -347,11 +347,11 @@ export default function ItemDetails() {
                        </div>
                      )}
                   </div>
-               </motion.div>
+               </m.div>
             </div>
 
             {/* Price & Fiscal Card */}
-            <motion.div 
+            <m.div 
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.1 }}
@@ -392,10 +392,10 @@ export default function ItemDetails() {
                      <Info size={16} className="cursor-help hover:text-white transition-colors" />
                   </div>
                </div>
-            </motion.div>
+            </m.div>
 
             {/* Distribution Control Card */}
-            <motion.div 
+            <m.div 
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.15 }}
@@ -413,7 +413,7 @@ export default function ItemDetails() {
                   </div>
                   
                   {/* Status Toggle Switch */}
-                  <button
+                  <button type="button"
                     disabled={isTogglingItem}
                     onClick={() => handleItemAvailabilityToggle(item.isAvailable !== false ? false : true)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none shadow-sm ${
@@ -446,7 +446,7 @@ export default function ItemDetails() {
 
                {/* Temporal holiday pause settings */}
                <div className="space-y-3">
-                  <button 
+                  <button type="button" 
                     onClick={() => setShowSchedulePause(!showSchedulePause)}
                     className="w-full py-3 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-2 border border-slate-100 dark:border-slate-700/50 transition-all"
                   >
@@ -456,7 +456,7 @@ export default function ItemDetails() {
 
                   <AnimatePresence>
                      {showSchedulePause && (
-                        <motion.div
+                        <m.div
                            initial={{ opacity: 0, height: 0 }}
                            animate={{ opacity: 1, height: 'auto' }}
                            exit={{ opacity: 0, height: 0 }}
@@ -482,21 +482,21 @@ export default function ItemDetails() {
                                  />
                               </div>
                            </div>
-                           <button
+                           <button type="button"
                               disabled={isTogglingItem || !pauseFromTime || !pauseToTime}
                               onClick={handleSchedulePause}
                               className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-rose-500/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                            >
                               {isTogglingItem ? <Loader2 size={12} className="animate-spin" /> : 'Confirm Pause Slot'}
                            </button>
-                        </motion.div>
+                        </m.div>
                      )}
                   </AnimatePresence>
                </div>
-            </motion.div>
+            </m.div>
 
             {/* Catalog Placement Card */}
-            <motion.div 
+            <m.div 
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.2 }}
@@ -514,33 +514,33 @@ export default function ItemDetails() {
                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed uppercase opacity-80">
                   {item.category?.description || 'Structural placement data for this SKU is pending manual verification.'}
                </p>
-            </motion.div>
+            </m.div>
 
-            <motion.div 
+            <m.div 
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.3 }}
                className="flex gap-4 pt-4"
             >
-               <button 
+               <button type="button" 
                  onClick={() => navigate(`/admin/menu/items?edit=${id}`)}
                  className="flex-1 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
                >
                   <Edit2 size={16} /> Edit
                </button>
-               <button 
+               <button type="button" 
                  onClick={() => window.print()}
                  className="w-16 h-16 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[2rem] flex items-center justify-center text-slate-400 hover:text-blue-500 transition-all shadow-sm"
                >
                   <Printer size={20} />
                </button>
-               <button 
+               <button type="button" 
                  onClick={handleDelete}
                  className="w-16 h-16 bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-100 dark:border-rose-500/20 rounded-[2rem] flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-lg shadow-rose-500/10"
                >
                   <Trash2 size={20} />
                </button>
-            </motion.div>
+            </m.div>
           </aside>
 
           {/* SECTION B: WORKFLOW & SENTIMENT (RIGHT) */}
@@ -608,7 +608,7 @@ export default function ItemDetails() {
                          <span className="text-xs font-black text-slate-900 dark:text-white uppercase group-hover:text-blue-500 transition-colors">{v.name}</span>
                          <div className="flex items-center gap-4">
                             <span className="text-sm font-black text-blue-600">₹{v.price}</span>
-                            <button
+                            <button type="button"
                               disabled={togglingSizes[v._id]}
                               onClick={() => handleSizeAvailabilityToggle(v._id, v.isAvailable !== false)}
                               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 focus:outline-none shadow-sm ${
@@ -650,7 +650,7 @@ export default function ItemDetails() {
                          </div>
                          <div className="flex flex-wrap gap-2">
                             {mod.options?.map((opt, oi) => (
-                               <button
+                               <button type="button"
                                  key={oi}
                                  disabled={togglingAddons[opt._id]}
                                  onClick={() => handleAddonAvailabilityToggle(opt._id, opt.isAvailable !== false)}
@@ -691,10 +691,10 @@ export default function ItemDetails() {
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Audited Customer Stream</p>
                      </div>
                      <div className="flex gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all">
+                        <button type="button" className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all">
                            <Eye size={16} /> Full Analytics
                         </button>
-                        <button className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all">
+                        <button type="button" className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all">
                            <Share2 size={16} />
                         </button>
                      </div>
@@ -702,7 +702,7 @@ export default function ItemDetails() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {item.reviews?.length > 0 ? item.reviews.map((rev, idx) => (
-                      <motion.div 
+                      <m.div 
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
@@ -725,7 +725,7 @@ export default function ItemDetails() {
                             </div>
                          </div>
                          <p className="text-[13px] text-slate-400 italic leading-relaxed font-medium">"{rev.comment}"</p>
-                      </motion.div>
+                      </m.div>
                     )) : (
                       <div className="col-span-full py-24 flex flex-col items-center justify-center bg-white/5 rounded-[4rem] border-2 border-dashed border-white/5">
                          <MessageSquare size={48} className="text-slate-800 mb-6" />

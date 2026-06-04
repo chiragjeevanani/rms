@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { 
   LayoutGrid, 
   Map, 
@@ -23,7 +23,7 @@ export function StaffNavbar({ activeTab }) {
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
-            <motion.button
+            <m.button
               key={tab.id}
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate(tab.path)}
@@ -38,12 +38,12 @@ export function StaffNavbar({ activeTab }) {
                 {tab.label}
               </span>
               {isActive && (
-                <motion.div 
+                <m.div 
                   layoutId="nav-pill"
                   className="w-1 h-1 rounded-full bg-slate-900 absolute -bottom-1"
                 />
               )}
-            </motion.button>
+            </m.button>
           );
         })}
       </nav>

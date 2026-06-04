@@ -8,7 +8,7 @@ import {
   Sparkles, MessageSquare, ArrowUpRight, ClipboardCheck,
   Eye, Archive, Settings, Hammer
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Skeleton from '../../components/ui/Skeleton';
 
@@ -82,7 +82,7 @@ export default function ComboDetails() {
         
         {/* Navigation Rail */}
         <header className="flex items-center justify-between">
-           <button 
+           <button type="button" 
              onClick={() => navigate('/admin/menu/combos')}
              className="flex items-center gap-3 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all group"
            >
@@ -101,7 +101,7 @@ export default function ComboDetails() {
           <aside className="lg:col-span-4 space-y-8">
             {/* Visual Manifest */}
             <div className="relative group">
-               <motion.div 
+               <m.div 
                  initial={{ opacity: 0, y: 20 }}
                  animate={{ opacity: 1, y: 0 }}
                  className="aspect-square bg-white dark:bg-slate-800 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 p-4"
@@ -121,11 +121,11 @@ export default function ComboDetails() {
                         <Package size={12} /> Bundle SKU: {combo.sku}
                      </div>
                   </div>
-               </motion.div>
+               </m.div>
             </div>
 
             {/* Bundle Pricing Card */}
-            <motion.div 
+            <m.div 
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.1 }}
@@ -166,34 +166,34 @@ export default function ComboDetails() {
                      <Info size={16} className="cursor-help hover:text-white transition-colors" />
                   </div>
                </div>
-            </motion.div>
+            </m.div>
 
             {/* Quick Record Actions */}
-            <motion.div 
+            <m.div 
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.2 }}
                className="flex gap-4 pt-4"
             >
-               <button 
+               <button type="button" 
                 onClick={() => navigate(`/admin/menu/combos?edit=${id}`)}
                 className="flex-1 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
                >
                   <Edit2 size={16} /> Edit
                </button>
-               <button 
+               <button type="button" 
                  onClick={() => window.print()}
                  className="w-16 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-[2rem] flex items-center justify-center hover:bg-slate-50 transition-all text-slate-400"
                >
                   <Printer size={20} />
                </button>
-               <button 
+               <button type="button" 
                  onClick={handleDelete}
                  className="w-16 bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-100 dark:border-rose-500/20 rounded-[2rem] flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all outline-none"
                >
                   <Trash2 size={24} />
                </button>
-            </motion.div>
+            </m.div>
           </aside>
 
           {/* SECTION B: WORKFLOW & COMPOSITION (RIGHT) */}
@@ -260,7 +260,7 @@ export default function ComboDetails() {
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  {combo.items?.map((comboItem, idx) => (
-                   <motion.div 
+                   <m.div 
                      initial={{ opacity: 0, x: -10 }}
                      animate={{ opacity: 1, x: 0 }}
                      transition={{ delay: idx * 0.05 }}
@@ -281,7 +281,7 @@ export default function ComboDetails() {
                             <span className="text-[8px] font-black text-slate-400 uppercase">Linked</span>
                          </div>
                       </div>
-                   </motion.div>
+                   </m.div>
                  ))}
                  {(!combo.items || combo.items.length === 0) && (
                    <div className="col-span-full py-20 text-center opacity-20 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-[3rem]">

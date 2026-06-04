@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import Sidebar from '../navigation/Sidebar';
 import TopBar from '../navigation/TopBar';
 import toast from 'react-hot-toast';
@@ -11,6 +11,7 @@ export default function AdminLayout() {
 
   // Sync Admin Info on Mount
   useEffect(() => {
+    let timeoutId;
     const syncProfile = async () => {
       try {
         const token = localStorage.getItem('admin_access');
@@ -27,7 +28,7 @@ export default function AdminLayout() {
             localStorage.removeItem('admin_info');
             localStorage.removeItem('admin_restaurantId');
             toast.error(errData.message || 'Account deactivated. Logging out...');
-            setTimeout(() => {
+            timeoutId = setTimeout(() => {
               window.location.href = '/admin/login';
             }, 1000);
             return;
@@ -53,6 +54,7 @@ export default function AdminLayout() {
       }
     };
     syncProfile();
+    return () => clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
@@ -66,6 +68,7 @@ export default function AdminLayout() {
 
     const socketUrl = (import.meta.env.VITE_API_URL || '').replace('/api', '');
     const socket = io(socketUrl);
+    let timeoutId;
 
     socket.on(`admin_status_${email}`, (update) => {
       console.log('⚡ Real-time admin status update via socket:', update);
@@ -77,7 +80,7 @@ export default function AdminLayout() {
         localStorage.removeItem('admin_access');
         localStorage.removeItem('admin_info');
         localStorage.removeItem('admin_restaurantId');
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           window.location.href = '/admin/login';
         }, 1500);
         return;
@@ -97,6 +100,7 @@ export default function AdminLayout() {
 
     return () => {
       socket.disconnect();
+      clearTimeout(timeoutId);
     };
   }, []);
 

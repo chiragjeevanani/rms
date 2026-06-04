@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, GithubIcon, ChromeIcon  } from 'lucide-react';
 
@@ -24,13 +24,13 @@ export default function UserLoginPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white flex flex-col p-6 selection:bg-brand-500 selection:text-charcoal-900">
       <div className="max-w-md w-full mx-auto flex-1 flex flex-col justify-center py-12">
         <header className="text-center mb-12">
-          <motion.div 
+          <m.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-16 h-16 bg-brand-500 rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl shadow-brand-500/20"
           >
             <Lock size={32} strokeWidth={2.5} className="text-charcoal-900" />
-          </motion.div>
+          </m.div>
           <h1 className="text-3xl font-display font-bold tracking-tight">Welcome Back</h1>
           <p className="text-charcoal-500 text-sm mt-2">Sign in to continue your feast</p>
         </header>
@@ -93,10 +93,10 @@ export default function UserLoginPage() {
           </div>
 
           <div className="flex gap-4">
-            <button className="flex-1 bg-white dark:bg-charcoal-800 border border-charcoal-900/10 dark:border-white/5 py-4 rounded-2xl flex items-center justify-center hover:bg-charcoal-50 dark:hover:bg-white/5 transition-all">
+            <button type="button" className="flex-1 bg-white dark:bg-charcoal-800 border border-charcoal-900/10 dark:border-white/5 py-4 rounded-2xl flex items-center justify-center hover:bg-charcoal-50 dark:hover:bg-white/5 transition-all">
               <ChromeIcon  size={20} />
             </button>
-            <button className="flex-1 bg-white dark:bg-charcoal-800 border border-charcoal-900/10 dark:border-white/5 py-4 rounded-2xl flex items-center justify-center hover:bg-charcoal-50 dark:hover:bg-white/5 transition-all">
+            <button type="button" className="flex-1 bg-white dark:bg-charcoal-800 border border-charcoal-900/10 dark:border-white/5 py-4 rounded-2xl flex items-center justify-center hover:bg-charcoal-50 dark:hover:bg-white/5 transition-all">
               <GithubIcon size={20} />
             </button>
           </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { AlertTriangle, RefreshCcw, Home, MessageCircle } from 'lucide-react';
 
 export default class ErrorBoundary extends React.Component {
@@ -21,7 +21,7 @@ export default class ErrorBoundary extends React.Component {
       return (
         <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center p-6 font-sans text-white">
           <div className="max-w-2xl w-full">
-            <motion.div 
+            <m.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="bg-[#141416] rounded-[3rem] p-12 border border-white/5 shadow-2xl relative overflow-hidden"
@@ -50,14 +50,14 @@ export default class ErrorBoundary extends React.Component {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button 
+                  <button type="button" 
                     onClick={() => window.location.reload()}
                     className="flex items-center justify-center gap-3 bg-white text-black py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95"
                   >
                     <RefreshCcw size={18} />
                     Reboot System
                   </button>
-                  <button 
+                  <button type="button" 
                     onClick={() => window.location.href = '/'}
                     className="flex items-center justify-center gap-3 bg-white/5 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all active:scale-95"
                   >
@@ -71,7 +71,7 @@ export default class ErrorBoundary extends React.Component {
                   <span className="text-[10px] font-black uppercase tracking-widest">Auto-Reporting Active</span>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           </div>
         </div>
       );

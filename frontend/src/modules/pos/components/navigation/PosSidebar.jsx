@@ -6,9 +6,9 @@ import {
   CreditCard, ChevronRight, LogOut,
   Clock, CheckCircle2, XCircle, Map, List, 
   Calendar, UserPlus, Star, Receipt, History, 
-  Banknote, Monitor
+  Banknote, Monitor, Zap
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 export default function PosSidebar({ isOpen }) {
   const navigate = useNavigate();
@@ -134,8 +134,8 @@ export default function PosSidebar({ isOpen }) {
 
       {/* Navigation Groups */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 no-scrollbar space-y-5">
-        {navGroups.map((group, idx) => (
-          <div key={idx} className="space-y-0.5">
+        {navGroups.map((group) => (
+          <div key={group.label} className="space-y-0.5">
             <div className="px-3 mb-2">
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{group.label}</span>
             </div>
@@ -145,7 +145,7 @@ export default function PosSidebar({ isOpen }) {
               
               return (
                 <div key={item.label} className="space-y-0.5">
-                  <button
+                  <button type="button"
                     onClick={() => {
                       if (item.subItems) {
                         toggleSubmenu(item.label);
@@ -167,17 +167,17 @@ export default function PosSidebar({ isOpen }) {
                       {item.label}
                     </span>
                     {item.subItems && (
-                      <motion.div
+                      <m.div
                       animate={{ rotate: isExpanded ? 90 : 0 }}
                       >
                         <ChevronRight size={12} className={isActive ? 'text-white/70' : 'text-slate-500'} />
-                      </motion.div>
+                      </m.div>
                     )}
                   </button>
 
                   <AnimatePresence>
                     {item.subItems && isExpanded && (
-                      <motion.div
+                      <m.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -187,7 +187,7 @@ export default function PosSidebar({ isOpen }) {
                           const [subPath, subQuery] = subItem.path.split('?');
                           const isSubActive = location.pathname === subPath && (!subQuery || location.search === '?' + subQuery);
                           return (
-                            <button
+                            <button type="button"
                               key={subItem.label}
                               onClick={() => navigate(subItem.path)}
                               style={isSubActive ? {
@@ -208,7 +208,7 @@ export default function PosSidebar({ isOpen }) {
                             </button>
                           );
                         })}
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -223,7 +223,7 @@ export default function PosSidebar({ isOpen }) {
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
         className="p-2 border-t border-white/8"
       >
-        <button 
+        <button type="button" 
           onClick={() => {
             localStorage.removeItem('pos_access');
             navigate('/pos/login');

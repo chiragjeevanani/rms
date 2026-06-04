@@ -10,7 +10,7 @@ export const OrderProvider = ({ children }) => {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('staff_access');
+      const token = localStorage.getItem('pos_access') || localStorage.getItem('staff_access');
       let branchId = null;
       if (token) {
         try {
@@ -77,7 +77,7 @@ export const OrderProvider = ({ children }) => {
 
   const getOrderById = async (orderId) => {
     try {
-      const token = localStorage.getItem('staff_access');
+      const token = localStorage.getItem('pos_access') || localStorage.getItem('staff_access');
       let branchId = null;
       if (token) {
         try {

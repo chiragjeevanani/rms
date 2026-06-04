@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, Truck, CreditCard,
   ShieldCheck, Bell, History, Sliders, Printer, Grid
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { playClickSound } from '../../../pos/utils/sounds';
 
 import { useAdminTheme } from '../../context/AdminThemeContext';
@@ -186,7 +186,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
               
               return (
                 <div key={item.label} className="space-y-0.5">
-                  <button
+                  <button type="button"
                     onClick={() => {
                       if (item.subItems && !isCollapsed) {
                         toggleSubmenu(item.label);
@@ -207,11 +207,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                           {item.label}
                         </span>
                         {item.subItems && (
-                          <motion.div
+                          <m.div
                             animate={{ rotate: isExpanded ? 90 : 0 }}
                           >
                             <ChevronRight size={12} className={isActive ? 'text-white/80' : 'text-white/40'} />
-                          </motion.div>
+                          </m.div>
                         )}
                       </>
                     )}
@@ -222,7 +222,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
 
                   <AnimatePresence>
                     {item.subItems && isExpanded && !isCollapsed && (
-                      <motion.div
+                      <m.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -231,7 +231,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                         {item.subItems.map((subItem) => {
                           const isSubActive = location.pathname === subItem.path;
                           return (
-                            <button
+                            <button type="button"
                               key={subItem.label}
                               onClick={() => { playClickSound(); navigate(subItem.path); }}
                               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded transition-all group ${
@@ -247,7 +247,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                             </button>
                           );
                         })}
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -259,7 +259,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
 
       {/* Logout Footer */}
       <div className="p-2 border-t border-white/8 bg-black/15">
-        <button 
+        <button type="button" 
           onClick={() => {
             playClickSound();
             localStorage.removeItem('admin_access');
@@ -273,7 +273,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       </div>
 
       {/* Toggle Button */}
-      <button 
+      <button type="button" 
         onClick={() => { playClickSound(); setIsCollapsed(!isCollapsed); }}
         className="absolute -right-3 top-20 w-6 h-6 bg-[#ff7a00] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-[#2C2C2C] z-50 hover:scale-110 active:scale-95 transition-all"
       >

@@ -52,7 +52,16 @@ export default function PosOrderPage() {
   // ── Cart ───────────────────────────────────────────────────────────────────
   const [cart, setCart] = useState([]);
   const [variantModalItem, setVariantModalItem] = useState(null);
-  const [selectedWaiter] = useState(MOCK_WAITERS[0]);
+  const [selectedWaiter, setSelectedWaiter] = useState(() => {
+    try {
+      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+      if (staffInfo && staffInfo.name) {
+        return { name: staffInfo.name, role: staffInfo.role || 'Server', id: staffInfo._id || staffInfo.id || 'w1' };
+      }
+    } catch (e) {}
+    return MOCK_WAITERS[0];
+  });
+  const [showWaiterDropdown, setShowWaiterDropdown] = useState(false);
 
   // Reset cart when switching tables
   const [tableHistory, setTableHistory] = useState([]);
@@ -103,8 +112,43 @@ export default function PosOrderPage() {
   // ── Billing state ──────────────────────────────────────────────────────────
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [isSalesReturn, setIsSalesReturn] = useState(false);
-  const [discount] = useState(0);
-  const [discountType] = useState('percentage');
+  const [discount, setDiscount] = useState(0);
+  const [discountType, setDiscountType] = useState('percentage');
+  const [customerName, setCustomerName] = useState('');
+  const [customerMobile, setCustomerMobile] = useState('');
+  const [customerSuggestions, setCustomerSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSelectingSuggestion, setIsSelectingSuggestion] = useState(false);
+
+  // Debounce customer mobile search
+  useEffect(() => {
+    if (isSelectingSuggestion) {
+      setIsSelectingSuggestion(false);
+      return;
+    }
+
+    if (customerMobile.length >= 3) {
+      const delayDebounceFn = setTimeout(async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/customers/search?query=${customerMobile}`);
+          if (response.ok) {
+            const data = await response.json();
+            setCustomerSuggestions(data);
+            setShowSuggestions(true);
+          }
+        } catch (err) {
+          console.error('Failed to search customers', err);
+        }
+      }, 400); // 400ms debounce delay
+
+      return () => clearTimeout(delayDebounceFn);
+    } else {
+      setCustomerSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [customerMobile]);
+
+
 
   // ── Fetch menu ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -234,6 +278,25 @@ export default function PosOrderPage() {
     [orders, tableId]
   );
 
+  useEffect(() => {
+    if (activeOrder) {
+      setCustomerName(activeOrder.customer?.name || '');
+      setCustomerMobile(activeOrder.customer?.mobile || '');
+      setDiscountType(activeOrder.discount?.type || 'percentage');
+      if (activeOrder.discount?.type === 'percentage' && activeOrder.subTotal) {
+        const percentageRate = ((activeOrder.discount?.amount || 0) / activeOrder.subTotal) * 100;
+        setDiscount(Math.round(percentageRate * 100) / 100);
+      } else {
+        setDiscount(activeOrder.discount?.amount || 0);
+      }
+    } else {
+      setCustomerName('');
+      setCustomerMobile('');
+      setDiscount(0);
+      setDiscountType('percentage');
+    }
+  }, [activeOrder]);
+
   // ── Filtered items ─────────────────────────────────────────────────────────
   const filteredItems = useMemo(() => {
     let items = menuItems;
@@ -306,9 +369,10 @@ export default function PosOrderPage() {
   const cartSubTotal = useMemo(() => cart.reduce((s, i) => s + i.price * i.quantity, 0), [cart]);
   const placedSubTotal = useMemo(() => activeOrder?.items?.reduce((s, i) => s + i.price * i.quantity, 0) || 0, [activeOrder]);
   const subTotal = cartSubTotal + placedSubTotal;
-  const taxAmt = Math.round(subTotal * 0.05);
-  const discAmt = discountType === 'percentage' ? Math.round(subTotal * discount / 100) : discount;
-  const grandTotal = Math.max(0, subTotal + taxAmt - discAmt);
+  const discAmt = discountType === 'percentage' ? (subTotal * discount / 100) : discount;
+  const taxableAmt = Math.max(0, subTotal - discAmt);
+  const taxAmt = taxableAmt * 0.05;
+  const grandTotal = taxableAmt + taxAmt;
 
   // ── PDF Generation ────────────────────────────────────────────────────────
   const generateKOTPDF = (tableId, items) => {
@@ -380,7 +444,6 @@ export default function PosOrderPage() {
 
     const items = cart.map(i => ({ itemId: i._id || i.id, name: i.name, quantity: i.quantity, price: i.price }));
     
-    // Status should be Pending (Yellow) for KOT
     const financials = {
       tableName: tableId,
       orderType: orderType,
@@ -389,7 +452,11 @@ export default function PosOrderPage() {
       subTotal,
       tax: taxAmt,
       discount: { amount: discAmt, type: discountType },
-      grandTotal
+      grandTotal,
+      customer: {
+        name: customerName,
+        mobile: customerMobile
+      }
     };
 
     const ok = await placeKOT(tableId, items, financials, selectedWaiter);
@@ -430,7 +497,11 @@ export default function PosOrderPage() {
       subTotal,
       tax: taxAmt,
       discount: { amount: discAmt, type: discountType },
-      grandTotal
+      grandTotal,
+      customer: {
+        name: customerName,
+        mobile: customerMobile
+      }
     };
 
     const ok = await placeKOT(tableId, items, financials, selectedWaiter);
@@ -466,7 +537,8 @@ export default function PosOrderPage() {
       const financials = {
         tableName: tableId, orderType, waiterName: selectedWaiter?.name,
         status: 'completed', subTotal, tax: taxAmt,
-        discount: { amount: discAmt, type: discountType }, grandTotal
+        discount: { amount: discAmt, type: discountType }, grandTotal,
+        customer: { name: customerName, mobile: customerMobile }
       };
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
@@ -486,7 +558,7 @@ export default function PosOrderPage() {
 
     if (!targetOrder) { toast.error('No active order to settle'); return; }
 
-    const ok = await settleOrder(targetOrder._id, [{ method: paymentMethod, amount: grandTotal }]);
+    const ok = await settleOrder(targetOrder._id, [{ method: paymentMethod, amount: grandTotal }], { name: customerName, mobile: customerMobile });
     if (ok) {
       if (withPrint) {
         const allItems = targetOrder.items || [];
@@ -643,7 +715,7 @@ export default function PosOrderPage() {
         {/* Order type tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid #E0E0E0', flexShrink: 0 }}>
           {['Dine-In', 'Takeaway'].map(tab => (
-            <button
+            <button type="button"
               key={tab}
               onClick={() => { playClickSound(); setOrderType(tab); }}
               style={{
@@ -659,11 +731,92 @@ export default function PosOrderPage() {
           ))}
         </div>
 
+        {/* Customer Details Form */}
+        <div style={{ padding: '12px 16px', background: '#FAFAFA', borderBottom: '1px solid #E0E0E0', flexShrink: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: '#666', letterSpacing: '0.05em', marginBottom: 8 }}>
+            Customer Details & Loyalty
+          </div>
+          
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8, position: 'relative' }}>
+            
+            <div style={{ flex: 1 }}>
+              <input
+                type="text"
+                placeholder="Customer Name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                style={{ width: '100%', padding: '6px 8px', fontSize: 12, border: '1px solid #CCC', borderRadius: 4, outline: 'none' }}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <input
+                type="text"
+                placeholder="Mobile (Search/New)"
+                value={customerMobile}
+                onChange={(e) => setCustomerMobile(e.target.value)}
+                style={{ width: '100%', padding: '6px 8px', fontSize: 12, border: '1px solid #CCC', borderRadius: 4, outline: 'none' }}
+              />
+              
+              {/* Autocomplete Suggestions Dropdown */}
+              {showSuggestions && customerSuggestions.length > 0 && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#FFF', border: '1px solid #CCC', borderRadius: 4, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 100, maxHeight: 150, overflowY: 'auto' }}>
+                  {customerSuggestions.map((cust) => (
+                    <div
+                      key={cust._id}
+                      onClick={() => {
+                        setIsSelectingSuggestion(true);
+                        setCustomerName(cust.name);
+                        setCustomerMobile(cust.mobile);
+                        if (cust.defaultDiscount) {
+                          setDiscountType(cust.defaultDiscount.type || 'percentage');
+                          setDiscount(cust.defaultDiscount.value || 0);
+                        }
+                        setShowSuggestions(false);
+                      }}
+                      style={{ padding: '8px 12px', fontSize: 12, cursor: 'pointer', borderBottom: '1px solid #EEE', display: 'flex', justifyContent: 'space-between', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F5F5F5'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <span style={{ fontWeight: 700 }}>{cust.name}</span>
+                      <span style={{ color: '#666' }}>{cust.mobile}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: '#666', fontWeight: 700 }}>Discount:</span>
+            <div style={{ display: 'flex', border: '1px solid #CCC', borderRadius: 4, overflow: 'hidden' }}>
+              <button type="button"
+                onClick={() => setDiscountType('percentage')}
+                style={{ border: 'none', padding: '4px 8px', fontSize: 11, cursor: 'pointer', fontWeight: 800, background: discountType === 'percentage' ? '#ff7a00' : '#FFF', color: discountType === 'percentage' ? '#FFF' : '#666' }}
+              >
+                %
+              </button>
+              <button type="button"
+                onClick={() => setDiscountType('fixed')}
+                style={{ border: 'none', padding: '4px 8px', fontSize: 11, cursor: 'pointer', fontWeight: 800, background: discountType === 'fixed' ? '#ff7a00' : '#FFF', color: discountType === 'fixed' ? '#FFF' : '#666' }}
+              >
+                ₹
+              </button>
+            </div>
+            <input
+              type="number"
+              placeholder="Val"
+              value={discount || ''}
+              onChange={(e) => setDiscount(Number(e.target.value))}
+              style={{ width: 50, padding: '4px 6px', fontSize: 11, border: '1px solid #CCC', borderRadius: 4, outline: 'none', textAlign: 'center' }}
+            />
+          </div>
+        </div>
+
         {/* Waiter / table info row */}
-        <div style={{ display: 'flex', height: 48, borderBottom: '1px solid #E0E0E0', background: '#FFF', flexShrink: 0 }}>
+        <div style={{ display: 'flex', height: 48, borderBottom: '1px solid #E0E0E0', background: '#FFF', flexShrink: 0, position: 'relative' }}>
           <InfoBox icon={<Soup size={16} />} label={tableId} active />
-          <InfoBox icon={<User size={16} />} />
-          <InfoBox icon={<Users size={16} />} label={selectedWaiter?.name?.slice(0, 4) || 'JANE'} />
+          <InfoBox icon={<User size={16} />} label={customerName || ''} />
           <InfoBox icon={<Edit3 size={16} />} />
           <InfoBox icon={<Bell size={16} />} />
           <div style={{ flex: 1, borderRight: '1px solid #F0F0F0' }} />
@@ -737,7 +890,7 @@ export default function PosOrderPage() {
                           <span style={{ fontSize: 13, fontWeight: 900, color: '#111827', fontStyle: 'italic' }}>
                             ₹{(item.grandTotal || item.totalAmount || 0).toFixed(2)}
                           </span>
-                          <button 
+                          <button type="button" 
                             onClick={() => {
                               const billingDetails = {
                                 subTotal: item.subTotal || 0,
@@ -794,11 +947,11 @@ export default function PosOrderPage() {
                   </div>
                 </div>
                 <div style={{ width: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                  <button onClick={() => changeQty(key(item), -1)} style={{ width: 18, height: 18, borderRadius: '50%', border: '1px solid #E0E0E0', background: '#FFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                  <button type="button" onClick={() => changeQty(key(item), -1)} style={{ width: 18, height: 18, borderRadius: '50%', border: '1px solid #E0E0E0', background: '#FFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
                     <Minus size={10} color="#666" />
                   </button>
                   <span style={{ fontSize: 11, fontWeight: 800, minWidth: 16, textAlign: 'center' }}>{item.quantity}</span>
-                  <button onClick={() => changeQty(key(item), 1)} style={{ width: 18, height: 18, borderRadius: '50%', border: '1px solid #E0E0E0', background: '#FFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                  <button type="button" onClick={() => changeQty(key(item), 1)} style={{ width: 18, height: 18, borderRadius: '50%', border: '1px solid #E0E0E0', background: '#FFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
                     <Plus size={10} color="#666" />
                   </button>
                 </div>
@@ -806,7 +959,7 @@ export default function PosOrderPage() {
                   {item.placed && <span style={{ fontSize: 11, fontWeight: 800, color: '#4CAF50' }}>✓</span>}
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#555' }}>{item.quantity}</span>
                 </div>
-                <button onClick={() => removeItem(key(item))} style={{ marginLeft: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+                <button type="button" onClick={() => removeItem(key(item))} style={{ marginLeft: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
                   <Trash2 size={13} color="#EF5350" />
                 </button>
               </div>
@@ -833,7 +986,7 @@ export default function PosOrderPage() {
             <div
               style={{ padding: '5px 14px', background: C.amber, borderRadius: 3, color: '#1A1A1A', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}
             >
-              TOTAL <span style={{ fontWeight: 900 }}>₹{grandTotal}</span>
+              TOTAL <span style={{ fontWeight: 900 }}>₹{Number(grandTotal).toFixed(2)}</span>
             </div>
           </div>
 
@@ -854,7 +1007,7 @@ export default function PosOrderPage() {
 
           {/* Row: SETTLE BUTTONS */}
           <div style={{ padding: '4px 8px', display: 'flex', gap: 6 }}>
-            <button
+            <button type="button"
               onClick={() => handleSettle(false)}
               style={{
                 flex: 1,
@@ -873,7 +1026,7 @@ export default function PosOrderPage() {
             >
               SETTLE ORDER
             </button>
-            <button
+            <button type="button"
               onClick={() => handleSettle(true)}
               style={{
                 flex: 1,
@@ -897,7 +1050,7 @@ export default function PosOrderPage() {
           {/* Row 5: CLEAR / CANCEL TABLE */}
           <div style={{ padding: '8px 10px 12px', display: 'flex', gap: 8 }}>
             {orderType === 'Dine-In' && (
-              <button
+              <button type="button"
                 onClick={handleClearTable}
                 style={{ flex: 1, padding: '10px 8px', background: '#F3F4F6', border: '1px solid #D1D5DB', borderRadius: 4, color: '#374151', fontSize: 9, fontWeight: 900, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.08em', transition: 'all 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#E5E7EB'}
@@ -907,7 +1060,7 @@ export default function PosOrderPage() {
               </button>
             )}
             {activeOrder && (activeOrder.status === 'pending' || activeOrder.status === 'preparing') && (
-              <button
+              <button type="button"
                 onClick={async () => {
                   if (window.confirm('Cancel this entire order?')) {
                     await updateOrderStatus(activeOrder._id, 'cancelled');
@@ -962,7 +1115,7 @@ export default function PosOrderPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {variantModalItem.variants.map((v, i) => (
-                <button
+                <button type="button"
                   key={i}
                   onClick={() => {
                     addToCart({
@@ -998,7 +1151,7 @@ export default function PosOrderPage() {
               ))}
             </div>
 
-            <button
+            <button type="button"
               onClick={() => setVariantModalItem(null)}
               style={{
                 padding: '12px',
@@ -1023,9 +1176,11 @@ export default function PosOrderPage() {
 }
 
 // ── Small helpers ─────────────────────────────────────────────────────────────
-function InfoBox({ label, icon, active }) {
+function InfoBox({ label, icon, active, onClick }) {
   return (
-    <div style={{
+    <div 
+      onClick={onClick}
+      style={{
       width: 58,
       height: '100%',
       display: 'flex',
@@ -1041,12 +1196,17 @@ function InfoBox({ label, icon, active }) {
         {icon}
       </div>
       {label && (
-        <span style={{
+         <span style={{
           fontSize: 9,
           fontWeight: 900,
           color: active ? 'var(--pos-sidebar-color, var(--primary-color))' : '#9E9E9E',
           textTransform: 'uppercase',
-          letterSpacing: '0.02em'
+          letterSpacing: '0.02em',
+          maxWidth: '52px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          textAlign: 'center'
         }}>
           {label}
         </span>
@@ -1057,7 +1217,7 @@ function InfoBox({ label, icon, active }) {
 
 function ActionBtn({ label, onClick, dark }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       style={{
         flex: 1,

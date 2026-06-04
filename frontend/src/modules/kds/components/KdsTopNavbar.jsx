@@ -4,7 +4,7 @@ import {
   LayoutGrid, Bell, Clock, CheckCircle, XCircle,
   Settings2, LogOut, Search, Activity, User, Sun, Moon
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useTheme } from '../../user/context/ThemeContext';
 
 export default function KdsTopNavbar() {
@@ -71,7 +71,7 @@ export default function KdsTopNavbar() {
           {settingsNav.map((item) => {
              const isActive = location.pathname === item.path;
              return (
-               <button
+               <button type="button"
                  key={item.path}
                  onClick={() => navigate(item.path)}
                  className={`p-2 rounded-lg transition-all ${
@@ -87,7 +87,7 @@ export default function KdsTopNavbar() {
           })}
         </div>
 
-        <button 
+        <button type="button" 
           onClick={() => {
             if (Notification.permission !== 'granted') {
               Notification.requestPermission().then(p => {
@@ -108,7 +108,7 @@ export default function KdsTopNavbar() {
           )}
         </button>
 
-        <button 
+        <button type="button" 
           onClick={toggleTheme}
           className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all ${
             isDarkMode ? 'bg-white/6 text-stone-300 border-white/8 hover:bg-white/12' : 'bg-stone-50 text-stone-500 border-stone-200 hover:bg-stone-100'
@@ -117,7 +117,7 @@ export default function KdsTopNavbar() {
           {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
         </button>
 
-        <button 
+        <button type="button" 
           onClick={handleLogout}
           className="w-9 h-9 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"
         >

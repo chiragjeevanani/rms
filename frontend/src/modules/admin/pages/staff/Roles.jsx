@@ -17,7 +17,7 @@ import {
   ChevronRight,
   Zap
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import BranchSelector from '../../components/BranchSelector';
@@ -186,13 +186,13 @@ export default function Roles() {
         <div className="flex items-center gap-4">
            {/* View Toggle Controller */}
            <div className="flex items-center gap-1 p-1.5 bg-white rounded-2xl shadow-sm border border-slate-100">
-              <button 
+              <button type="button" 
                 onClick={() => setViewMode('grid')}
                 className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
               >
                 <LayoutGrid size={18} />
               </button>
-              <button 
+              <button type="button" 
                  onClick={() => setViewMode('list')}
                  className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
                >
@@ -208,7 +208,7 @@ export default function Roles() {
               onSelect={setSelectedBranchFilter}
             />
 
-           <button 
+           <button type="button" 
              onClick={() => handleOpenModal()}
              className="h-14 px-8 bg-[#2C2C2C] text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all group lg:min-w-[220px] justify-center"
            >
@@ -234,7 +234,7 @@ export default function Roles() {
           
           <div className="flex items-center gap-1 p-1 bg-white rounded-2xl shadow-sm self-stretch md:self-auto min-w-[300px] border border-slate-100">
             {['All', 'Published', 'Draft'].map((status) => (
-              <button
+              <button type="button"
                 key={status}
                 onClick={() => setFilterStatus(status)}
                 className={`flex-1 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${filterStatus === status ? 'bg-[#2C2C2C] text-white shadow-lg' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
@@ -261,7 +261,7 @@ export default function Roles() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <AnimatePresence>
             {filteredRoles.map((role) => (
-              <motion.div 
+              <m.div 
                 layout
                 key={role._id}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -288,20 +288,20 @@ export default function Roles() {
                 </p>
 
                 <div className="pt-8 border-t border-slate-50 flex items-center gap-2 mt-auto">
-                  <button 
+                  <button type="button" 
                     onClick={() => handleOpenModal(role)}
                     className="flex-1 h-12 bg-slate-50 text-slate-600 text-[9px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm"
                   >
                      <Edit2 size={12} /> Optimization
                   </button>
-                  <button 
+                  <button type="button" 
                     onClick={() => handleDeleteClick(role)}
                     className="p-3 bg-slate-50 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-slate-100"
                   >
                     <Trash2 size={18} />
                   </button>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>
@@ -340,8 +340,8 @@ export default function Roles() {
                       </td>
                       <td className="px-10 py-6 text-right">
                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                            <button onClick={() => handleOpenModal(role)} className="p-3 bg-white text-slate-900 rounded-xl hover:bg-slate-900 hover:text-white shadow-sm border border-slate-100 transition-all"><Edit2 size={14} /></button>
-                            <button onClick={() => handleDeleteClick(role)} className="p-3 bg-white text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white shadow-sm border border-slate-100 transition-all"><Trash2 size={14} /></button>
+                            <button type="button" onClick={() => handleOpenModal(role)} className="p-3 bg-white text-slate-900 rounded-xl hover:bg-slate-900 hover:text-white shadow-sm border border-slate-100 transition-all"><Edit2 size={14} /></button>
+                            <button type="button" onClick={() => handleDeleteClick(role)} className="p-3 bg-white text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white shadow-sm border border-slate-100 transition-all"><Trash2 size={14} /></button>
                          </div>
                       </td>
                    </tr>
@@ -401,8 +401,8 @@ export default function Roles() {
                <p className="text-xs font-black text-rose-600 uppercase tracking-widest leading-relaxed">Warning: You are about to terminate the <span className="underline">"{roleToDelete?.name}"</span> role matrix. This is irreversible.</p>
            </div>
            <div className="flex gap-4">
-              <button onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-5 bg-slate-50 text-slate-400 rounded-3xl font-black text-[10px] uppercase">Abort</button>
-              <button onClick={confirmDelete} className="flex-[2] py-5 bg-rose-500 text-white rounded-3xl font-black text-[10px] uppercase shadow-xl shadow-rose-200">Validate</button>
+              <button type="button" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-5 bg-slate-50 text-slate-400 rounded-3xl font-black text-[10px] uppercase">Abort</button>
+              <button type="button" onClick={confirmDelete} className="flex-[2] py-5 bg-rose-500 text-white rounded-3xl font-black text-[10px] uppercase shadow-xl shadow-rose-200">Validate</button>
            </div>
         </div>
       </AdminModal>

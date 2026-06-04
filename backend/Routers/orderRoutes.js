@@ -17,16 +17,16 @@ const {
   registerToken
 } = require('../Controllers/orderController');
 
-const { protectAdmin, protectStaff } = require('../Middleware/authMiddleware');
+const { protectAdmin, protectStaff, protectAdminOrStaff } = require('../Middleware/authMiddleware');
 
 router.post('/', createOrder);
 router.post('/register-token', registerToken);
-router.get('/', protectAdmin, getAllOrders);
-router.get('/active', protectAdmin, getActiveOrders);
-router.get('/completed', protectAdmin, getCompletedOrders);
-router.get('/cancelled', protectAdmin, getCancelledOrders);
-router.get('/analytics', protectAdmin, getKitchenAnalytics);
-router.get('/reports/sales', protectAdmin, getSalesAnalytics);
+router.get('/', protectAdminOrStaff, getAllOrders);
+router.get('/active', protectAdminOrStaff, getActiveOrders);
+router.get('/completed', protectAdminOrStaff, getCompletedOrders);
+router.get('/cancelled', protectAdminOrStaff, getCancelledOrders);
+router.get('/analytics', protectAdminOrStaff, getKitchenAnalytics);
+router.get('/reports/sales', protectAdminOrStaff, getSalesAnalytics);
 router.get('/stats/staff/:staffName', getStaffDailyStats);
 router.get('/stats/staff-snapshot', getStaffDashboardSnapshot);
 

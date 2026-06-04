@@ -6,7 +6,7 @@ import {
   Lock, Key, Sliders, ChevronRight,
   CheckCircle2, AlertCircle, Save
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAdminTheme } from '../context/AdminThemeContext';
 
@@ -45,7 +45,7 @@ export default function SystemSettings() {
            <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900 underline decoration-transparent">System Core Configuration</h1>
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 underline decoration-transparent">Configure global protocols, security frameworks, and hardware routing</p>
         </div>
-        <button 
+        <button type="button" 
           onClick={handleCommit}
           disabled={isSaving}
           className={`h-9 px-6 bg-slate-900 text-white rounded-sm text-[10px] font-black uppercase tracking-widest shadow-lg shadow-slate-900/10 active:scale-95 transition-all flex items-center gap-2 ${isSaving ? 'opacity-50 cursor-wait' : ''} outline-none underline decoration-transparent`}
@@ -59,7 +59,7 @@ export default function SystemSettings() {
         {/* Lateral Navigation */}
         <div className="w-full lg:w-64 space-y-1 underline decoration-transparent">
           {settingsGroups.map((group) => (
-            <button
+            <button type="button"
               key={group.id}
               onClick={() => navigate(`/admin/settings/${group.id}`)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all ${
@@ -80,7 +80,7 @@ export default function SystemSettings() {
             <div className="bg-white border border-slate-100 rounded-sm p-8 shadow-sm space-y-8 min-h-[400px] underline decoration-transparent">
                <AnimatePresence mode="wait underline decoration-transparent">
                   {section === 'general' && (
-                     <motion.div 
+                     <m.div 
                         key="general"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -140,11 +140,11 @@ export default function SystemSettings() {
                               Caution: Modifying regional protocols may affect historical data indexing and billing reconciliation logic.
                            </p>
                         </div>
-                     </motion.div>
+                     </m.div>
                   )}
 
                   {section === 'security' && (
-                     <motion.div 
+                     <m.div 
                         key="security"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -170,7 +170,7 @@ export default function SystemSettings() {
                                     <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5 tracking-widest leading-tight underline decoration-transparent">Secondary verification for all admin logins</p>
                                  </div>
                               </div>
-                              <button 
+                              <button type="button" 
                                 onClick={() => window.alert('SECURITY: Connecting to multi-factor authentication gateway...')}
                                 className="px-3 py-1 bg-white border border-slate-200 text-slate-900 text-[8px] font-black uppercase tracking-widest rounded-sm active:scale-95 transition-all underline decoration-transparent"
                               >CONFIGURE</button>
@@ -184,17 +184,17 @@ export default function SystemSettings() {
                                     <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5 tracking-widest leading-tight underline decoration-transparent">Management of secure communication tokens</p>
                                  </div>
                               </div>
-                              <button 
+                              <button type="button" 
                                 onClick={() => window.alert('SECURITY: Regenerating secure terminal handshaking keys...')}
                                 className="px-3 py-1 bg-white border border-slate-200 text-slate-900 text-[8px] font-black uppercase tracking-widest rounded-sm active:scale-95 transition-all underline decoration-transparent"
                               >MANAGE KEYS</button>
                            </div>
                         </div>
-                     </motion.div>
+                     </m.div>
                   )}
 
                   {section === 'design' && (
-                     <motion.div 
+                     <m.div 
                         key="design"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -275,11 +275,11 @@ export default function SystemSettings() {
                             </div>
                           </div>
                         </div>
-                     </motion.div>
+                     </m.div>
                   )}
 
                   {(section !== 'general' && section !== 'security' && section !== 'design') && (
-                     <motion.div 
+                     <m.div 
                         key="others"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -288,7 +288,7 @@ export default function SystemSettings() {
                         <Database size={48} className="mx-auto text-slate-100" />
                         <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300 underline decoration-transparent">Module Synchronizing</h3>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest underline decoration-transparent">Establishing hardware handshakes and registry links</p>
-                     </motion.div>
+                     </m.div>
                   )}
                </AnimatePresence>
             </div>

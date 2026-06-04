@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { XCircle, Search, Filter, AlertCircle, RefreshCw, Eye, Trash2, Save } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 
 export default function CancelledOrders() {
@@ -117,11 +117,11 @@ export default function CancelledOrders() {
                 </td>
                 <td className="px-6 py-4 text-right underline decoration-transparent">
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all underline decoration-transparent">
-                    <button 
+                    <button type="button" 
                       onClick={() => handleOpenView(order)}
                       className="p-1.5 hover:bg-white rounded-sm text-slate-400 hover:text-slate-900 shadow-sm transition-colors outline-none"
                     ><Eye size={14} /></button>
-                    <button 
+                    <button type="button" 
                       onClick={() => handleDeleteRecord(order.id)}
                       className="p-1.5 hover:bg-rose-100 rounded-sm text-slate-400 hover:text-rose-600 shadow-sm transition-colors outline-none"
                     ><Trash2 size={14} /></button>
@@ -139,7 +139,7 @@ export default function CancelledOrders() {
               Showing <span className="text-slate-900">{indexOfFirstRecord + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastRecord, filteredCancellations.length)}</span> of <span className="text-slate-900">{filteredCancellations.length}</span> voids
             </p>
             <div className="flex items-center gap-2">
-              <button
+              <button type="button"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm border transition-all ${
@@ -152,7 +152,7 @@ export default function CancelledOrders() {
               </button>
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
-                  <button
+                  <button type="button"
                     key={i + 1}
                     onClick={() => setCurrentPage(i + 1)}
                     className={`w-7 h-7 text-[9px] font-black rounded-sm border transition-all ${
@@ -165,7 +165,7 @@ export default function CancelledOrders() {
                   </button>
                 ))}
               </div>
-              <button
+              <button type="button"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm border transition-all ${

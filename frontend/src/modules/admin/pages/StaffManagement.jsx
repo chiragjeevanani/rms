@@ -5,7 +5,7 @@ import {
   Trash2, Mail, Phone, MapPin, X, Save,
   AlertTriangle, Lock, Unlock, BadgeCheck
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { STAFF_USERS } from '../../staff/data/staffMockData';
 import { playClickSound } from '../../pos/utils/sounds';
 
@@ -85,11 +85,11 @@ export default function StaffManagement() {
            <p className="text-xs text-stone-400 font-semibold">Manage your kitchen team, floor staff, and management access</p>
         </div>
          <div className="flex items-center gap-2">
-            <button 
+            <button type="button" 
               onClick={playClickSound}
               className="h-10 px-4 bg-white text-stone-500 rounded-xl text-[11px] font-bold uppercase tracking-wider hover:text-stone-800 transition-all border border-stone-200 shadow-sm"
             >Roles Setup</button>
-            <button 
+            <button type="button" 
               onClick={() => { playClickSound(); handleOpenModal(); }}
               className="h-10 px-4 bg-[#ff7a00] text-white rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-stone-900/10 active:scale-[0.98] transition-all"
             >
@@ -146,7 +146,7 @@ export default function StaffManagement() {
                           </div>
                        </div>
                    </div>
-                   <button className="text-stone-300 hover:text-stone-600 transition-colors p-1"><MoreHorizontal size={18} /></button>
+                   <button type="button" className="text-stone-300 hover:text-stone-600 transition-colors p-1"><MoreHorizontal size={18} /></button>
                </div>
 
                <div className="space-y-3 bg-stone-50/50 p-4 rounded-xl border border-stone-100">
@@ -161,14 +161,14 @@ export default function StaffManagement() {
                </div>
 
                 <div className="grid grid-cols-2 gap-2 mt-5">
-                   <button 
+                   <button type="button" 
                      onClick={() => { playClickSound(); handleOpenModal(member); }}
                      className="py-2.5 bg-stone-800 text-white text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-black transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
                    >
                       <Edit3 size={12} />
                       Edit Profile
                    </button>
-                   <button 
+                   <button type="button" 
                      onClick={() => { playClickSound(); handleDelete(member.id); }}
                      className="py-2.5 bg-white text-stone-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-rose-50 hover:text-rose-500 transition-all border border-stone-200 hover:border-rose-100 flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
                    >
@@ -184,14 +184,14 @@ export default function StaffManagement() {
        <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -209,7 +209,7 @@ export default function StaffManagement() {
                          <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mt-0.5">Staff Management Access</p>
                       </div>
                    </div>
-                   <button onClick={() => { playClickSound(); setIsModalOpen(false); }} className="p-2 text-stone-500 hover:text-white transition-colors"><X size={18} /></button>
+                   <button type="button" onClick={() => { playClickSound(); setIsModalOpen(false); }} className="p-2 text-stone-500 hover:text-white transition-colors"><X size={18} /></button>
                 </div>
 
                <form onSubmit={handleSave} className="p-6 space-y-5">
@@ -294,7 +294,7 @@ export default function StaffManagement() {
                       </button>
                    </div>
                </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

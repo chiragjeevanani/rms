@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function MyProfile() {
@@ -228,9 +228,9 @@ export default function MyProfile() {
   if (isLoading) {
     return (
        <div className="min-h-screen bg-white flex items-center justify-center p-10">
-          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="p-4 bg-slate-900 rounded-2xl shadow-xl">
+          <m.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="p-4 bg-slate-900 rounded-2xl shadow-xl">
              <Loader2 className="text-white" size={32} strokeWidth={3} />
-          </motion.div>
+          </m.div>
        </div>
     );
   }
@@ -253,7 +253,7 @@ export default function MyProfile() {
                   </div>
                )}
             </div>
-            <button 
+            <button type="button" 
                onClick={() => fileInputRef.current?.click()} 
                className="absolute bottom-6 -right-1 p-3 bg-slate-900 text-white rounded-2xl shadow-lg border-2 border-white hover:scale-110 active:scale-95 transition-all"
             >
@@ -309,7 +309,7 @@ export default function MyProfile() {
         <section className="space-y-4">
            <div className="flex items-center justify-between px-2">
               <h2 className="text-[11px] font-[900] text-slate-500 uppercase tracking-[0.4em]">Recent Attendance</h2>
-              <button onClick={() => navigate('/staff/attendance')} className="text-[9px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">View All <ChevronRight size={12} /></button>
+              <button type="button" onClick={() => navigate('/staff/attendance')} className="text-[9px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">View All <ChevronRight size={12} /></button>
            </div>
            
            <div className="space-y-3">
@@ -334,21 +334,21 @@ export default function MyProfile() {
         {/* Settings & Session */}
         <section className="pt-10 space-y-4">
            <div className="flex flex-col gap-3">
-              <motion.button 
+              <m.button 
                 whileTap={{ scale: 0.98 }}
                 onClick={handleLogout} 
                 className="w-full py-5.5 bg-white text-slate-800 border border-slate-200 rounded-[2.5rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm"
               >
                 <LogOut size={16} strokeWidth={2.5} /> Logout System
-              </motion.button>
+              </m.button>
               
-              <motion.button 
+              <m.button 
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsDeleteModalOpen(true)} 
                 className="w-full py-5.5 bg-rose-50 text-rose-500 border border-rose-100 rounded-[2.5rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
               >
                 <Trash2 size={16} strokeWidth={2.5} /> Delete Account
-              </motion.button>
+              </m.button>
            </div>
            
            <div className="flex flex-col items-center gap-2 pt-6 opacity-20">
@@ -365,8 +365,8 @@ export default function MyProfile() {
          {/* Edit Profile Modal */}
          {isEditMode && (
          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="w-full max-w-sm bg-white rounded-[4rem] p-12 shadow-2xl relative border-t-8 border-slate-900">
-               <button onClick={() => setIsEditMode(false)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900 transition-colors"><X size={24} /></button>
+            <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="w-full max-w-sm bg-white rounded-[4rem] p-12 shadow-2xl relative border-t-8 border-slate-900">
+               <button type="button" onClick={() => setIsEditMode(false)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900 transition-colors"><X size={24} /></button>
                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-10">Update Profile</h3>
                <form onSubmit={handleUpdate} className="space-y-6">
                   <div className="space-y-2">
@@ -379,15 +379,15 @@ export default function MyProfile() {
                      </button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
          </div>
          )}
 
          {/* Change Password Modal */}
          {isPasswordModalOpen && (
          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="w-full max-w-sm bg-white rounded-[4rem] p-12 shadow-2xl relative border-t-8 border-amber-400">
-               <button onClick={() => setIsPasswordModalOpen(false)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900"><X size={24} /></button>
+            <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="w-full max-w-sm bg-white rounded-[4rem] p-12 shadow-2xl relative border-t-8 border-amber-400">
+               <button type="button" onClick={() => setIsPasswordModalOpen(false)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900"><X size={24} /></button>
                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-10">Security Settings</h3>
                <form onSubmit={handlePasswordChange} className="space-y-6">
                   <div className="space-y-4">
@@ -455,14 +455,14 @@ export default function MyProfile() {
                      </button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
          </div>
          )}
 
          {/* Delete Account Modal */}
          {isDeleteModalOpen && (
          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-rose-900/40 backdrop-blur-xl">
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="w-full max-w-sm bg-white rounded-[4rem] p-12 shadow-2xl relative border-2 border-rose-100">
+            <m.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="w-full max-w-sm bg-white rounded-[4rem] p-12 shadow-2xl relative border-2 border-rose-100">
                <div className="text-center space-y-6">
                   <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
                      <Trash2 size={40} />
@@ -470,11 +470,11 @@ export default function MyProfile() {
                   <h3 className="text-2xl font-[900] text-slate-900 uppercase tracking-tighter">Delete Account?</h3>
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide leading-relaxed">This action is permanent and your staff profile will be removed from the system.</p>
                   <div className="flex gap-4 pt-6">
-                     <button onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-5 rounded-2xl bg-slate-50 text-slate-400 font-bold uppercase text-[10px] tracking-widest">Cancel</button>
-                     <button onClick={handleDeleteAccount} className="flex-[2] py-5 rounded-2xl bg-rose-500 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-rose-500/30">Confirm Delete</button>
+                     <button type="button" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-5 rounded-2xl bg-slate-50 text-slate-400 font-bold uppercase text-[10px] tracking-widest">Cancel</button>
+                     <button type="button" onClick={handleDeleteAccount} className="flex-[2] py-5 rounded-2xl bg-rose-500 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-rose-500/30">Confirm Delete</button>
                   </div>
                </div>
-            </motion.div>
+            </m.div>
          </div>
          )}
       </AnimatePresence>

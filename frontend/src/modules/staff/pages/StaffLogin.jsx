@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, ArrowRight, ShieldCheck, Sparkles, Mail, Key, RefreshCcw, CheckCircle2, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -68,8 +68,8 @@ export default function StaffLogin() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success('OTP sent to your email');
-        setView('verify');
+        toast.success(data.message || 'New password sent to your email');
+        setView('login');
       } else {
         toast.error(data.message || 'Failed to send OTP');
       }
@@ -140,18 +140,18 @@ export default function StaffLogin() {
         
         {/* Animated Branding */}
         <div className="text-center mb-10">
-          <motion.div 
+          <m.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-24 h-24 bg-slate-900 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-slate-900/20"
           >
             <ShieldCheck size={44} className="text-amber-400" />
-          </motion.div>
+          </m.div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">RMS Staff</h1>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-3 ml-1">Secure Operations Link</p>
         </div>
 
-        <motion.div
+        <m.div
           layout
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -160,7 +160,7 @@ export default function StaffLogin() {
           <AnimatePresence mode="wait">
             {/* LOGIN VIEW */}
             {view === 'login' && (
-              <motion.form 
+              <m.form 
                 key="login"
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                 onSubmit={handleLogin} className="space-y-8"
@@ -200,30 +200,30 @@ export default function StaffLogin() {
                   </div>
                 </div>
 
-                <motion.button
+                <m.button
                   whileTap={{ scale: 0.98 }}
                   disabled={isLoading}
                   className="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.25em] flex items-center justify-center gap-4 shadow-2xl shadow-slate-900/20 hover:bg-slate-800 transition-all disabled:opacity-50 active:scale-95"
                 >
                   {isLoading ? <RefreshCcw size={18} className="animate-spin" /> : <>Access Dashboard <ArrowRight size={18} /></>}
-                </motion.button>
+                </m.button>
 
                 <div className="pt-4 text-center">
                    <button type="button" onClick={() => setView('forgot')} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Forgot Access Password?</button>
                 </div>
-              </motion.form>
+              </m.form>
             )}
 
             {/* FORGOT VIEW */}
             {view === 'forgot' && (
-              <motion.form 
+              <m.form 
                 key="forgot"
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                 onSubmit={handleRequestOTP} className="space-y-8"
               >
                 <div className="space-y-2">
                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Account Recovery</h2>
-                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-relaxed">Enter your registered mail to receive a 6-digit verification code.</p>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-relaxed">Enter your registered mail to receive a new access password directly in your email.</p>
                 </div>
 
                 <div className="space-y-4">
@@ -243,19 +243,19 @@ export default function StaffLogin() {
 
                 <div className="flex gap-4">
                   <button type="button" onClick={() => setView('login')} className="flex-1 py-6 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 border border-slate-100 hover:bg-slate-50 transition-all">Cancel</button>
-                  <button 
+                  <button type="button" 
                     disabled={isLoading}
                     className="flex-[2] bg-slate-900 text-white py-6 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50"
                   >
-                    {isLoading ? <RefreshCcw size={18} className="animate-spin" /> : <>Request OTP <ArrowRight size={18} /></>}
+                    {isLoading ? <RefreshCcw size={18} className="animate-spin" /> : <>Request New Password <ArrowRight size={18} /></>}
                   </button>
                 </div>
-              </motion.form>
+              </m.form>
             )}
 
             {/* VERIFY VIEW */}
             {view === 'verify' && (
-              <motion.form 
+              <m.form 
                 key="verify"
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                 onSubmit={handleVerifyOTP} className="space-y-8"
@@ -279,19 +279,19 @@ export default function StaffLogin() {
 
                 <div className="flex gap-4 pt-4">
                   <button type="button" onClick={() => setView('forgot')} className="flex-1 py-6 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 border border-slate-100 hover:bg-slate-50 transition-all">Resend</button>
-                  <button 
+                  <button type="button" 
                     disabled={isLoading}
                     className="flex-[2] bg-amber-400 text-slate-900 py-6 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-amber-400/20 active:scale-95 disabled:opacity-50"
                   >
                     {isLoading ? <RefreshCcw size={18} className="animate-spin" /> : <>Verify Code <ArrowRight size={18} /></>}
                   </button>
                 </div>
-              </motion.form>
+              </m.form>
             )}
 
             {/* RESET VIEW */}
             {view === 'reset' && (
-              <motion.form 
+              <m.form 
                 key="reset"
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                 onSubmit={handleResetPassword} className="space-y-8"
@@ -346,16 +346,16 @@ export default function StaffLogin() {
                    </div>
                 </div>
 
-                <button 
+                <button type="button" 
                   disabled={isLoading}
                   className="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-2xl active:scale-95 disabled:opacity-50"
                 >
                   {isLoading ? <RefreshCcw size={18} className="animate-spin" /> : <>Finalize Update <CheckCircle2 size={18} /></>}
                 </button>
-              </motion.form>
+              </m.form>
             )}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
 
         <div className="mt-12 flex items-center gap-3 opacity-30">
            <div className="w-12 h-[1px] bg-slate-900" />

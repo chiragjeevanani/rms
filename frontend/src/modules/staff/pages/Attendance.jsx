@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, ArrowLeft, CheckCircle2, AlertCircle, ChevronRight, Zap, Target } from 'lucide-react';
 import { StaffNavbar } from '../components/StaffNavbar';
 import { useNavigate } from 'react-router-dom';
@@ -69,7 +69,7 @@ export default function Attendance() {
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col pb-32">
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-6 pt-safe pb-8 shadow-sm">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-3 bg-slate-900 text-white rounded-2xl group shadow-lg active:scale-95 transition-all">
+          <button type="button" onClick={() => navigate(-1)} className="p-3 bg-slate-900 text-white rounded-2xl group shadow-lg active:scale-95 transition-all">
             <ArrowLeft size={18} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
           </button>
           <div>
@@ -102,7 +102,7 @@ export default function Attendance() {
                     </div>
 
                     {!isPunchedOut && todayLog?.status !== 'Present' ? (
-                      <motion.button
+                      <m.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handlePunch(isPunchedIn ? 'Out' : 'Present')}
                         className={`w-full py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl transition-all ${
@@ -112,7 +112,7 @@ export default function Attendance() {
                         }`}
                       >
                          {isPunchedIn ? 'Punch Out' : 'Mark Present'}
-                      </motion.button>
+                      </m.button>
                     ) : (
                       <div className="w-full py-5 rounded-[1.5rem] bg-slate-100 text-slate-400 font-black text-[10px] uppercase tracking-widest italic border border-slate-200">
                          Attendance Recorded
@@ -170,7 +170,7 @@ export default function Attendance() {
                  const date = new Date(log.date);
                  
                  return (
-                  <motion.div 
+                  <m.div 
                     layout
                     key={idx}
                     initial={{ opacity: 0, x: -20 }}
@@ -203,7 +203,7 @@ export default function Attendance() {
                           </div>
                        </div>
                     </div>
-                  </motion.div>
+                  </m.div>
                 );
               })
             )}

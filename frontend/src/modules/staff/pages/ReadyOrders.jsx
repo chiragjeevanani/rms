@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ChefHat, CheckCircle2, MapPin, Clock, Hash } from 'lucide-react';
 import { useOrders } from '../../../context/OrderContext';
 import { StaffNavbar } from '../components/StaffNavbar';
@@ -20,17 +20,17 @@ export default function ReadyOrders() {
         <div className="space-y-6">
           <AnimatePresence mode="popLayout">
             {readyOrders.length === 0 ? (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="flex flex-col items-center justify-center py-20 text-center opacity-20"
               >
                 <ChefHat size={64} strokeWidth={1} className="mb-4" />
                 <p className="text-[10px] font-black uppercase tracking-[0.2em]">Everything Is Served</p>
-              </motion.div>
+              </m.div>
             ) : (
               readyOrders.map((order) => (
-                <motion.div
+                <m.div
                   key={order.id}
                   layout
                   initial={{ opacity: 0, y: 20 }}
@@ -66,14 +66,14 @@ export default function ReadyOrders() {
                     ))}
                   </div>
 
-                  <motion.button
+                  <m.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => updateOrderStatus(order.id, 'served')}
                     className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2"
                   >
                     <CheckCircle2 size={16} /> Mark as Served
-                  </motion.button>
-                </motion.div>
+                  </m.button>
+                </m.div>
               ))
             )}
           </AnimatePresence>

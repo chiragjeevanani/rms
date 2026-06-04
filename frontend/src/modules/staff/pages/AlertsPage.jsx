@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Bell, ShoppingBag, Clock, ArrowRight, Trash2, CheckCircle, Sparkles } from 'lucide-react';
 import { StaffNavbar } from '../components/StaffNavbar';
 
@@ -56,7 +56,7 @@ export default function AlertsPage() {
               </div>
               <h1 className="text-xl font-black text-slate-900 tracking-tight">Staff Notifications</h1>
             </div>
-            <button 
+            <button type="button" 
               onClick={markAllRead}
               className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-600 hover:text-white transition-all"
             >
@@ -68,7 +68,7 @@ export default function AlertsPage() {
         <main className="p-4 space-y-3">
           <AnimatePresence mode="popLayout">
             {alerts.length === 0 ? (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="flex flex-col items-center justify-center py-20 text-center opacity-30"
@@ -77,10 +77,10 @@ export default function AlertsPage() {
                   <CheckCircle size={32} />
                 </div>
                 <p className="text-[10px] font-black uppercase tracking-widest">All caught up!</p>
-              </motion.div>
+              </m.div>
             ) : (
               alerts.map((alert) => (
-                <motion.div
+                <m.div
                   key={alert.id}
                   layout
                   initial={{ opacity: 0, x: -20 }}
@@ -111,10 +111,10 @@ export default function AlertsPage() {
                       </p>
                       
                       <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all">
+                        <button type="button" className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all">
                           Take Action <ArrowRight size={10} />
                         </button>
-                        <button 
+                        <button type="button" 
                           onClick={() => deleteAlert(alert.id)}
                           className="p-1.5 text-slate-300 hover:text-rose-500 transition-colors"
                         >
@@ -126,7 +126,7 @@ export default function AlertsPage() {
                   {alert.unread && (
                     <div className="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full" />
                   )}
-                </motion.div>
+                </m.div>
               ))
             )}
           </AnimatePresence>

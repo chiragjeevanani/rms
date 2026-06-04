@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { QuantityStepper } from '../components/QuantityStepper';
 import { Trash2, ArrowRight, ShoppingBag, ArrowLeft, Tag, AlertCircle } from 'lucide-react';
@@ -15,24 +15,24 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white flex flex-col items-center justify-center p-8 text-center transition-colors duration-300">
-          <motion.div 
+          <m.div 
              initial={{ scale: 0.8, opacity: 0 }}
              animate={{ scale: 1, opacity: 1 }}
              className="w-32 h-32 bg-white/5 rounded-full flex items-center justify-center mb-10 border border-white/5"
           >
              <ShoppingBag size={56} className="text-charcoal-900/10 dark:text-white/10" />
-          </motion.div>
+          </m.div>
           <h1 className="text-4xl font-display font-bold mb-4 tracking-tight">Your basket is empty</h1>
           <p className="text-charcoal-500 max-w-xs mx-auto mb-12 font-medium leading-relaxed italic opacity-80">
             "A hungry stomach is a blank canvas. Let's paint it with flavors."
           </p>
-          <motion.button 
+          <m.button 
              whileTap={{ scale: 0.95 }}
              className="bg-brand-500 text-charcoal-900 px-10 py-5 rounded-2xl font-black shadow-2xl"
              onClick={() => navigate('/menu')}
           >
              Explore Our Menu
-          </motion.button>
+          </m.button>
           <BottomNav />
       </div>
     );
@@ -42,7 +42,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white selection:bg-brand-500 selection:text-charcoal-900 transition-colors duration-300">
       <div className="max-w-lg mx-auto px-6 pt-8 pb-40">
         <header className="flex items-center gap-6 mb-12">
-           <button 
+           <button type="button" 
              onClick={() => navigate('/menu')}
              className="w-12 h-12 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center text-charcoal-400 hover:text-white transition-colors"
            >
@@ -57,7 +57,7 @@ export default function CartPage() {
         <div className="space-y-4 mb-10">
           <AnimatePresence mode="popLayout">
             {items.map((item) => (
-              <motion.div
+              <m.div
                 key={item.cartId}
                 layout
                 initial={{ opacity: 0, x: -20 }}
@@ -79,20 +79,20 @@ export default function CartPage() {
 
                   <div className="mt-auto flex items-center justify-between">
                      <QuantityStepper value={item.quantity} onChange={(q) => updateQuantity(item.cartId, q)} compact />
-                     <motion.button
+                     <m.button
                        whileTap={{ scale: 0.8 }}
                        onClick={() => removeFromCart(item.cartId)}
                        className="text-white/10 hover:text-red-500 transition-colors p-2"
                      >
                        <Trash2 size={18} />
-                     </motion.button>
+                     </m.button>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
           
-          <button 
+          <button type="button" 
             onClick={() => navigate('/menu')}
             className="w-full py-6 border-2 border-dashed border-white/5 rounded-[2.5rem] flex items-center justify-center gap-3 text-charcoal-500 font-black uppercase text-[10px] tracking-widest hover:border-brand-500/30 hover:text-brand-500 transition-all group"
           >
@@ -128,12 +128,12 @@ export default function CartPage() {
            </div>
 
            <Link to="/checkout" className="block w-full">
-              <motion.button 
+              <m.button 
                  whileTap={{ scale: 0.97 }}
                  className="w-full bg-brand-500 text-charcoal-900 py-5 rounded-[1.5rem] font-black flex items-center justify-center gap-3 shadow-xl shadow-brand-500/20 group"
               >
                  Proceed to Secure Checkout <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </motion.button>
+              </m.button>
            </Link>
         </div>
       </div>

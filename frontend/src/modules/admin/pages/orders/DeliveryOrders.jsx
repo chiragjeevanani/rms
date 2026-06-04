@@ -5,7 +5,7 @@ import {
   Lock, Train, AlertTriangle, Check, X, PhoneCall, Gift, ChevronDown, CheckSquare,
   DollarSign
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 
@@ -425,7 +425,7 @@ export default function DeliveryOrders() {
             <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
 
-          <button 
+          <button type="button" 
             onClick={handleRefresh}
             className="p-3 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm"
           >
@@ -447,7 +447,7 @@ export default function DeliveryOrders() {
             { id: 'delivered', label: 'Delivered', count: orders.filter(o => o.status === 'delivered').length },
             { id: 'cancelled', label: 'Cancelled', count: orders.filter(o => o.status === 'cancelled').length }
           ].map(tab => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => { setStatusFilter(tab.id); setSelectedOrderId(null); }}
               className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
@@ -473,7 +473,7 @@ export default function DeliveryOrders() {
               { id: 'ZOMATO', label: 'Zomato' },
               { id: 'POS', label: 'Self-Delivery' }
             ].map(src => (
-              <button
+              <button type="button"
                 key={src.id}
                 onClick={() => { setSourceFilter(src.id); setSelectedOrderId(null); }}
                 className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all w-full lg:w-fit cursor-pointer ${
@@ -521,7 +521,7 @@ export default function DeliveryOrders() {
               filteredOrders.map(order => {
                 const hasPendingComplaint = order.complaints?.some(c => c.status === 'pending');
                 return (
-                  <motion.div
+                  <m.div
                     key={order._id}
                     onClick={() => setSelectedOrderId(order._id)}
                     className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden group ${
@@ -620,7 +620,7 @@ export default function DeliveryOrders() {
                         )}
                       </div>
                     )}
-                  </motion.div>
+                  </m.div>
                 );
               })
             )}
@@ -631,7 +631,7 @@ export default function DeliveryOrders() {
         <div className="lg:col-span-7 flex flex-col min-h-0 bg-white border border-slate-200 rounded-[2rem] overflow-hidden shadow-sm relative">
           <AnimatePresence mode="wait">
             {!selectedOrder ? (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
@@ -646,9 +646,9 @@ export default function DeliveryOrders() {
                     Select a dispatch record from the queue to view its metrics, handle channel handshake protocols, and track delivery agents.
                   </p>
                 </div>
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.div
+              <m.div
                 key={selectedOrder._id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -687,7 +687,7 @@ export default function DeliveryOrders() {
                   {/* Accept Order Action */}
                   {selectedOrder.status === 'pending' && (
                     <div className="relative">
-                      <button
+                      <button type="button"
                         onClick={() => setShowPrepTimeSelect(!showPrepTimeSelect)}
                         disabled={actionLoading}
                         className="px-5 py-2.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center gap-2 shadow-md shadow-emerald-600/10 cursor-pointer"
@@ -714,7 +714,7 @@ export default function DeliveryOrders() {
                               </button>
                             ))}
                           </div>
-                          <button
+                          <button type="button"
                             onClick={handleAcceptOrder}
                             disabled={actionLoading}
                             className="w-full py-2.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
@@ -729,7 +729,7 @@ export default function DeliveryOrders() {
                   {/* Reject Order Action */}
                   {(selectedOrder.status === 'pending' || selectedOrder.status === 'preparing') && (
                     <div className="relative">
-                      <button
+                      <button type="button"
                         onClick={() => setShowRejectSelect(!showRejectSelect)}
                         disabled={actionLoading}
                         className="px-5 py-2.5 border-2 border-rose-200 text-rose-600 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-50 hover:border-rose-300 active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer"
@@ -757,7 +757,7 @@ export default function DeliveryOrders() {
                               </button>
                             ))}
                           </div>
-                          <button
+                          <button type="button"
                             onClick={handleRejectOrder}
                             disabled={actionLoading}
                             className="w-full py-2.5 bg-rose-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-700 transition-all cursor-pointer"
@@ -771,7 +771,7 @@ export default function DeliveryOrders() {
 
                   {/* Food Ready Action */}
                   {selectedOrder.status === 'preparing' && (
-                    <button
+                    <button type="button"
                       onClick={handleFoodReady}
                       disabled={actionLoading}
                       className="px-5 py-2.5 bg-indigo-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-md shadow-indigo-600/10 cursor-pointer"
@@ -782,7 +782,7 @@ export default function DeliveryOrders() {
 
                   {/* Food Picked Up Action */}
                   {selectedOrder.status === 'ready' && (
-                    <button
+                    <button type="button"
                       onClick={handleOrderPickedUp}
                       disabled={actionLoading}
                       className="px-5 py-2.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all shadow-md shadow-emerald-600/10 cursor-pointer"
@@ -794,7 +794,7 @@ export default function DeliveryOrders() {
                   {/* Swiggy Support Call Action */}
                   {selectedOrder.source === 'SWIGGY' && (
                     <div className="relative">
-                      <button
+                      <button type="button"
                         onClick={() => setShowSupportSelect(!showSupportSelect)}
                         disabled={actionLoading}
                         className="px-5 py-2.5 border border-slate-200 text-slate-600 hover:text-slate-900 bg-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:border-slate-300 active:scale-[0.98] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
@@ -822,7 +822,7 @@ export default function DeliveryOrders() {
                               </button>
                             ))}
                           </div>
-                          <button
+                          <button type="button"
                             onClick={handleCallSupport}
                             disabled={actionLoading}
                             className="w-full py-2.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
@@ -933,7 +933,7 @@ export default function DeliveryOrders() {
                         </div>
 
                         {!decryptedContacts[selectedOrder._id] && (
-                          <button
+                          <button type="button"
                             onClick={handleDecryptCustomer}
                             disabled={decryptingCustomer}
                             className="px-4 py-2 border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-1.5 shadow-sm bg-white cursor-pointer"
@@ -953,7 +953,7 @@ export default function DeliveryOrders() {
                         <Truck size={14} className="text-slate-900" /> Delivery Agent / Courier
                       </h4>
 
-                      <button
+                      <button type="button"
                         onClick={handlePollRider}
                         disabled={pollingRider}
                         className="p-1.5 hover:bg-slate-50 text-slate-400 hover:text-slate-900 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest cursor-pointer"
@@ -1036,7 +1036,7 @@ export default function DeliveryOrders() {
 
                             {comp.status === 'pending' && (
                               <div className="flex gap-2 pt-2">
-                                <button
+                                <button type="button"
                                   onClick={() => {
                                     setActiveComplaint(comp);
                                     setComplaintRefundAmount(comp.data?.refund_amount || 0);
@@ -1046,7 +1046,7 @@ export default function DeliveryOrders() {
                                 >
                                   Accept Refund
                                 </button>
-                                <button
+                                <button type="button"
                                   onClick={() => {
                                     setActiveComplaint(comp);
                                     setComplaintRejectionId(9);
@@ -1153,7 +1153,7 @@ export default function DeliveryOrders() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
@@ -1180,13 +1180,13 @@ export default function DeliveryOrders() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button
+              <button type="button"
                 onClick={() => setShowComplaintAccept(false)}
                 className="flex-1 py-3 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer"
               >
                 Cancel
               </button>
-              <button
+              <button type="button"
                 onClick={handleAcceptComplaint}
                 disabled={actionLoading}
                 className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-700 active:scale-[0.98] transition-all cursor-pointer"
@@ -1234,13 +1234,13 @@ export default function DeliveryOrders() {
             )}
 
             <div className="flex gap-3 pt-2">
-              <button
+              <button type="button"
                 onClick={() => setShowComplaintReject(false)}
                 className="flex-1 py-3 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer"
               >
                 Cancel
               </button>
-              <button
+              <button type="button"
                 onClick={handleRejectComplaint}
                 disabled={actionLoading}
                 className="flex-1 py-3 bg-rose-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all cursor-pointer"

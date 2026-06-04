@@ -14,6 +14,7 @@ import { Toaster } from 'react-hot-toast';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/error/ErrorBoundary';
 import { SystemThemeProvider } from './context/SystemThemeContext';
+import { LazyMotion, domAnimation } from 'framer-motion';
 
 function RootRedirect() {
   const isAdmin = localStorage.getItem('admin_access');
@@ -52,31 +53,33 @@ function App() {
   }
 
   return (
-    <Router>
-      <ErrorBoundary>
-        <SystemThemeProvider>
-          <ThemeProvider>
-            <SyncProvider>
-              <CartProvider>
-                <PosProvider>
-                  <OrderProvider>
-                    <Routes>
-                      <Route path="/" element={<RootRedirect />} />
-                      <Route path="/staff/*" element={<StaffRoutes />} />
-                      <Route path="/kds/*" element={<KdsRoutes />} />
-                      <Route path="/pos/*" element={<PosRoutes />} />
-                      <Route path="/admin/*" element={<AdminRoutes />} />
-                      <Route path="/*" element={<UserRoutes />} />
-                    </Routes>
-                  </OrderProvider>
-                </PosProvider>
-              </CartProvider>
-            </SyncProvider>
-          </ThemeProvider>
-        </SystemThemeProvider>
-      </ErrorBoundary>
-      <Toaster position="top-center" reverseOrder={false} />
-    </Router>
+    <LazyMotion features={domAnimation}>
+      <Router>
+        <ErrorBoundary>
+          <SystemThemeProvider>
+            <ThemeProvider>
+              <SyncProvider>
+                <CartProvider>
+                  <PosProvider>
+                    <OrderProvider>
+                      <Routes>
+                        <Route path="/" element={<RootRedirect />} />
+                        <Route path="/staff/*" element={<StaffRoutes />} />
+                        <Route path="/kds/*" element={<KdsRoutes />} />
+                        <Route path="/pos/*" element={<PosRoutes />} />
+                        <Route path="/admin/*" element={<AdminRoutes />} />
+                        <Route path="/*" element={<UserRoutes />} />
+                      </Routes>
+                    </OrderProvider>
+                  </PosProvider>
+                </CartProvider>
+              </SyncProvider>
+            </ThemeProvider>
+          </SystemThemeProvider>
+        </ErrorBoundary>
+        <Toaster position="top-center" reverseOrder={false} />
+      </Router>
+    </LazyMotion>
   );
 }
 

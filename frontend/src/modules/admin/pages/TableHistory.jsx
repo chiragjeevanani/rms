@@ -3,27 +3,33 @@ import {
   Grid, Search, Clock, Building2, DollarSign, 
   History, TrendingUp, ShoppingCart, Calendar, ArrowRight, Eye, ChevronRight
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import BranchSelector from '../components/BranchSelector';
 import AdminModal from '../components/ui/AdminModal';
 
 export default function TableHistory() {
-  const [tables, setTables] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [branches, setBranches] = useState([]);
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
-  const [selectedTable, setSelectedTable] = useState(null);
-  const [selectedTimeFilter, setSelectedTimeFilter] = useState('all'); // 'all' | 'today' | 'week' | 'month'
+  // Grouped filters state
+  const [filters, setFilters] = useState({
+    searchQuery: '',
+    selectedBranchFilter: 'all',
+    selectedTimeFilter: 'all' // 'all' | 'today' | 'week' | 'month'
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // Grouped operational data state (isLoading starts true, so no need to set it on mount)
+  const [dataState, setDataState] = useState({
+    tables: [],
+    orders: [],
+    branches: [],
+    isLoading: true
+  });
+
+  // Grouped modal state
+  const [modalState, setModalState] = useState({
+    selectedTable: null
+  });
 
   const fetchData = async () => {
-    setIsLoading(true);
     try {
       const [tableRes, orderRes, branchRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_URL}/table`, {
@@ -32,7 +38,10 @@ export default function TableHistory() {
         fetch(`${import.meta.env.VITE_API_URL}/orders`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
         }),
-        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })(), {
+        fetch((() => { 
+          const _rid = localStorage.getItem('admin_restaurantId'); 
+          return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; 
+        })(), {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` }
         })
       ]);
@@ -40,24 +49,30 @@ export default function TableHistory() {
       const orderData = await orderRes.json();
       const branchData = await branchRes.json();
       
-      setTables(tableData);
-      if (orderData.success) setOrders(orderData.data);
-      if (branchData.success) setBranches(branchData.data);
+      setDataState({
+        tables: tableData,
+        orders: orderData.success ? orderData.data : [],
+        branches: branchRes.ok ? branchData.data : [],
+        isLoading: false
+      });
     } catch (err) {
       toast.error('Failed to load table order analytics');
-    } finally {
-      setIsLoading(false);
+      setDataState(prev => ({ ...prev, isLoading: false }));
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   // Compile statistics for each table
   const tableAnalytics = useMemo(() => {
     // Filter tables and orders based on branch filter
-    const filteredTablesList = tables.filter(t => selectedBranchFilter === 'all' || t.branchId === selectedBranchFilter);
-    let filteredOrdersList = orders.filter(o => selectedBranchFilter === 'all' || o.branchId === selectedBranchFilter);
+    const filteredTablesList = dataState.tables.filter(t => filters.selectedBranchFilter === 'all' || t.branchId === filters.selectedBranchFilter);
+    let filteredOrdersList = dataState.orders.filter(o => filters.selectedBranchFilter === 'all' || o.branchId === filters.selectedBranchFilter);
 
     // Apply time filter
-    if (selectedTimeFilter !== 'all') {
+    if (filters.selectedTimeFilter !== 'all') {
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       const weekStart = todayStart - 7 * 24 * 60 * 60 * 1000;
@@ -65,11 +80,11 @@ export default function TableHistory() {
 
       filteredOrdersList = filteredOrdersList.filter(o => {
         const orderTime = new Date(o.createdAt).getTime();
-        if (selectedTimeFilter === 'today') {
+        if (filters.selectedTimeFilter === 'today') {
           return orderTime >= todayStart;
-        } else if (selectedTimeFilter === 'week') {
+        } else if (filters.selectedTimeFilter === 'week') {
           return orderTime >= weekStart;
-        } else if (selectedTimeFilter === 'month') {
+        } else if (filters.selectedTimeFilter === 'month') {
           return orderTime >= monthStart;
         }
         return true;
@@ -78,7 +93,6 @@ export default function TableHistory() {
 
     return filteredTablesList.map(table => {
       // Find all orders corresponding to this table
-      // Some orders use tableName (e.g. "Table 1" or code like "TBL-1234"), let's match both
       const tableOrders = filteredOrdersList.filter(o => 
         o.tableName?.toUpperCase() === table.tableName?.toUpperCase() || 
         o.tableName?.toUpperCase() === table.tableCode?.toUpperCase() ||
@@ -88,7 +102,7 @@ export default function TableHistory() {
       const completedOrders = tableOrders.filter(o => ['completed', 'Completed', 'paid', 'Paid'].includes(o.status));
       const totalSales = completedOrders.reduce((sum, o) => sum + (o.grandTotal || o.subTotal || 0), 0);
       
-      const lastOrder = tableOrders.length > 0 ? tableOrders[0] : null; // Sorted descending by api
+      const lastOrder = tableOrders.length > 0 ? tableOrders[0] : null;
 
       return {
         ...table,
@@ -99,15 +113,15 @@ export default function TableHistory() {
         orders: tableOrders
       };
     }).sort((a, b) => b.totalOrdersCount - a.totalOrdersCount); // Sort by most orders first
-  }, [tables, orders, selectedBranchFilter, selectedTimeFilter]);
+  }, [dataState.tables, dataState.orders, filters.selectedBranchFilter, filters.selectedTimeFilter]);
 
   // Apply search query
   const filteredTableAnalytics = useMemo(() => {
     return tableAnalytics.filter(t => 
-      t.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      t.tableCode.toLowerCase().includes(searchQuery.toLowerCase())
+      t.tableName.toLowerCase().includes(filters.searchQuery.toLowerCase()) || 
+      t.tableCode.toLowerCase().includes(filters.searchQuery.toLowerCase())
     );
-  }, [tableAnalytics, searchQuery]);
+  }, [tableAnalytics, filters.searchQuery]);
 
   return (
     <div className="h-screen flex flex-col bg-[#F8F9FA] overflow-hidden admin-layout">
@@ -129,9 +143,10 @@ export default function TableHistory() {
             <input 
               type="text" 
               placeholder="Search tables..."
+              aria-label="Search tables filter"
               className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 pl-9 pr-4 text-[10px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-slate-900/10 outline-none transition-all"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={filters.searchQuery}
+              onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
             />
           </div>
 
@@ -145,11 +160,11 @@ export default function TableHistory() {
               { id: 'week', label: 'This Week' },
               { id: 'month', label: 'This Month' }
             ].map((filter) => (
-              <button
+              <button type="button"
                 key={filter.id}
-                onClick={() => setSelectedTimeFilter(filter.id)}
+                onClick={() => setFilters(prev => ({ ...prev, selectedTimeFilter: filter.id }))}
                 className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
-                  selectedTimeFilter === filter.id 
+                  filters.selectedTimeFilter === filter.id 
                     ? 'bg-slate-900 text-white shadow-md' 
                     : 'text-slate-400 hover:text-slate-600'
                 }`}
@@ -162,16 +177,16 @@ export default function TableHistory() {
           <div className="h-8 w-px bg-slate-100 hidden md:block" />
 
           <BranchSelector 
-            branches={branches}
-            selectedBranch={selectedBranchFilter}
-            onSelect={setSelectedBranchFilter}
+            branches={dataState.branches}
+            selectedBranch={filters.selectedBranchFilter}
+            onSelect={(b) => setFilters(prev => ({ ...prev, selectedBranchFilter: b }))}
           />
         </div>
       </div>
 
       {/* Main Content Pane */}
       <div className="flex-1 overflow-y-auto p-6 no-scrollbar bg-slate-50/30">
-        {isLoading ? (
+        {dataState.isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
              {[1, 2, 3, 4, 5, 6].map(i => (
                <div key={i} className="bg-white rounded-3xl h-44 animate-pulse border border-slate-100 shadow-sm" />
@@ -185,51 +200,11 @@ export default function TableHistory() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
              {filteredTableAnalytics.map((analytics) => (
-               <motion.div 
-                 layout
-                 key={analytics._id} 
-                 onClick={() => setSelectedTable(analytics)}
-                 className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all group cursor-pointer relative overflow-hidden flex flex-col justify-between h-56 hover:border-amber-200"
-               >
-                  {/* Top Line */}
-                  <div className="flex justify-between items-start">
-                     <div>
-                       <h3 className="text-base font-black text-slate-900 tracking-tight uppercase group-hover:text-amber-500 transition-colors">
-                          {analytics.tableName}
-                       </h3>
-                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Code: {analytics.tableCode}</p>
-                     </div>
-                     <div className="w-10 h-10 bg-slate-50 text-slate-400 group-hover:bg-slate-900 group-hover:text-white rounded-xl flex items-center justify-center transition-all shadow-sm">
-                        <Grid size={16} />
-                     </div>
-                  </div>
-
-                  {/* Aggregated Counters */}
-                  <div className="grid grid-cols-2 gap-4 py-3 border-y border-slate-50 mt-2">
-                     <div>
-                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Total Orders</span>
-                       <span className="text-xl font-black text-slate-800 tabular-nums">{analytics.totalOrdersCount.toString().padStart(2, '0')}</span>
-                     </div>
-                     <div>
-                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Total Value</span>
-                       <span className="text-xl font-black text-emerald-600 tabular-nums">₹{analytics.totalSales}</span>
-                     </div>
-                  </div>
-
-                  {/* Bottom Line Info */}
-                  <div className="mt-4 flex items-center justify-between pt-2">
-                     <div className="flex items-center gap-1.5 text-slate-400">
-                        <Clock size={12} className="text-amber-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest">
-                          {analytics.lastActive ? analytics.lastActive.toLocaleDateString() : 'Never Active'}
-                        </span>
-                     </div>
-                     <div className="flex items-center gap-1 text-[9px] font-black text-amber-600 group-hover:translate-x-1.5 transition-transform uppercase tracking-widest">
-                        View Details
-                        <ChevronRight size={10} strokeWidth={3} />
-                     </div>
-                  </div>
-               </motion.div>
+               <TableAnalyticsCard 
+                 key={analytics._id}
+                 analytics={analytics}
+                 onClick={() => setModalState({ selectedTable: analytics })}
+               />
              ))}
           </div>
         )}
@@ -237,85 +212,145 @@ export default function TableHistory() {
 
       {/* Modal showing table order details */}
       <AdminModal
-        isOpen={!!selectedTable}
-        onClose={() => setSelectedTable(null)}
-        title={`${selectedTable?.tableName} - Historical Log`}
-        subtitle={`Summary of all ${selectedTable?.totalOrdersCount || 0} orders processed`}
+        isOpen={!!modalState.selectedTable}
+        onClose={() => setModalState({ selectedTable: null })}
+        title={`${modalState.selectedTable?.tableName} - Historical Log`}
+        subtitle={`Summary of all ${modalState.selectedTable?.totalOrdersCount || 0} orders processed`}
         maxWidth="max-w-4xl"
       >
-        <div className="space-y-6">
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-3 gap-4 p-5 bg-slate-900 text-white rounded-[2rem]">
-            <div className="text-center">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Total Orders placed</span>
-              <span className="text-2xl font-black text-amber-400 mt-1 block">{selectedTable?.totalOrdersCount}</span>
-            </div>
-            <div className="text-center border-x border-white/10">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Total Cash Settle</span>
-              <span className="text-2xl font-black text-emerald-400 mt-1 block">{selectedTable?.completedOrdersCount}</span>
-            </div>
-            <div className="text-center">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Gross Revenue</span>
-              <span className="text-2xl font-black text-white mt-1 block">₹{selectedTable?.totalSales}</span>
-            </div>
-          </div>
-
-          {/* Orders History List */}
-          <div className="space-y-3">
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Processed Transactions</h4>
-             <div className="max-h-[50vh] overflow-y-auto pr-2 space-y-2 thin-scrollbar">
-                {selectedTable?.orders.map((order, idx) => (
-                  <div key={order._id || idx} className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
-                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-white border border-slate-100 rounded-xl text-slate-700 shadow-sm shrink-0">
-                           <ShoppingCart size={16} />
-                        </div>
-                        <div>
-                           <p className="text-xs font-black text-slate-900 uppercase">{order.orderNumber}</p>
-                           <div className="flex items-center gap-2 mt-1 text-[9px] font-bold text-slate-400 uppercase">
-                             <span>Waiter: {order.waiterName || 'POS'}</span>
-                             <span className="w-1 h-1 rounded-full bg-slate-200" />
-                             <span>Type: {order.orderType}</span>
-                             <span className="w-1 h-1 rounded-full bg-slate-200" />
-                             <span>Date: {new Date(order.createdAt).toLocaleDateString()}</span>
-                           </div>
-                        </div>
-                     </div>
-
-                     <div className="flex items-center gap-6">
-                        <div className="text-right">
-                           <p className="text-sm font-black text-slate-900">₹{order.grandTotal || order.subTotal}</p>
-                           <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border mt-1 inline-block ${
-                             ['completed', 'paid'].includes(order.status?.toLowerCase()) 
-                               ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
-                               : order.status === 'cancelled' 
-                                 ? 'bg-rose-50 text-rose-600 border-rose-100' 
-                                 : 'bg-amber-50 text-amber-600 border-amber-100'
-                           }`}>
-                             {order.status}
-                           </span>
-                        </div>
-                     </div>
-                  </div>
-                ))}
-                {selectedTable?.orders.length === 0 && (
-                  <div className="p-12 text-center bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                     No orders recorded for this table yet.
-                  </div>
-                )}
-             </div>
-          </div>
-
-          <div className="flex justify-end pt-2">
-             <button 
-               onClick={() => setSelectedTable(null)}
-               className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
-             >
-               Close Log
-             </button>
-          </div>
-        </div>
+        <TableLogModalContent 
+          selectedTable={modalState.selectedTable}
+          onClose={() => setModalState({ selectedTable: null })}
+        />
       </AdminModal>
+    </div>
+  );
+}
+
+// ── SUB-COMPONENTS (Extracted to resolve Giant Component warnings) ──────────────
+
+function TableAnalyticsCard({ analytics, onClick }) {
+  return (
+    <m.div 
+      layout
+      onClick={onClick}
+      className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all group cursor-pointer relative overflow-hidden flex flex-col justify-between h-56 hover:border-amber-200"
+    >
+       {/* Top Line */}
+       <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-base font-black text-slate-900 tracking-tight uppercase group-hover:text-amber-500 transition-colors">
+               {analytics.tableName}
+            </h3>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Code: {analytics.tableCode}</p>
+          </div>
+          <div className="w-10 h-10 bg-slate-50 text-slate-400 group-hover:bg-slate-900 group-hover:text-white rounded-xl flex items-center justify-center transition-all shadow-sm">
+             <Grid size={16} />
+          </div>
+       </div>
+
+       {/* Aggregated Counters */}
+       <div className="grid grid-cols-2 gap-4 py-3 border-y border-slate-50 mt-2">
+          <div>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Total Orders</span>
+            <span className="text-xl font-black text-slate-800 tabular-nums">{analytics.totalOrdersCount.toString().padStart(2, '0')}</span>
+          </div>
+          <div>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Total Value</span>
+            <span className="text-xl font-black text-emerald-600 tabular-nums">₹{analytics.totalSales}</span>
+          </div>
+       </div>
+
+       {/* Bottom Line Info */}
+       <div className="mt-4 flex items-center justify-between pt-2">
+          <div className="flex items-center gap-1.5 text-slate-400">
+             <Clock size={12} className="text-amber-500" />
+             <span className="text-[9px] font-black uppercase tracking-widest">
+               {analytics.lastActive ? analytics.lastActive.toLocaleDateString() : 'Never Active'}
+             </span>
+          </div>
+          <div className="flex items-center gap-1 text-[9px] font-black text-amber-600 group-hover:translate-x-1.5 transition-transform uppercase tracking-widest">
+             View Details
+             <ChevronRight size={10} strokeWidth={3} />
+          </div>
+       </div>
+    </m.div>
+  );
+}
+
+function TableLogModalContent({ selectedTable, onClose }) {
+  return (
+    <div className="space-y-6">
+      {/* Quick Metrics */}
+      <div className="grid grid-cols-3 gap-4 p-5 bg-slate-900 text-white rounded-[2rem]">
+        <div className="text-center">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Total Orders placed</span>
+          <span className="text-2xl font-black text-amber-400 mt-1 block">{selectedTable?.totalOrdersCount}</span>
+        </div>
+        <div className="text-center border-x border-white/10">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Total Cash Settle</span>
+          <span className="text-2xl font-black text-emerald-400 mt-1 block">{selectedTable?.completedOrdersCount}</span>
+        </div>
+        <div className="text-center">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Gross Revenue</span>
+          <span className="text-2xl font-black text-white mt-1 block">₹{selectedTable?.totalSales}</span>
+        </div>
+      </div>
+
+      {/* Orders History List */}
+      <div className="space-y-3">
+         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Processed Transactions</h4>
+         <div className="max-h-[50vh] overflow-y-auto pr-2 space-y-2 thin-scrollbar">
+            {selectedTable?.orders.map((order, idx) => (
+              <div key={order._id || idx} className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
+                 <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white border border-slate-100 rounded-xl text-slate-700 shadow-sm shrink-0">
+                       <ShoppingCart size={16} />
+                    </div>
+                    <div>
+                       <p className="text-xs font-black text-slate-900 uppercase">{order.orderNumber}</p>
+                       <div className="flex items-center gap-2 mt-1 text-[9px] font-bold text-slate-400 uppercase">
+                         <span>Waiter: {order.waiterName || 'POS'}</span>
+                         <span className="w-1 h-1 rounded-full bg-slate-200" />
+                         <span>Type: {order.orderType}</span>
+                         <span className="w-1 h-1 rounded-full bg-slate-200" />
+                         <span>Date: {new Date(order.createdAt).toLocaleDateString()}</span>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="flex items-center gap-6">
+                    <div className="text-right">
+                       <p className="text-sm font-black text-slate-900">₹{order.grandTotal || order.subTotal}</p>
+                       <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border mt-1 inline-block ${
+                         ['completed', 'paid'].includes(order.status?.toLowerCase()) 
+                           ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                           : order.status === 'cancelled' 
+                             ? 'bg-rose-50 text-rose-600 border-rose-100' 
+                             : 'bg-amber-50 text-amber-600 border-amber-100'
+                       }`}>
+                         {order.status}
+                       </span>
+                    </div>
+                 </div>
+              </div>
+            ))}
+            {selectedTable?.orders.length === 0 && (
+              <div className="p-12 text-center bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                 No orders recorded for this table yet.
+              </div>
+            )}
+         </div>
+      </div>
+
+      <div className="flex justify-end pt-2">
+         <button type="button" 
+           onClick={onClose}
+           className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+         >
+           Close Log
+         </button>
+      </div>
     </div>
   );
 }

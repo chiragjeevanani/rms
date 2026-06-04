@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import BranchSelector from '../../components/BranchSelector';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import Skeleton from '../../components/ui/Skeleton';
@@ -423,21 +423,21 @@ export default function ComboMeals() {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Multi-Asset Assemblies & Value Bundles</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button type="button" 
             onClick={downloadComboTemplate}
             className="h-12 px-6 bg-amber-50 text-amber-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-amber-200 hover:bg-amber-100 active:scale-95 transition-all outline-none"
           >
             <Download size={16} />
             Download Sample
           </button>
-          <button 
+          <button type="button" 
             onClick={() => setIsImportModalOpen(true)}
             className="h-12 px-6 bg-slate-100 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-slate-200 hover:bg-slate-200 active:scale-95 transition-all outline-none"
           >
             <Upload size={16} />
             Import CSV
           </button>
-          <button 
+          <button type="button" 
             onClick={() => handleOpenModal()}
             className="h-12 px-8 bg-[#2C2C2C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black active:scale-95 transition-all outline-none"
           >
@@ -461,7 +461,7 @@ export default function ComboMeals() {
 
         <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-2xl w-full md:w-auto">
           {['All', 'Published', 'Draft'].map((status) => (
-            <button
+            <button type="button"
               key={status}
               onClick={() => setFilterStatus(status)}
               className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${filterStatus === status ? 'bg-[#2C2C2C] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
@@ -483,11 +483,11 @@ export default function ComboMeals() {
         />
 
         <div className="flex items-center border border-slate-100 rounded-2xl p-1 bg-slate-50">
-          <button 
+          <button type="button" 
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
           ><LayoutGrid size={16} /></button>
-          <button 
+          <button type="button" 
             onClick={() => setViewMode('list')}
             className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
           ><List size={16} /></button>
@@ -515,7 +515,7 @@ export default function ComboMeals() {
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
           {filteredCombos.map((combo) => (
             viewMode === 'grid' ? (
-              <motion.div 
+              <m.div 
                 key={combo._id}
                 whileHover={{ y: -6 }}
                 className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all group relative flex flex-col"
@@ -572,17 +572,17 @@ export default function ComboMeals() {
                      >
                         <Eye size={14} />
                      </Link>
-                    <button 
+                    <button type="button" 
                       onClick={() => handleOpenModal(combo)}
                       className="flex-1 h-10 bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2"
                     >
                       <Edit2 size={12} />
                     </button>
-                    <button 
+                    <button type="button" 
                       onClick={() => handleDeleteClick(combo)}
                       className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all flex-shrink-0"
                     ><Trash2 size={14} /></button>
-                    <button 
+                    <button type="button" 
                       onClick={() => toggleStatus(combo)}
                       className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 flex-shrink-0 ${combo.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
                       title={`Status: ${combo.status}`}
@@ -591,9 +591,9 @@ export default function ComboMeals() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             ) : ( 
-              <motion.div 
+              <m.div 
                 key={combo._id}
                 className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-6 group"
               >
@@ -625,7 +625,7 @@ export default function ComboMeals() {
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <button 
+                    <button type="button" 
                       onClick={() => toggleStatus(combo)}
                       className="w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-slate-100 hover:border-slate-300"
                       title={`Toggle Live Status`}
@@ -638,17 +638,17 @@ export default function ComboMeals() {
                     >
                       <Eye size={16} />
                     </Link>
-                    <button 
+                    <button type="button" 
                       onClick={() => handleOpenModal(combo)}
                       className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all outline-none"
                     ><Edit2 size={16} /></button>
-                    <button 
+                    <button type="button" 
                       onClick={() => handleDeleteClick(combo)}
                       className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all outline-none"
                     ><Trash2 size={16} /></button>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             )
           ))}
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Search, Shield, Edit2, Trash2, Mail, LayoutGrid, List, MapPin } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Users, Plus, Search, Shield, Edit2, Trash2, Mail, LayoutGrid, List, MapPin, Key } from 'lucide-react';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import BranchSelector from '../../components/BranchSelector';
@@ -13,8 +13,11 @@ export default function StaffList() {
   const [viewMode, setViewMode] = useState('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
   const [editingStaff, setEditingStaff] = useState(null);
+  const [staffForPassword, setStaffForPassword] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -162,6 +165,62 @@ export default function StaffList() {
     }
   };
 
+  const handleSendResetEmail = async (member) => {
+    const loadingToast = toast.loading('Sending password reset email...');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: member.email })
+      });
+      if (res.ok) {
+        toast.success('Password reset email sent successfully!', { id: loadingToast });
+      } else {
+        const error = await res.json();
+        toast.error(error.message || 'Failed to send reset email', { id: loadingToast });
+      }
+    } catch (err) {
+      toast.error('Network error. Failed to send email.', { id: loadingToast });
+    }
+  };
+
+  const handleOpenPasswordModal = (member) => {
+    setStaffForPassword(member);
+    setNewPassword('');
+    setIsPasswordModalOpen(true);
+  };
+
+  const handleSetPassword = async (e) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 4) {
+      return toast.error('Password must be at least 4 characters long');
+    }
+
+    const loadingToast = toast.loading('Updating password...');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/${staffForPassword._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('admin_access')}`
+        },
+        body: JSON.stringify({ password: newPassword })
+      });
+
+      if (res.ok) {
+        toast.success('Password updated successfully!', { id: loadingToast });
+        setIsPasswordModalOpen(false);
+      } else {
+        const error = await res.json();
+        toast.error(error.message || 'Failed to update password', { id: loadingToast });
+      }
+    } catch (err) {
+      toast.error('Network error. Failed to update password.', { id: loadingToast });
+    }
+  };
+
   const filteredStaff = staff.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           member.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -187,10 +246,10 @@ export default function StaffList() {
         <div className="flex items-center gap-3">
            <BranchSelector branches={branches} selectedBranch={selectedBranchFilter} onSelect={setSelectedBranchFilter} />
            <div className="flex items-center gap-1 p-1 bg-white rounded-xl shadow-sm border border-slate-100">
-              <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><LayoutGrid size={16} /></button>
-              <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><List size={16} /></button>
+              <button type="button" onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><LayoutGrid size={16} /></button>
+              <button type="button" onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><List size={16} /></button>
            </div>
-           <button onClick={() => handleOpenModal()} className="h-10 px-6 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 hover:scale-105 transition-all">
+           <button type="button" onClick={() => handleOpenModal()} className="h-10 px-6 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 hover:scale-105 transition-all">
               <Plus size={14} strokeWidth={3} /> Enroll Staff
             </button>
         </div>
@@ -209,7 +268,7 @@ export default function StaffList() {
           </div>
           <div className="flex items-center gap-1 p-1 bg-white rounded-xl border border-slate-100 min-w-[240px]">
             {['All', 'Active', 'Inactive'].map((status) => (
-              <button key={status} onClick={() => setFilterStatus(status)} className={`flex-1 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filterStatus === status ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}>{status}</button>
+              <button type="button" key={status} onClick={() => setFilterStatus(status)} className={`flex-1 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filterStatus === status ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}>{status}</button>
             ))}
           </div>
       </div>
@@ -232,7 +291,7 @@ export default function StaffList() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <AnimatePresence>
             {filteredStaff.map((member) => (
-              <motion.div layout key={member._id} className="bg-white border border-slate-100 p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all group relative flex flex-col">
+              <m.div layout key={member._id} className="bg-white border border-slate-100 p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all group relative flex flex-col">
                 <div className="flex items-start justify-between mb-6">
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white shadow-lg ${member.status === 'Active' ? 'bg-slate-900' : 'bg-slate-400'}`}>
                     {member.name.split(' ').map(n => n[0]).join('')}
@@ -254,14 +313,20 @@ export default function StaffList() {
                     </div>
                   </div>
                 <div className="pt-4 border-t border-slate-50 flex items-center gap-1.5 mt-auto">
-                  <button onClick={() => handleOpenModal(member)} className="flex-1 h-9 bg-slate-50 text-slate-600 text-[8px] font-black uppercase rounded-xl hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2">
+                  <button type="button" onClick={() => handleOpenModal(member)} className="flex-1 h-9 bg-slate-50 text-slate-600 text-[8px] font-black uppercase rounded-xl hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2">
                      <Edit2 size={10} /> Edit
                   </button>
-                  <button onClick={() => handleDeleteClick(member)} className="w-9 h-9 flex items-center justify-center bg-slate-50 text-rose-500 rounded-xl hover:bg-rose-50 transition-all">
+                  <button type="button" onClick={() => handleOpenPasswordModal(member)} title="Set Password" className="w-9 h-9 flex items-center justify-center bg-slate-50 text-amber-600 rounded-xl hover:bg-amber-50 hover:text-amber-700 transition-all">
+                    <Key size={12} />
+                  </button>
+                  <button type="button" onClick={() => handleSendResetEmail(member)} title="Send Reset Email" className="w-9 h-9 flex items-center justify-center bg-slate-50 text-blue-600 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-all">
+                    <Mail size={12} />
+                  </button>
+                  <button type="button" onClick={() => handleDeleteClick(member)} className="w-9 h-9 flex items-center justify-center bg-slate-50 text-rose-500 rounded-xl hover:bg-rose-50 transition-all">
                     <Trash2 size={12} />
                   </button>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>
@@ -289,8 +354,10 @@ export default function StaffList() {
                       </td>
                       <td className="px-6 py-3 text-[10px]">{member.status}</td>
                       <td className="px-6 py-3 text-right">
-                        <button onClick={() => handleOpenModal(member)} className="text-slate-400 hover:text-slate-900 mr-2"><Edit2 size={14} /></button>
-                        <button onClick={() => handleDeleteClick(member)} className="text-rose-400 hover:text-rose-600"><Trash2 size={14} /></button>
+                        <button type="button" onClick={() => handleOpenModal(member)} title="Edit Staff" className="text-slate-400 hover:text-slate-900 mr-2"><Edit2 size={14} /></button>
+                        <button type="button" onClick={() => handleOpenPasswordModal(member)} title="Set Password" className="text-amber-500 hover:text-amber-700 mr-2"><Key size={14} /></button>
+                        <button type="button" onClick={() => handleSendResetEmail(member)} title="Send Reset Email" className="text-blue-500 hover:text-blue-700 mr-2"><Mail size={14} /></button>
+                        <button type="button" onClick={() => handleDeleteClick(member)} title="Delete Staff" className="text-rose-400 hover:text-rose-600"><Trash2 size={14} /></button>
                       </td>
                    </tr>
                  ))}
@@ -375,9 +442,47 @@ export default function StaffList() {
                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest leading-relaxed text-center">Terminate registry for: <span className="underline">{staffToDelete?.name}</span>? This is irreversible.</p>
            </div>
            <div className="flex gap-3">
-              <button onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-xl">Abort</button>
-              <button onClick={confirmDelete} className="flex-[2] py-4 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-rose-200">Validate</button>
+              <button type="button" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-xl">Abort</button>
+              <button type="button" onClick={confirmDelete} className="flex-[2] py-4 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-rose-200">Validate</button>
            </div>
+        </div>
+      </AdminModal>
+
+      <AdminModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        title={`Set Password for ${staffForPassword?.name || ''}`}
+        subtitle="Recalibrate security credentials directly"
+        onSubmit={handleSetPassword}
+      >
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">New Password</label>
+            <input 
+              type="password" 
+              required 
+              minLength={4}
+              className="w-full bg-slate-50 border border-slate-100 p-3.5 text-[10px] font-bold outline-none focus:border-slate-900 rounded-xl transition-all" 
+              value={newPassword} 
+              onChange={(e) => setNewPassword(e.target.value)} 
+              placeholder="ENTER NEW PASSWORD" 
+            />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button 
+              type="button" 
+              onClick={() => setIsPasswordModalOpen(false)} 
+              className="flex-1 py-3.5 bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="flex-[2] py-3.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 shadow-lg shadow-slate-900/10 transition-all"
+            >
+              Update Password
+            </button>
+          </div>
         </div>
       </AdminModal>
     </div>

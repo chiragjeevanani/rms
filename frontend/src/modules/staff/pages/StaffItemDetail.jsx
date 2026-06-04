@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowLeft, Star, Clock, ShoppingCart, ChevronRight, Info, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -36,7 +36,7 @@ export default function StaffItemDetail() {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
       <Info size={48} className="text-slate-300 mb-4" />
       <h2 className="text-xl font-black text-slate-900 uppercase italic">Product Not Found</h2>
-      <button onClick={() => navigate(-1)} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px]">Go Back</button>
+      <button type="button" onClick={() => navigate(-1)} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px]">Go Back</button>
     </div>
   );
 
@@ -48,7 +48,7 @@ export default function StaffItemDetail() {
         
         {/* Header Image Section */}
         <div className="relative h-[45vh] w-full bg-slate-100 overflow-hidden">
-           <motion.img 
+           <m.img 
              initial={{ scale: 1.1 }}
              animate={{ scale: 1 }}
              transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
@@ -56,7 +56,7 @@ export default function StaffItemDetail() {
              className="w-full h-full object-cover" 
            />
            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white to-transparent" />
-           <button 
+           <button type="button" 
              onClick={() => navigate(-1)}
              className="absolute top-8 left-8 w-12 h-12 bg-white/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-slate-900 shadow-xl border border-white active:scale-90 transition-all"
            >
@@ -134,7 +134,7 @@ export default function StaffItemDetail() {
         </div>
 
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-sm px-6">
-           <button 
+           <button type="button" 
              onClick={() => navigate(-1)}
              className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl shadow-slate-900/40 flex items-center justify-center gap-4 hover:bg-slate-800 transition-all active:scale-95"
            >

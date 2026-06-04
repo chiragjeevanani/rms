@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { useOrders } from '../../../../context/OrderContext';
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Globe, MoreVertical, X, Plus, Minus, LayoutGrid, ShoppingCart, Users, Wallet, SlidersHorizontal, TrendingUp, Monitor, Clock, Settings, RefreshCw, Power, ArrowLeft, ChevronRight, Shield, Table, Zap } from 'lucide-react';
 import { usePos } from '../../context/PosContext';
 import { useNavigate } from 'react-router-dom';
@@ -76,7 +76,7 @@ export default function PosLayout() {
       {/* Sidebar - Now persistent and pushes content */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
-          <motion.aside
+          <m.aside
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 240, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
@@ -93,7 +93,7 @@ export default function PosLayout() {
                   POS <span className="text-white/70">Navigator</span>
                 </h2>
               </div>
-              <button 
+              <button type="button" 
                 onClick={closeSidebar} 
                 className="p-1.5 bg-black/10 hover:bg-black/20 rounded-lg text-white/80 hover:text-white transition-colors"
               >
@@ -124,7 +124,7 @@ export default function PosLayout() {
                   />
                   <AnimatePresence>
                     {expandedMenus.includes('Orders') && (
-                      <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
+                      <m.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
                         <DrawerSubItem 
                           label="Dine-In Orders" 
                           onClick={() => navigate('/pos/orders/active?type=Dine-In')} 
@@ -140,7 +140,7 @@ export default function PosLayout() {
                           onClick={() => navigate('/pos/orders/active?type=Delivery')} 
                           active={window.location.pathname.includes('/pos/orders') && window.location.search.includes('type=Delivery')} 
                         />
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -179,19 +179,19 @@ export default function PosLayout() {
                   </div>
                 </div>
             </div>
-          </motion.aside>
+          </m.aside>
         )}
       </AnimatePresence>
 
       {/* Main Content Area */}
-      <motion.main 
+      <m.main 
         layout
         className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white"
       >
         {/* Incoming Orders Panel */}
         <AnimatePresence>
           {incomingOrders.length > 0 && (
-            <motion.div
+            <m.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -199,7 +199,7 @@ export default function PosLayout() {
             >
               <div className="p-4 flex gap-4 overflow-x-auto no-scrollbar scroll-smooth">
                 {incomingOrders.map((order) => (
-                  <motion.div
+                  <m.div
                     key={order.id}
                     layout
                     initial={{ scale: 0.95, opacity: 0 }}
@@ -217,7 +217,7 @@ export default function PosLayout() {
                         <span className="bg-[#F57C00] text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                           {order.type || 'Delivery'}
                         </span>
-                        <button 
+                        <button type="button" 
                           onClick={() => setDismissedOrders(prev => [...prev, order.id])}
                           className="text-white/40 hover:text-white transition-colors"
                         >
@@ -249,45 +249,45 @@ export default function PosLayout() {
 
                     <div className="p-3 flex items-center justify-between bg-white border-t border-gray-100">
                       <div className="flex items-center gap-1">
-                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                        <button type="button" className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
                           <MoreVertical size={16} />
                         </button>
-                        <button 
+                        <button type="button" 
                           onClick={() => handleRejectOrder(order.id)}
                           className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 rounded transition-colors"
                         >
                           Reject
                         </button>
                       </div>
-                      <button 
+                      <button type="button" 
                         onClick={() => handleAcceptOrder(order)}
                         className="px-6 py-2 bg-[#F57C00] text-white text-[10px] font-black uppercase tracking-widest rounded shadow-lg active:scale-95 transition-all"
                       >
                         Accept
                       </button>
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <Outlet />
         </div>
-      </motion.main>
+      </m.main>
 
       {/* Accept Order Modal */}
       <AnimatePresence>
         {acceptingOrder && (
           <>
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
               onClick={() => setAcceptingOrder(null)}
             />
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -297,7 +297,7 @@ export default function PosLayout() {
                 <h3 className="text-sm font-bold text-gray-700">
                   {acceptingOrder.source || 'Home Website'} - {acceptingOrder.id}
                 </h3>
-                <button onClick={() => setAcceptingOrder(null)} className="text-gray-400 hover:text-gray-900">
+                <button type="button" onClick={() => setAcceptingOrder(null)} className="text-gray-400 hover:text-gray-900">
                   <X size={20} />
                 </button>
               </div>
@@ -307,11 +307,11 @@ export default function PosLayout() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-600">Minimum Delivery Time <span className="text-gray-400 font-normal">(Minutes)</span>:</span>
                     <div className="flex items-center gap-2">
-                       <button onClick={() => setDeliveryTime(Math.max(0, deliveryTime - 5))} className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:bg-gray-50"><Minus size={16} /></button>
+                       <button type="button" onClick={() => setDeliveryTime(Math.max(0, deliveryTime - 5))} className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:bg-gray-50"><Minus size={16} /></button>
                        <div className="w-24 h-10 border border-gray-200 rounded flex items-center justify-center font-bold text-gray-700">
                          {deliveryTime}
                        </div>
-                       <button onClick={() => setDeliveryTime(deliveryTime + 5)} className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:bg-gray-50"><Plus size={16} /></button>
+                       <button type="button" onClick={() => setDeliveryTime(deliveryTime + 5)} className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:bg-gray-50"><Plus size={16} /></button>
                     </div>
                   </div>
                 )}
@@ -319,20 +319,20 @@ export default function PosLayout() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-600">Preparation Time <span className="text-gray-400 font-normal">(Minutes)</span>:</span>
                   <div className="flex items-center gap-2">
-                     <button onClick={() => setPrepTime(Math.max(0, prepTime - 5))} className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:bg-gray-50"><Minus size={16} /></button>
+                     <button type="button" onClick={() => setPrepTime(Math.max(0, prepTime - 5))} className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:bg-gray-50"><Minus size={16} /></button>
                      <div className="w-24 h-10 border border-gray-200 rounded flex items-center justify-center font-bold text-gray-700">
                        {prepTime}
                      </div>
-                     <button onClick={() => setPrepTime(prepTime + 5)} className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:bg-gray-50"><Plus size={16} /></button>
+                     <button type="button" onClick={() => setPrepTime(prepTime + 5)} className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:bg-gray-50"><Plus size={16} /></button>
                   </div>
                 </div>
               </div>
 
               <div className="p-4 bg-gray-50 flex flex-wrap items-center justify-center gap-3">
-                <button onClick={handleConfirmAccept} className="bg-[#ff7a00] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Save</button>
-                <button onClick={handleConfirmAccept} className="bg-[#ff7a00] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Save & Print</button>
+                <button type="button" onClick={handleConfirmAccept} className="bg-[#ff7a00] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Save</button>
+                <button type="button" onClick={handleConfirmAccept} className="bg-[#ff7a00] text-white px-6 py-2 rounded font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Save & Print</button>
               </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>
@@ -363,9 +363,9 @@ function DrawerItem({ icon, label, active, color, hoverBg, onClick, isExpandable
         <span className="text-[11px] font-black uppercase tracking-widest">{label}</span>
       </div>
       {isExpandable ? (
-        <motion.div animate={{ rotate: isExpanded ? 90 : 0 }}>
+        <m.div animate={{ rotate: isExpanded ? 90 : 0 }}>
           <ChevronRight size={14} className={`transition-transform duration-300 ${active ? 'text-white' : 'text-white/40 group-hover:text-white/70'}`} />
-        </motion.div>
+        </m.div>
       ) : (
         <ChevronRight size={14} className={`transition-transform duration-300 ${active ? 'text-white' : 'text-white/40 group-hover:text-white/70 group-hover:translate-x-1'}`} />
       )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ListOrdered, Plus, Edit2, Trash2, Power, LayoutGrid, ChefHat } from 'lucide-react';
 import { KDS_STATIONS } from '../data/kdsMockData';
 import { useTheme } from '../../user/context/ThemeContext';
@@ -24,7 +24,7 @@ export default function KitchenStations() {
           </div>
         </div>
 
-        <button className="flex items-center gap-2 px-6 py-2 bg-[#ff7a00] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#ea6c00] transition-all shadow-lg shadow-[#ff7a00]/20">
+        <button type="button" className="flex items-center gap-2 px-6 py-2 bg-[#ff7a00] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#ea6c00] transition-all shadow-lg shadow-[#ff7a00]/20">
           <Plus size={14} strokeWidth={3} />
           Create New Station
         </button>
@@ -35,7 +35,7 @@ export default function KitchenStations() {
       }`}>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {stations.map((station) => (
-            <motion.div
+            <m.div
               key={station.id}
               whileHover={{ y: -4 }}
               className={`p-6 rounded-3xl border transition-all ${
@@ -47,10 +47,10 @@ export default function KitchenStations() {
                   <ChefHat size={24} />
                 </div>
                 <div className="flex gap-2">
-                  <button className={`p-2 rounded-lg hover:bg-white/5 transition-all ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>
+                  <button type="button" className={`p-2 rounded-lg hover:bg-white/5 transition-all ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>
                     <Edit2 size={16} />
                   </button>
-                  <button className={`p-2 rounded-lg hover:bg-red-500/10 hover:text-red-500 transition-all ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>
+                  <button type="button" className={`p-2 rounded-lg hover:bg-red-500/10 hover:text-red-500 transition-all ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>
                     <Power size={16} />
                   </button>
                 </div>
@@ -73,7 +73,7 @@ export default function KitchenStations() {
                   <span className="font-bold text-sm text-amber-600">Moderate</span>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </main>

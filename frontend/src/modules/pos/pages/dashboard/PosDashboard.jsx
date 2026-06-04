@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { 
   History, FileText, LayoutGrid, Clock, Banknote, 
   RefreshCw, Menu, XCircle, Calendar, Plus, 
@@ -135,14 +135,14 @@ export default function PosDashboard() {
         </div>
         
         <div className="flex items-center gap-4">
-            <button 
+            <button type="button" 
               onClick={() => navigate('/pos/tables')}
               style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
               className="text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-black/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
             >
               <Plus size={14} strokeWidth={3} /> New Order
             </button>
-           <button onClick={fetchStats} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 hover:text-slate-900 transition-all">
+           <button type="button" onClick={fetchStats} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 hover:text-slate-900 transition-all">
              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
            </button>
         </div>
@@ -225,7 +225,7 @@ export default function PosDashboard() {
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6">Terminal Ops</h3>
                 <div className="grid grid-cols-2 gap-4">
                    {operationTiles.map((tile, idx) => (
-                     <button
+                     <button type="button"
                        key={idx}
                        onClick={() => handleTileClick(tile.path)}
                        className="group flex flex-col items-center justify-center p-5 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all active:scale-95 text-center gap-3"
@@ -271,7 +271,7 @@ function StatCard({ label, value, icon, trend, color, bg, isDynamic }) {
   } : null;
 
   return (
-    <motion.div 
+    <m.div 
       whileHover={{ y: -4 }}
       className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-4 relative overflow-hidden group"
     >
@@ -294,6 +294,6 @@ function StatCard({ label, value, icon, trend, color, bg, isDynamic }) {
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
         <h4 className="text-2xl font-black text-slate-900 mt-1">{value}</h4>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

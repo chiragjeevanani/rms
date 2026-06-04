@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Search, LayoutGrid, 
   History, Globe, 
@@ -69,14 +69,14 @@ export default function MenuManagement() {
       {/* Top Header Buttons */}
       <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-end gap-2 shrink-0">
          {topButtons.map((btn, idx) => (
-           <button 
+           <button type="button" 
              key={idx}
              className="px-4 py-1.5 border border-gray-300 rounded text-[11px] font-bold text-gray-700 hover:bg-gray-50 transition-colors"
            >
              {btn.label}
            </button>
          ))}
-         <button 
+         <button type="button" 
            onClick={() => { playClickSound(); navigate(-1); }}
            className="flex items-center gap-1 px-4 py-1.5 border border-red-200 rounded text-red-500 text-[11px] font-bold hover:bg-red-50 transition-all active:scale-95 ml-2"
          >
@@ -87,7 +87,7 @@ export default function MenuManagement() {
       {/* Primary Tabs */}
       <div className="bg-white border-b border-gray-200 px-4 flex items-center gap-8 shrink-0">
          {subTabs.map((tab) => (
-           <button 
+           <button type="button" 
              key={tab.id}
              onClick={() => { playClickSound(); setActiveTab(tab.id); }}
              className={`flex flex-col items-center py-3 px-4 min-w-[70px] relative transition-all group ${activeTab === tab.id ? 'text-red-600' : 'text-gray-400 hover:text-gray-600'}`}
@@ -99,7 +99,7 @@ export default function MenuManagement() {
               <span className={`text-[10px] font-black uppercase tracking-tight mt-1 ${activeTab === tab.id ? 'text-red-600' : 'text-gray-400'}`}>
                  {tab.label}
               </span>
-              {activeTab === tab.id && <motion.div layoutId="menuTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600" />}
+              {activeTab === tab.id && <m.div layoutId="menuTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600" />}
            </button>
          ))}
       </div>
@@ -130,13 +130,13 @@ export default function MenuManagement() {
          </div>
          
          <div className="flex items-center gap-2 ml-2">
-            <button className="bg-[#C62828] text-white px-5 py-1.5 rounded text-[11px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">
+            <button type="button" className="bg-[#C62828] text-white px-5 py-1.5 rounded text-[11px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">
                Show
             </button>
-            <button className="bg-white border border-gray-300 text-gray-600 px-4 py-1.5 rounded text-[11px] font-bold hover:bg-gray-50 transition-all active:scale-95">
+            <button type="button" className="bg-white border border-gray-300 text-gray-600 px-4 py-1.5 rounded text-[11px] font-bold hover:bg-gray-50 transition-all active:scale-95">
                Clear
             </button>
-            <button className="bg-white border border-gray-300 text-gray-600 px-4 py-1.5 rounded text-[11px] font-bold hover:bg-gray-50 transition-all active:scale-95 flex items-center gap-1.5">
+            <button type="button" className="bg-white border border-gray-300 text-gray-600 px-4 py-1.5 rounded text-[11px] font-bold hover:bg-gray-50 transition-all active:scale-95 flex items-center gap-1.5">
                <RotateCcw size={14} /> Refresh
             </button>
          </div>
@@ -147,7 +147,7 @@ export default function MenuManagement() {
          {/* Categories Sidebar */}
          <div className="w-60 bg-white border-r border-gray-200 flex flex-col overflow-y-auto no-scrollbar">
             {categories.map((cat) => (
-              <button 
+              <button type="button" 
                 key={cat}
                 onClick={() => { playClickSound(); setActiveCategory(cat); }}
                 className={`flex items-center justify-between px-4 py-4 border-b border-gray-50 transition-all relative ${activeCategory === cat ? 'bg-red-50/30' : 'hover:bg-gray-50'}`}
@@ -183,13 +183,13 @@ export default function MenuManagement() {
                           <span className="text-sm font-bold text-gray-700">{item.name}</span>
                        </div>
                        <div className="flex items-center gap-3">
-                          <button 
+                          <button type="button" 
                             onClick={() => handleToggleStatus(item)}
                             className={`flex items-center gap-1.5 px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest transition-all ${item.status === 'ON' ? 'bg-[#1C1E22] text-green-400' : 'bg-red-100 text-red-600'}`}
                           >
                              {item.status}
                           </button>
-                          <button className="p-1 text-gray-300 hover:text-gray-600 transition-colors">
+                          <button type="button" className="p-1 text-gray-300 hover:text-gray-600 transition-colors">
                              <RotateCcw size={14} />
                           </button>
                        </div>
@@ -204,14 +204,14 @@ export default function MenuManagement() {
       <AnimatePresence>
         {isMarkOffPanelOpen && (
           <>
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMarkOffPanelOpen(false)}
               className="absolute inset-0 bg-black/20 z-[50]"
             />
-            <motion.div 
+            <m.div 
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -221,7 +221,7 @@ export default function MenuManagement() {
                {/* Panel Header */}
                <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                   <h2 className="text-sm font-black text-gray-800 uppercase tracking-widest">{selectedItem?.name}</h2>
-                  <button 
+                  <button type="button" 
                     onClick={() => setIsMarkOffPanelOpen(false)}
                     className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                   >
@@ -259,20 +259,20 @@ export default function MenuManagement() {
 
                {/* Panel Footer */}
                <div className="p-4 border-t border-gray-100 flex gap-2">
-                  <button 
+                  <button type="button" 
                     onClick={() => setIsMarkOffPanelOpen(false)}
                     className="flex-1 px-4 py-2 border border-gray-200 rounded text-[11px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-50 active:scale-95 transition-all"
                   >
                      Cancel
                   </button>
-                  <button 
+                  <button type="button" 
                     onClick={saveMarkOff}
                     className="flex-1 px-8 py-2 bg-[#C62828] text-white rounded text-[11px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-red-200"
                   >
                      Save Changes
                   </button>
                </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

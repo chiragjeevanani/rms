@@ -31,7 +31,7 @@ import {
   FileText,
   FileSpreadsheet
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import BranchSelector from '../../components/BranchSelector';
@@ -598,8 +598,8 @@ export default function Attendance() {
         
         <div className="flex items-center gap-3">
            <div className="flex items-center gap-1 p-1 bg-white rounded-xl shadow-sm border border-slate-100">
-              <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><LayoutGrid size={16} /></button>
-              <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><List size={16} /></button>
+              <button type="button" onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><LayoutGrid size={16} /></button>
+              <button type="button" onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}><List size={16} /></button>
            </div>
 
            <div className="h-8 w-px bg-slate-100 hidden md:block" />
@@ -610,7 +610,7 @@ export default function Attendance() {
               onSelect={setSelectedBranchFilter}
             />
 
-            <button 
+            <button type="button" 
                onClick={() => {
                  setReportModalOpen(true);
                  setReportBranchId('all');
@@ -626,11 +626,11 @@ export default function Attendance() {
             </button>
 
             <div className="flex items-center gap-3 bg-white p-1 rounded-xl shadow-sm border border-slate-100 min-w-[240px] justify-between">
-               <button onClick={() => changeDate(-1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronLeft size={16} strokeWidth={3} /></button>
+               <button type="button" onClick={() => changeDate(-1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronLeft size={16} strokeWidth={3} /></button>
                <span className={`text-[11px] font-black uppercase tracking-widest tabular-nums ${isSelectedDateToday ? 'text-slate-900' : 'text-rose-500'}`}>
                  {new Date(selectedDate).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
                </span>
-               <button onClick={() => changeDate(1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronRight size={16} strokeWidth={3} /></button>
+               <button type="button" onClick={() => changeDate(1)} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"><ChevronRight size={16} strokeWidth={3} /></button>
             </div>
         </div>
       </div>
@@ -669,7 +669,7 @@ export default function Attendance() {
           </div>
           <div className="flex items-center gap-1 p-1 bg-white rounded-xl border border-slate-100 min-w-[280px]">
              {['All', 'Chef', 'Waiter', 'Manager'].map(role => (
-                <button key={role} onClick={() => setFilterRole(role)} className={`flex-1 px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${filterRole === role ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}>{role}</button>
+                <button type="button" key={role} onClick={() => setFilterRole(role)} className={`flex-1 px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${filterRole === role ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400'}`}>{role}</button>
              ))}
           </div>
       </div>
@@ -714,7 +714,7 @@ export default function Attendance() {
                 const onLeave = status === 'LEAVE';
 
                 return (
-                  <motion.div 
+                  <m.div 
                     layout
                     key={person._id}
                     className={`bg-white rounded-[2rem] p-6 border shadow-sm relative overflow-hidden group transition-all duration-300 ${isPresent ? 'border-emerald-100' : isAbsent ? 'border-rose-100' : onLeave ? 'border-blue-100' : 'border-slate-100'}`}
@@ -742,21 +742,21 @@ export default function Attendance() {
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
-                       <button 
+                       <button type="button" 
                           disabled={!isSelectedDateToday}
                           onClick={() => handleMark(person._id, 'Present')}
                           className={`flex flex-col items-center gap-2 py-5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all ${isPresent ? 'bg-emerald-500 text-white shadow-md scale-[1.03]' : 'bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600'}`}
                        >
                           <UserCheck size={16} strokeWidth={3} /> {isPresent ? 'SELECTED' : 'PRESENT'}
                        </button>
-                       <button 
+                       <button type="button" 
                           disabled={!isSelectedDateToday}
                           onClick={() => handleMark(person._id, 'Absent')}
                           className={`flex flex-col items-center gap-2 py-5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all ${isAbsent ? 'bg-rose-500 text-white shadow-md scale-[1.03]' : 'bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600'}`}
                        >
                           <UserX size={16} strokeWidth={3} /> {isAbsent ? 'SELECTED' : 'ABSENT'}
                        </button>
-                       <button 
+                       <button type="button" 
                           disabled={!isSelectedDateToday}
                           onClick={() => handleMark(person._id, 'Leave')}
                           className={`flex flex-col items-center gap-2 py-5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all ${onLeave ? 'bg-blue-600 text-white shadow-md scale-[1.03]' : 'bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600'}`}
@@ -764,7 +764,7 @@ export default function Attendance() {
                           <PlaneTakeoff size={16} strokeWidth={3} /> {onLeave ? 'SELECTED' : 'LEAVE'}
                        </button>
                     </div>
-                  </motion.div>
+                  </m.div>
                 );
               })
             )}
@@ -810,9 +810,9 @@ export default function Attendance() {
                               <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
                                  {isSelectedDateToday ? (
                                     <>
-                                       <button onClick={() => handleMark(person._id, 'Present')} className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg shadow-sm border border-emerald-100"><UserCheck size={14} /></button>
-                                       <button onClick={() => handleMark(person._id, 'Absent')} className="p-2.5 bg-rose-50 text-rose-600 rounded-lg shadow-sm border border-rose-100"><UserX size={14} /></button>
-                                       <button onClick={() => handleMark(person._id, 'Leave')} className="p-2.5 bg-blue-50 text-blue-600 rounded-lg shadow-sm border border-blue-100"><PlaneTakeoff size={14} /></button>
+                                       <button type="button" onClick={() => handleMark(person._id, 'Present')} className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg shadow-sm border border-emerald-100"><UserCheck size={14} /></button>
+                                       <button type="button" onClick={() => handleMark(person._id, 'Absent')} className="p-2.5 bg-rose-50 text-rose-600 rounded-lg shadow-sm border border-rose-100"><UserX size={14} /></button>
+                                       <button type="button" onClick={() => handleMark(person._id, 'Leave')} className="p-2.5 bg-blue-50 text-blue-600 rounded-lg shadow-sm border border-blue-100"><PlaneTakeoff size={14} /></button>
                                     </>
                                  ) : (
                                     <Lock size={14} className="text-slate-100" />
@@ -906,7 +906,7 @@ export default function Attendance() {
                 onChange={(e) => setReportStaffId(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-[10px] font-black uppercase tracking-widest focus:border-slate-900 outline-none transition-all"
               >
-                <option value="" disabled>Choose personnel...</option>
+                <option value="" disabled>Choose personnel…</option>
                 {staff
                   .filter(s => reportBranchId === 'all' || (s.branchId?._id || s.branchId) === reportBranchId)
                   .map((s) => (

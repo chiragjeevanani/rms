@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Plus, Search, Phone, Mail, Edit2, Trash2, Shield, Package, AlertCircle, CheckCircle2, LayoutGrid, List, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import BranchSelector from '../../components/BranchSelector';
@@ -166,13 +166,13 @@ export default function Vendors() {
            {/* View Toggle */}
            {/* View Toggle */}
            <div className="bg-white border border-slate-100 rounded-[1.5rem] p-1.5 shadow-sm flex items-center gap-1">
-              <button 
+              <button type="button" 
                 onClick={() => setViewType('list')}
                 className={`p-2.5 rounded-xl transition-all ${viewType === 'list' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}
               >
                 <List size={18} />
               </button>
-              <button 
+              <button type="button" 
                 onClick={() => setViewType('grid')}
                 className={`p-2.5 rounded-xl transition-all ${viewType === 'grid' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}
               >
@@ -188,7 +188,7 @@ export default function Vendors() {
               onSelect={setSelectedBranchFilter}
             />
 
-           <button 
+           <button type="button" 
              onClick={() => handleOpenModal()}
              className="h-14 px-8 bg-[#2C2C2C] text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all group"
            >
@@ -225,7 +225,7 @@ export default function Vendors() {
         <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-slate-200">
            <Truck size={64} className="mx-auto text-slate-200 mb-6" strokeWidth={1} />
            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No vendors found</p>
-           <button onClick={() => handleOpenModal()} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Add Your First Vendor</button>
+           <button type="button" onClick={() => handleOpenModal()} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Add Your First Vendor</button>
         </div>
       ) : viewType === 'list' ? (
         /* List View */
@@ -251,7 +251,7 @@ export default function Vendors() {
                       <div>
                         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{vendor.name}</p>
                         <div className="flex gap-2 mt-1">
-                          <button className="text-[9px] font-bold text-blue-500 hover:underline uppercase tracking-widest flex items-center gap-1">
+                          <button type="button" className="text-[9px] font-bold text-blue-500 hover:underline uppercase tracking-widest flex items-center gap-1">
                             <Phone size={10} /> {vendor.phone}
                           </button>
                         </div>
@@ -278,25 +278,25 @@ export default function Vendors() {
                   </td>
                   <td className="px-8 py-6 text-right">
                      <div className="flex items-center justify-end gap-2">
-                        <button 
+                        <button type="button" 
                           onClick={() => window.location.href = `tel:${vendor.phone}`}
                           className="p-2.5 bg-slate-50 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm"
                         >
                           <Phone size={14} />
                         </button>
-                        <button 
+                        <button type="button" 
                           onClick={() => window.location.href = `mailto:${vendor.email}`}
                           className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                         >
                           <Mail size={14} />
                         </button>
-                        <button 
+                        <button type="button" 
                           onClick={() => handleOpenModal(vendor)}
                           className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                         >
                            <Edit2 size={14} strokeWidth={2.5} />
                         </button>
-                        <button 
+                        <button type="button" 
                           onClick={() => handleDeleteClick(vendor)}
                            className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                         >
@@ -313,7 +313,7 @@ export default function Vendors() {
         /* Grid View */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
            {currentItems.map((vendor) => (
-             <motion.div 
+             <m.div 
                layout
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
@@ -343,13 +343,13 @@ export default function Vendors() {
                       <span className="text-xs font-black text-slate-900 uppercase tracking-tight">{vendor.contact}</span>
                    </div>
                    <div className="flex gap-2">
-                       <button 
+                       <button type="button" 
                          onClick={() => window.location.href = `tel:${vendor.phone}`}
                          className="flex-1 py-4 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
                        >
                          <Phone size={14} /> Call
                        </button>
-                       <button 
+                       <button type="button" 
                          onClick={() => window.location.href = `mailto:${vendor.email}`}
                          className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-900 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
                        >
@@ -359,15 +359,15 @@ export default function Vendors() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3 border-t border-slate-50 pt-6">
-                   <button className="flex-1 py-4 bg-slate-50 text-slate-400 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all">View Contracts</button>
+                   <button type="button" className="flex-1 py-4 bg-slate-50 text-slate-400 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all">View Contracts</button>
                    <div className="flex gap-2">
-                      <button 
+                      <button type="button" 
                         onClick={() => handleOpenModal(vendor)}
                         className="p-4 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-900 hover:text-white transition-all"
                       >
                          <Edit2 size={14} />
                       </button>
-                      <button 
+                      <button type="button" 
                         onClick={() => handleDeleteClick(vendor)}
                         className="p-4 bg-slate-50 text-slate-400 rounded-2xl hover:bg-rose-500 hover:text-white transition-all"
                       >
@@ -375,7 +375,7 @@ export default function Vendors() {
                       </button>
                    </div>
                 </div>
-             </motion.div>
+             </m.div>
            ))}
         </div>
       )}
@@ -387,7 +387,7 @@ export default function Vendors() {
              Showing <span className="text-slate-900">{indexOfFirstItem + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastItem, filteredVendors.length)}</span> of <span className="text-slate-900">{filteredVendors.length}</span> Vendors
            </p>
            <div className="flex items-center gap-2">
-              <button 
+              <button type="button" 
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="p-3 bg-white text-slate-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-900 hover:text-white transition-all border border-slate-100 shadow-sm"
@@ -397,7 +397,7 @@ export default function Vendors() {
               
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
-                  <button 
+                  <button type="button" 
                     key={i}
                     onClick={() => handlePageChange(i + 1)}
                     className={`w-10 h-10 rounded-xl text-[10px] font-black uppercase transition-all
@@ -408,7 +408,7 @@ export default function Vendors() {
                 ))}
               </div>
 
-              <button 
+              <button type="button" 
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="p-3 bg-white text-slate-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-900 hover:text-white transition-all border border-slate-100 shadow-sm"
@@ -535,11 +535,11 @@ export default function Vendors() {
               </p>
            </div>
            <div className="flex gap-3">
-              <button 
+              <button type="button" 
                 onClick={() => setIsDeleteModalOpen(false)}
                 className="flex-1 py-4 bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-100 transition-all shadow-sm"
               >Cancel</button>
-              <button 
+              <button type="button" 
                 onClick={confirmDelete}
                 className="flex-[2] py-4 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-rose-600 transition-all shadow-xl shadow-rose-200"
               >Confirm Delete</button>

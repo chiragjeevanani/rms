@@ -5,7 +5,7 @@ import {
   Plus, Search, Filter, Layers, 
   Monitor, Coffee, Utensils, Wine
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const MOCK_TABLES = [
   { id: 1, name: 'T-01', capacity: 2, status: 'available', x: '15%', y: '20%', type: 'booth' },
@@ -33,7 +33,7 @@ export default function TableLayout() {
           <div className="flex items-center gap-3">
             <div className="flex bg-slate-50 p-1 border border-slate-100 rounded">
               {['MAIN HALL', 'BALCONY', 'VIP LOUNGE'].map(zone => (
-                <button 
+                <button type="button" 
                   key={zone}
                   onClick={() => setSelectedZone(zone)}
                   style={selectedZone === zone ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
@@ -43,7 +43,7 @@ export default function TableLayout() {
                 </button>
               ))}
             </div>
-            <button className="h-9 w-9 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-sm">
+            <button type="button" className="h-9 w-9 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-sm">
               <Plus size={18} />
             </button>
           </div>
@@ -80,7 +80,7 @@ export default function TableLayout() {
         {/* Tables */}
         <div className="relative w-full h-full max-w-5xl mx-auto">
           {MOCK_TABLES.map(table => (
-            <motion.div
+            <m.div
               key={table.id}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -120,7 +120,7 @@ export default function TableLayout() {
               >
                 <span className="text-[8px] font-black text-white uppercase tracking-widest">{table.capacity} PAX • {table.type}</span>
               </div>
-            </motion.div>
+            </m.div>
           ))}
 
           {/* Environmental Elements */}
@@ -170,7 +170,7 @@ export default function TableLayout() {
               ))}
            </div>
         </div>
-        <button 
+        <button type="button" 
           style={{ color: 'var(--pos-sidebar-color, var(--primary-color))' }}
           className="h-10 px-6 bg-stone-50 border border-stone-100 p-2.5 py-1.2 rounded-md text-[10px] font-black hover:bg-stone-100 transition-colors flex items-center gap-1.5 uppercase tracking-wider shadow-sm"
         >

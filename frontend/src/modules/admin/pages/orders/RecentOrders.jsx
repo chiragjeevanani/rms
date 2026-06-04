@@ -1,45 +1,146 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Filter, Clock, Eye, MapPin, User, Hash, Calendar, Building2, Truck } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { ShoppingBag, Search, Filter, Clock, Eye, MapPin, User, Hash, Calendar, Building2, Truck, Printer, Download } from 'lucide-react';
+import { m } from 'framer-motion';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import BranchSelector from '../../components/BranchSelector';
 import DeliveryOrders from './DeliveryOrders';
+import { jsPDF } from "jspdf";
 
 export default function RecentOrders() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [viewingOrder, setViewingOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState([]);
-  const [branches, setBranches] = useState([]);
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+  const [dataState, setDataState] = useState({
+    orders: [],
+    branches: [],
+    loading: true
+  });
+
+  const [filterState, setFilterState] = useState({
+    searchQuery: '',
+    statusFilter: 'All',
+    selectedBranchFilter: 'all',
+    orderTypeFilter: 'All',
+    currentPage: 1
+  });
+
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    viewingOrder: null,
+    formData: { status: 'Pending' }
+  });
+
+  const [branchInfo] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pos_branch_info') || localStorage.getItem('branch_info');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [selectedPrintOrder, setSelectedPrintOrder] = useState(null);
+
+  const handlePrint = (order) => {
+    setSelectedPrintOrder(order);
+    setTimeout(() => {
+      window.print();
+    }, 150);
+  };
+
+  const generatePDF = (order) => {
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [80, 120 + ((order.items || []).length * 5)]
+    });
+
+    const centerX = 40;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text(branchInfo?.branchName || 'RESTAURANT', centerX, 10, { align: 'center' });
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text(branchInfo?.address || 'Branch Address', centerX, 14, { align: 'center' });
+    doc.text(`Phone: ${branchInfo?.phone || ''}`, centerX, 17, { align: 'center' });
+    
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(5, 20, 75, 20);
+    
+    doc.setFontSize(8);
+    doc.text(`Order No: ${order.orderNumber}`, 5, 24);
+    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 5, 28);
+    doc.text(`Table: ${order.tableName}`, 5, 32);
+    doc.text(`Waiter: ${order.waiterName || ''}`, 45, 32);
+    
+    doc.line(5, 35, 75, 35);
+    doc.setFont("helvetica", "bold");
+    doc.text('Item', 5, 39);
+    doc.text('Qty', 45, 39, { align: 'center' });
+    doc.text('Amount', 75, 39, { align: 'right' });
+    doc.line(5, 41, 75, 41);
+
+    doc.setFont("helvetica", "normal");
+    let y = 45;
+    (order.items || []).forEach(item => {
+      const name = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
+      doc.text(name, 5, y);
+      doc.text(item.quantity.toString(), 45, y, { align: 'center' });
+      doc.text(((item.price || 0) * item.quantity).toFixed(2), 75, y, { align: 'right' });
+      y += 5;
+    });
+
+    doc.line(5, y, 75, y);
+    y += 5;
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text('GRAND TOTAL:', 45, y, { align: 'right' });
+    doc.text(`Rs. ${(order.grandTotal || 0).toFixed(2)}`, 75, y, { align: 'right' });
+    
+    y += 8;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7);
+    doc.text('Thank you!', centerX, y, { align: 'center' });
+
+    doc.save(`Order_${order.orderNumber}.pdf`);
+  };
+
   const location = useLocation();
-  const [orderTypeFilter, setOrderTypeFilter] = useState('All');
-  
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
   const recordsPerPage = 5;
 
+  const { orders, branches, loading } = dataState;
+  const { searchQuery, statusFilter, selectedBranchFilter, orderTypeFilter, currentPage } = filterState;
+  const { isOpen: isModalOpen, viewingOrder, formData } = modalState;
+
+  const setOrders = (val) => setDataState(prev => ({ ...prev, orders: typeof val === 'function' ? val(prev.orders) : val }));
+  const setBranches = (val) => setDataState(prev => ({ ...prev, branches: typeof val === 'function' ? val(prev.branches) : val }));
+  const setLoading = (val) => setDataState(prev => ({ ...prev, loading: typeof val === 'function' ? val(prev.loading) : val }));
+
+  const setSearchQuery = (val) => setFilterState(prev => ({ ...prev, searchQuery: typeof val === 'function' ? val(prev.searchQuery) : val }));
+  const setStatusFilter = (val) => setFilterState(prev => ({ ...prev, statusFilter: typeof val === 'function' ? val(prev.statusFilter) : val }));
+  const setSelectedBranchFilter = (val) => setFilterState(prev => ({ ...prev, selectedBranchFilter: typeof val === 'function' ? val(prev.selectedBranchFilter) : val }));
+  const setOrderTypeFilter = (val) => setFilterState(prev => ({ ...prev, orderTypeFilter: typeof val === 'function' ? val(prev.orderTypeFilter) : val }));
+  const setCurrentPage = (val) => setFilterState(prev => ({ ...prev, currentPage: typeof val === 'function' ? val(prev.currentPage) : val }));
+
+  const setIsModalOpen = (val) => setModalState(prev => ({ ...prev, isOpen: typeof val === 'function' ? val(prev.isOpen) : val }));
+  const setViewingOrder = (val) => setModalState(prev => ({ ...prev, viewingOrder: typeof val === 'function' ? val(prev.viewingOrder) : val }));
+  const setFormData = (val) => setModalState(prev => ({ ...prev, formData: typeof val === 'function' ? val(prev.formData) : val }));
+
   useEffect(() => {
-    const path = location.pathname.split('/').pop();
-    if (path === 'dine-in') setOrderTypeFilter('Dine-In');
-    else if (path === 'takeaway') setOrderTypeFilter('Takeaway');
-    else if (path === 'delivery') setOrderTypeFilter('Delivery');
-    else if (path === 'recent') setOrderTypeFilter('All');
+    const path = location.pathname;
+    if (path.endsWith('/dine-in')) {
+      setOrderTypeFilter('Dine-In');
+    } else if (path.endsWith('/takeaway')) {
+      setOrderTypeFilter('Takeaway');
+    } else if (path.endsWith('/delivery')) {
+      setOrderTypeFilter('Delivery');
+    } else {
+      setOrderTypeFilter('All');
+    }
     setCurrentPage(1);
   }, [location.pathname]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, selectedBranchFilter, searchQuery, orderTypeFilter]);
-
-  const [formData, setFormData] = useState({
-    status: 'Pending'
-  });
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -156,21 +257,21 @@ export default function RecentOrders() {
               label="Dine-In" 
               count={dineInCount} 
               active={orderTypeFilter === 'Dine-In'} 
-              onClick={() => setOrderTypeFilter(orderTypeFilter === 'Dine-In' ? 'All' : 'Dine-In')}
+              onClick={() => navigate(orderTypeFilter === 'Dine-In' ? '/admin/orders/recent' : '/admin/orders/dine-in')}
               color="bg-blue-500"
             />
             <SummaryCard 
               label="Takeaway" 
               count={takeawayCount} 
               active={orderTypeFilter === 'Takeaway'} 
-              onClick={() => setOrderTypeFilter(orderTypeFilter === 'Takeaway' ? 'All' : 'Takeaway')}
+              onClick={() => navigate(orderTypeFilter === 'Takeaway' ? '/admin/orders/recent' : '/admin/orders/takeaway')}
               color="bg-amber-500"
             />
             <SummaryCard 
               label="Delivery" 
               count={deliveryCount} 
               active={orderTypeFilter === 'Delivery'} 
-              onClick={() => setOrderTypeFilter(orderTypeFilter === 'Delivery' ? 'All' : 'Delivery')}
+              onClick={() => navigate(orderTypeFilter === 'Delivery' ? '/admin/orders/recent' : '/admin/orders/delivery')}
               color="bg-rose-500"
             />
           </div>
@@ -182,7 +283,7 @@ export default function RecentOrders() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={14} />
           <input 
             type="text" 
-            placeholder="SEARCH TODAY'S RECORDS..."
+            placeholder="SEARCH TODAY'S RECORDS…"
             className="w-full bg-white border border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -256,11 +357,27 @@ export default function RecentOrders() {
                       {order.status}
                     </div>
                   </td>
-                  <td className="px-8 py-6 text-right">
-                    <button 
-                      onClick={() => handleOpenView(order)}
-                      className="p-3 bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-white border border-slate-100 rounded-xl transition-all hover:shadow-lg outline-none"
-                    ><Eye size={18} /></button>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        type="button" 
+                        onClick={() => handleOpenView(order)}
+                        className="p-2 text-slate-400 hover:text-[#ff7a00] bg-white border border-slate-200 rounded-lg shadow-sm transition-all"
+                        title="View Details"
+                      ><Eye size={14} /></button>
+                      <button 
+                        type="button" 
+                        onClick={() => handlePrint(order)}
+                        className="p-2 text-slate-400 hover:text-emerald-600 bg-white border border-slate-200 rounded-lg shadow-sm transition-all"
+                        title="Print Receipt"
+                      ><Printer size={14} /></button>
+                      <button 
+                        type="button" 
+                        onClick={() => generatePDF(order)}
+                        className="p-2 text-slate-400 hover:text-blue-600 bg-white border border-slate-200 rounded-lg shadow-sm transition-all"
+                        title="Download PDF"
+                      ><Download size={14} /></button>
+                    </div>
                   </td>
                 </tr>
               )) : (
@@ -286,7 +403,7 @@ export default function RecentOrders() {
               Showing <span className="text-slate-900">{indexOfFirstRecord + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastRecord, filteredOrders.length)}</span> of <span className="text-slate-900">{filteredOrders.length}</span> results
             </p>
             <div className="flex items-center gap-2">
-              <button
+              <button type="button"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
@@ -299,7 +416,7 @@ export default function RecentOrders() {
               </button>
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
-                  <button
+                  <button type="button"
                     key={i + 1}
                     onClick={() => setCurrentPage(i + 1)}
                     className={`w-8 h-8 text-[10px] font-black rounded-lg border transition-all ${
@@ -312,7 +429,7 @@ export default function RecentOrders() {
                   </button>
                 ))}
               </div>
-              <button
+              <button type="button"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
@@ -341,21 +458,21 @@ export default function RecentOrders() {
           <div className="space-y-8">
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Source Entity</label>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Source Entity</span>
                 <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
                    <User size={14} className="text-brand-500" />
                    {viewingOrder.waiterName}
                 </div>
               </div>
               <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Sector</label>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Sector</span>
                 <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
                    <MapPin size={14} className="text-brand-500" />
                    {viewingOrder.tableName}
                 </div>
               </div>
               <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Branch</label>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Branch</span>
                 <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
                    <Building2 size={14} className="text-brand-500" />
                    {branches.find(b => b._id === (typeof viewingOrder.branchId === 'object' ? viewingOrder.branchId?._id : viewingOrder.branchId))?.branchName || 'Global/Unknown'}
@@ -364,7 +481,7 @@ export default function RecentOrders() {
             </div>
             
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-2">Status Lifecycle Management</label>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-2">Status Lifecycle Management</span>
               <div className="grid grid-cols-3 gap-2">
                 {(() => {
                   const type = viewingOrder.orderType?.toLowerCase();
@@ -436,16 +553,92 @@ export default function RecentOrders() {
                 </div>
               </div>
             </div>
+
+            <div className="flex items-center gap-2.5 mt-4">
+              <button type="button" 
+                onClick={() => { handlePrint(viewingOrder); }}
+                className="flex-1 py-3 bg-[#ff7a00] text-white text-[11px] font-black uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-brand-500/15 hover:bg-[#ea6c00]"
+              >
+                <Printer size={14} />
+                Print Receipt
+              </button>
+              <button type="button" 
+                onClick={() => { generatePDF(viewingOrder); }}
+                className="flex-1 py-3 bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-900/15 hover:bg-blue-700"
+              >
+                <Download size={14} />
+                Download PDF
+              </button>
+            </div>
           </div>
         )}
       </AdminModal>
+
+      {/* Hidden Print Layer */}
+      <div className="hidden print:block absolute inset-0 bg-white text-slate-900" id="printable-admin-receipt">
+         {selectedPrintOrder && (
+            <div className="w-full max-w-[70mm] mx-auto font-mono text-[10px] px-2">
+               <div className="text-center mb-4 border-b border-dashed pb-4 px-2">
+                  <h1 className="text-base font-black uppercase break-words">{branchInfo?.branchName || 'RESTAURANT'}</h1>
+                  <p className="text-[8px] mt-1 break-words leading-relaxed whitespace-normal text-center">{branchInfo?.address}</p>
+                  <p className="text-[8px] mt-0.5">Ph: {branchInfo?.phone}</p>
+               </div>
+               <div className="flex justify-between mb-1">
+                  <span>Order: {selectedPrintOrder.orderNumber}</span>
+                  <span>{new Date(selectedPrintOrder.createdAt).toLocaleDateString()}</span>
+               </div>
+               <div className="flex justify-between mb-4">
+                  <span>Table: {selectedPrintOrder.tableName}</span>
+                  <span>{new Date(selectedPrintOrder.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+               </div>
+               <div className="border-y border-dashed py-2 mb-4">
+                  <div className="flex font-bold mb-1">
+                     <span className="flex-1">Item</span>
+                     <span className="w-8 text-center">Qty</span>
+                     <span className="w-16 text-right">Amt</span>
+                  </div>
+                  {(selectedPrintOrder.items || []).map((item, i) => (
+                     <div key={i} className="flex py-0.5">
+                        <span className="flex-1 uppercase">{item.name}</span>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <span className="w-16 text-right">{((item.price || 0) * item.quantity).toFixed(2)}</span>
+                     </div>
+                  ))}
+               </div>
+               <div className="flex justify-between font-bold text-sm border-t border-slate-900 pt-1 mt-1 uppercase">
+                  <span>Total:</span>
+                  <span>₹{(selectedPrintOrder.grandTotal || 0).toFixed(2)}</span>
+               </div>
+               <p className="text-center italic opacity-60 text-[8px] tracking-widest mt-10 uppercase">Thank you!</p>
+            </div>
+         )}
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #printable-admin-receipt, #printable-admin-receipt * {
+            visibility: visible;
+          }
+          #printable-admin-receipt {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+          }
+        }
+      `}} />
     </div>
   );
 }
 
 function SummaryCard({ label, count, active, onClick, color }) {
   return (
-    <button 
+    <button type="button" 
       onClick={onClick}
       className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-all ${
         active 

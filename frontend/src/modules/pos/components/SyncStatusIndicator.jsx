@@ -1,6 +1,6 @@
 import React from 'react';
 import { Cloud, CloudOff, RefreshCw } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useSync } from '../../../context/SyncContext';
 
 export default function SyncStatusIndicator() {
@@ -14,7 +14,7 @@ export default function SyncStatusIndicator() {
       <AnimatePresence mode="wait">
         {!isOnline ? (
           // 1. Offline Mode State
-          <motion.button
+          <m.button
             key="offline"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -33,10 +33,10 @@ export default function SyncStatusIndicator() {
                 {pendingCount}
               </span>
             )}
-          </motion.button>
+          </m.button>
         ) : pendingCount > 0 ? (
           // 2. Syncing Queue State
-          <motion.button
+          <m.button
             key="pending"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -53,10 +53,10 @@ export default function SyncStatusIndicator() {
             <span className="bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full ml-1 animate-bounce">
               {pendingCount}
             </span>
-          </motion.button>
+          </m.button>
         ) : (
           // 3. Fully Cloud-Synced State
-          <motion.div
+          <m.div
             key="synced"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -67,7 +67,7 @@ export default function SyncStatusIndicator() {
             <span className="text-[9px] font-black uppercase tracking-widest leading-none">
               Cloud Synced
             </span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

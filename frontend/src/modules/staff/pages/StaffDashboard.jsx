@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   LayoutGrid,
   Map,
@@ -151,7 +151,7 @@ export default function StaffDashboard() {
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Shift Hub</h1>
           </div>
           <div className="flex items-center gap-2">
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate('/staff/profile')}
               className="w-12 h-12 rounded-2xl bg-white overflow-hidden flex items-center justify-center border-2 border-slate-100 shadow-sm"
@@ -163,7 +163,7 @@ export default function StaffDashboard() {
                   {staff?.name?.charAt(0) || <Users size={18} />}
                 </div>
               )}
-            </motion.button>
+            </m.button>
           </div>
         </div>
       </header>
@@ -179,7 +179,7 @@ export default function StaffDashboard() {
             ) : (
               <>
                 {/* Row 1: Tables */}
-                <motion.div
+                <m.div
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/staff/tables')}
                   className="p-5 rounded-[2rem] bg-slate-100 text-slate-900 border border-slate-200 shadow-sm flex flex-col gap-4"
@@ -191,9 +191,9 @@ export default function StaffDashboard() {
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Available</span>
                     <span className="text-3xl font-black">{(snapshot?.availableTables ?? 0).toString().padStart(2, '0')}</span>
                   </div>
-                </motion.div>
+                </m.div>
 
-                <motion.div
+                <m.div
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/staff/tables')}
                   className="p-5 rounded-[2rem] bg-slate-900 text-white shadow-xl shadow-slate-900/10 flex flex-col gap-4 relative overflow-hidden"
@@ -208,10 +208,10 @@ export default function StaffDashboard() {
                   <div className="absolute top-4 right-4 text-emerald-400">
                     <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                   </div>
-                </motion.div>
+                </m.div>
 
                 {/* Row 2: Orders Flow */}
-                <motion.div
+                <m.div
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/staff/active-orders')}
                   className="p-5 rounded-[2rem] bg-amber-500 text-white shadow-xl shadow-amber-500/10 flex flex-col gap-4"
@@ -223,9 +223,9 @@ export default function StaffDashboard() {
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Pending</span>
                     <span className="text-3xl font-black">{(snapshot?.pendingOrders ?? 0).toString().padStart(2, '0')}</span>
                   </div>
-                </motion.div>
+                </m.div>
 
-                <motion.div
+                <m.div
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/staff/active-orders')}
                   className="p-5 rounded-[2rem] bg-emerald-500 text-white shadow-xl shadow-emerald-500/10 flex flex-col gap-4"
@@ -237,10 +237,10 @@ export default function StaffDashboard() {
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Ready</span>
                     <span className="text-3xl font-black">{(snapshot?.readyPickups ?? 0).toString().padStart(2, '0')}</span>
                   </div>
-                </motion.div>
+                </m.div>
 
                 {/* Row 3: Totals */}
-                <motion.div
+                <m.div
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/staff/active-orders')}
                   className="p-5 rounded-[2rem] bg-purple-500 text-white shadow-xl shadow-purple-500/10 flex flex-col gap-4"
@@ -252,9 +252,9 @@ export default function StaffDashboard() {
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">In Process</span>
                     <span className="text-3xl font-black">{(snapshot?.activeOrders ?? 0).toString().padStart(2, '0')}</span>
                   </div>
-                </motion.div>
+                </m.div>
 
-                <motion.div
+                <m.div
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/staff/active-orders')}
                   className="p-5 rounded-[2rem] bg-indigo-500 text-white shadow-xl shadow-indigo-500/10 flex flex-col gap-4"
@@ -266,10 +266,10 @@ export default function StaffDashboard() {
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Completed</span>
                     <span className="text-3xl font-black">{(snapshot?.completedOrders ?? 0).toString().padStart(2, '0')}</span>
                   </div>
-                </motion.div>
+                </m.div>
 
                 {/* Row 4: Attendance (Full Width) */}
-                <motion.div
+                <m.div
                   whileTap={{ scale: 0.98 }}
                   onClick={markPresent}
                   className={`col-span-2 p-6 rounded-[2.5rem] shadow-xl flex items-center justify-between cursor-pointer transition-all ${attendanceStatus === 'Present'
@@ -295,7 +295,7 @@ export default function StaffDashboard() {
                     }`}>
                     {attendanceStatus === 'Present' ? <ChevronRight size={20} /> : <PlusCircle size={20} />}
                   </div>
-                </motion.div>
+                </m.div>
               </>
             )}
           </div>
@@ -305,7 +305,7 @@ export default function StaffDashboard() {
         <section>
           <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 px-2">Quick Actions</h2>
           <div className="grid grid-cols-1 gap-3">
-            <button
+            <button type="button"
               onClick={() => navigate('/staff/table/69cf6f128c8e06df8f5944a3')}
               className="flex items-center gap-3 p-6 rounded-3xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all text-left group cursor-pointer"
             >
@@ -361,7 +361,7 @@ export default function StaffDashboard() {
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Shift Live</span>
             </div>
-            <button onClick={() => navigate('/staff/tables')} className="text-[9px] font-black text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors flex items-center gap-1.5">
+            <button type="button" onClick={() => navigate('/staff/tables')} className="text-[9px] font-black text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors flex items-center gap-1.5">
               View Tables <ChevronRight size={12} />
             </button>
           </div>

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { CheckCircle2, ArrowRight, Star, Heart, Share2 } from 'lucide-react';
 
 export default function OrderSuccessPage() {
@@ -14,16 +14,16 @@ export default function OrderSuccessPage() {
       </div>
 
       <div className="relative z-10 text-center max-w-sm w-full">
-        <motion.div
+        <m.div
           initial={{ scale: 0, rotate: -20 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', damping: 15, stiffness: 200 }}
           className="w-32 h-32 bg-brand-500 rounded-[2.5rem] flex items-center justify-center mb-10 mx-auto shadow-2xl shadow-brand-500/30 border-b-8 border-black/20"
         >
           <CheckCircle2 size={64} className="text-charcoal-900" strokeWidth={3} />
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
            initial={{ opacity: 0, y: 20 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ delay: 0.3 }}
@@ -32,16 +32,16 @@ export default function OrderSuccessPage() {
           <p className="text-charcoal-600 dark:text-charcoal-400 font-medium mb-12 italic opacity-90 dark:opacity-80 px-4">
              "Your order is now a mission for our chefs. Get ready for a flavor explosion!"
           </p>
-        </motion.div>
+        </m.div>
 
         <div className="space-y-4 mb-16">
-           <motion.button
+           <m.button
              whileTap={{ scale: 0.95 }}
              onClick={() => navigate('/menu')}
              className="w-full bg-charcoal-900 dark:bg-white text-white dark:text-charcoal-900 py-6 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-2xl shadow-charcoal-900/20"
            >
              Back to Main Menu
-           </motion.button>
+           </m.button>
         </div>
 
       </div>

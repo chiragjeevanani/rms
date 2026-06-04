@@ -6,7 +6,7 @@ import {
   MoreVertical, Edit2, ShieldCheck,
   CreditCard, Menu
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { usePos } from '../../context/PosContext';
 import PosTopNavbar from '../../components/PosTopNavbar';
 
@@ -38,7 +38,7 @@ export default function CustomerList() {
               </p>
             </div>
           </div>
-          <button 
+          <button type="button" 
             style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
             className="h-10 px-6 text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2 outline-none"
           >
@@ -66,7 +66,7 @@ export default function CustomerList() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button className="h-10 px-4 bg-white border border-slate-200 text-slate-400 rounded text-[10px] font-black uppercase tracking-widest hover:text-slate-900 flex items-center gap-2 transition-all outline-none">
+          <button type="button" className="h-10 px-4 bg-white border border-slate-200 text-slate-400 rounded text-[10px] font-black uppercase tracking-widest hover:text-slate-900 flex items-center gap-2 transition-all outline-none">
             <Filter size={14} />
             Data Segments
           </button>
@@ -76,7 +76,7 @@ export default function CustomerList() {
       <div className="flex-1 p-8 overflow-y-auto no-scrollbar">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {MOCK_CUSTOMERS.map(cust => (
-            <motion.div 
+            <m.div 
               key={cust.id}
               whileHover={{ y: -4 }}
               style={{
@@ -115,7 +115,7 @@ export default function CustomerList() {
                     </div>
                   </div>
                 </div>
-                <button className="p-1 text-slate-200 hover:text-slate-900 transition-colors">
+                <button type="button" className="p-1 text-slate-200 hover:text-slate-900 transition-colors">
                   <MoreVertical size={16} />
                 </button>
               </div>
@@ -151,21 +151,21 @@ export default function CustomerList() {
               </div>
 
               <div className="mt-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                <button 
+                <button type="button" 
                   style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
                   className="flex-1 py-2 text-white rounded text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md flex items-center justify-center gap-2"
                 >
                   <CreditCard size={12} />
                   POS Link
                 </button>
-                <button className="p-2 bg-slate-50 text-slate-400 border border-slate-200 rounded hover:text-slate-900 transition-all">
+                <button type="button" className="p-2 bg-slate-50 text-slate-400 border border-slate-200 rounded hover:text-slate-900 transition-all">
                   <History size={14} />
                 </button>
-                <button className="p-2 bg-slate-50 text-slate-400 border border-slate-200 rounded hover:text-slate-900 transition-all">
+                <button type="button" className="p-2 bg-slate-50 text-slate-400 border border-slate-200 rounded hover:text-slate-900 transition-all">
                   <Edit2 size={14} />
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>

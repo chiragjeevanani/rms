@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, User, Phone, ArrowRight, CheckCircle2 } from 'lucide-react';
 
@@ -29,7 +29,7 @@ export default function UserSignupPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 flex items-center justify-center p-6">
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
@@ -39,7 +39,7 @@ export default function UserSignupPage() {
           </div>
           <h2 className="text-3xl font-display font-bold text-charcoal-900 dark:text-white mb-2">Welcome to the Family!</h2>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-charcoal-500 italic">Prepping your table in 2 seconds...</p>
-        </motion.div>
+        </m.div>
       </div>
     );
   }

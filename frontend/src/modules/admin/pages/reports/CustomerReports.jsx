@@ -16,7 +16,7 @@ export default function CustomerReports() {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Identity Intelligence</h1>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Consumer Behavior & Retention Metrics</p>
         </div>
-        <button className="h-10 px-6 bg-slate-900 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all outline-none">
+        <button type="button" className="h-10 px-6 bg-slate-900 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 transition-all outline-none">
           <Download size={14} />
           Cohort Export
         </button>

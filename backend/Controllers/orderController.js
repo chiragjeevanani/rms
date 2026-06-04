@@ -3,6 +3,7 @@ const Table = require('../Models/Table');
 const mongoose = require('mongoose');
 const { sendToTopic } = require('../Utils/firebaseAdmin');
 const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
+const { upsertCustomerInternal } = require('./customerController');
 
 // 1. Create a dynamic order number helper
 const generateOrderNumber = async () => {
@@ -84,6 +85,16 @@ const createOrder = async (req, res) => {
         if (io) io.emit('tableStatusChanged');
       }
 
+      // Upsert customer profile if data is available
+      if (customer && customer.mobile) {
+        await upsertCustomerInternal({
+          name: customer.name,
+          mobile: customer.mobile,
+          discountType: discount?.type,
+          discountValue: discount?.amount
+        }, grandTotal || order.grandTotal);
+      }
+
       return res.status(200).json({ success: true, message: 'Order updated successfully', data: order });
     }
 
@@ -134,6 +145,16 @@ const createOrder = async (req, res) => {
          );
        }
        if (io) io.emit('tableStatusChanged');
+    }
+
+    // Upsert customer profile if data is available
+    if (customer && customer.mobile) {
+      await upsertCustomerInternal({
+        name: customer.name,
+        mobile: customer.mobile,
+        discountType: discount?.type,
+        discountValue: discount?.amount
+      }, grandTotal || newOrder.grandTotal);
     }
 
     res.status(201).json({ success: true, data: newOrder });
@@ -233,6 +254,16 @@ const settleOrder = async (req, res) => {
     if (io) {
       io.emit('orderPaid', order);
       io.emit('tableStatusChanged');
+    }
+
+    // Upsert customer profile if data is available upon settlement
+    if (order.customer && order.customer.mobile) {
+      await upsertCustomerInternal({
+        name: order.customer.name,
+        mobile: order.customer.mobile,
+        discountType: order.discount?.type,
+        discountValue: order.discount?.amount
+      }, order.grandTotal);
     }
 
     res.json({ success: true, message: 'Order Settled Successfully', data: order });

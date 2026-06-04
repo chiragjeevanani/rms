@@ -5,7 +5,7 @@ import {
   ToggleLeft, ToggleRight, List, Loader2, Building2, Upload, Download
 } from 'lucide-react';
 import BranchSelector from '../../components/BranchSelector';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import Skeleton from '../../components/ui/Skeleton';
@@ -315,21 +315,21 @@ export default function Modifiers() {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Configure sizes, add-ons, and special instructions</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button type="button" 
             onClick={downloadModifierTemplate}
             className="h-12 px-6 bg-amber-50 text-amber-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-amber-200 hover:bg-amber-100 active:scale-95 transition-all outline-none"
           >
             <Download size={16} />
             Download Sample
           </button>
-          <button 
+          <button type="button" 
             onClick={() => setIsImportModalOpen(true)}
             className="h-12 px-6 bg-slate-100 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-slate-200 hover:bg-slate-200 active:scale-95 transition-all outline-none"
           >
             <Upload size={16} />
             Import CSV
           </button>
-          <button 
+          <button type="button" 
             onClick={() => handleOpenModal()}
             className="h-12 px-8 bg-[#2C2C2C] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black active:scale-95 transition-all outline-none"
           >
@@ -353,7 +353,7 @@ export default function Modifiers() {
 
         <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-2xl w-full md:w-auto">
           {['All', 'Published', 'Draft'].map((status) => (
-            <button
+            <button type="button"
               key={status}
               onClick={() => setFilterStatus(status)}
               className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${filterStatus === status ? 'bg-[#2C2C2C] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
@@ -421,7 +421,7 @@ export default function Modifiers() {
               return branchId === selectedBranchFilter;
             })
             .map((mod) => (
-            <motion.div 
+            <m.div 
               key={mod._id}
               whileHover={{ y: -6 }}
               className="bg-white border border-slate-100 p-6 rounded-[2.5rem] shadow-xl hover:shadow-2xl transition-all group relative border-amber-50 flex flex-col min-h-[290px]"
@@ -452,19 +452,19 @@ export default function Modifiers() {
               </div>
 
               <div className="pt-4 border-t border-slate-50 flex items-center gap-2 mt-auto">
-                <button 
+                <button type="button" 
                   onClick={() => handleOpenModal(mod)}
                   className="flex-1 h-10 bg-slate-50 text-slate-600 text-[8px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2"
                 >
                    <Edit2 size={12} />
                    Edit
                 </button>
-                <button 
+                <button type="button" 
                   onClick={() => handleDeleteClick(mod)}
                   className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all flex-shrink-0"
                 ><Trash2 size={14} /></button>
 
-                <button 
+                <button type="button" 
                   onClick={() => toggleStatus(mod)}
                   className={`w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-white transition-all border border-transparent hover:border-slate-100 shadow-sm flex-shrink-0 ${mod.status === 'Published' ? 'text-emerald-500' : 'text-slate-300'}`}
                   title={`Status: ${mod.status}`}
@@ -472,7 +472,7 @@ export default function Modifiers() {
                    <div className={`w-2.5 h-2.5 rounded-full ${mod.status === 'Published' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       )}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChefHat, Lock, ArrowRight, HardDrive, Cpu, Wifi, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -61,7 +61,7 @@ export default function KdsLoginPage() {
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10">
         
         {/* Left Side: Kitchen System Information & Diagnostics */}
-        <motion.div 
+        <m.div 
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           className="hidden lg:flex flex-col gap-10"
@@ -108,10 +108,10 @@ export default function KdsLoginPage() {
             <HardDrive size={20} className="text-brand-500" />
             <span className="text-xs font-bold text-charcoal-300 uppercase tracking-widest">Session Persistence Enabled</span>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Right Side: Login Interface */}
-        <motion.div 
+        <m.div 
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="w-full max-w-md mx-auto"
@@ -189,7 +189,7 @@ export default function KdsLoginPage() {
               </p>
             </footer>
           </div>
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Mobile Footer Decor */}

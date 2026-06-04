@@ -6,7 +6,7 @@ import {
   Edit3, Trash2, TrendingUp, Users, ShoppingBag,
   FileText, X, Save
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function BranchDetails() {
@@ -137,7 +137,7 @@ export default function BranchDetails() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button 
+          <button type="button" 
             onClick={() => navigate('/admin/branches')}
             className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-slate-900 transition-all shadow-sm"
           >
@@ -149,7 +149,7 @@ export default function BranchDetails() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          <button type="button" 
             onClick={handleOpenModal}
             className="h-10 px-6 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-200 transition-all"
           >
@@ -235,13 +235,13 @@ export default function BranchDetails() {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <m.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <h3 className="text-[14px] font-black uppercase tracking-tight text-slate-900">
                     Update Branch Details
                   </h3>
-                  <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={20} /></button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={20} /></button>
                </div>
 
                <form onSubmit={handleSave} className="p-8 overflow-y-auto no-scrollbar space-y-6">
@@ -322,7 +322,7 @@ export default function BranchDetails() {
                     </button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

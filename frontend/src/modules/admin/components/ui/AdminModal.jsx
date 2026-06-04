@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, Save, Plus, Edit3, Trash2, AlertCircle } from 'lucide-react';
 
 export default function AdminModal({ 
@@ -19,14 +19,14 @@ export default function AdminModal({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -47,7 +47,7 @@ export default function AdminModal({
                       )}
                    </div>
                 </div>
-                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all"><X size={18} /></button>
+                <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all"><X size={18} /></button>
              </div>
 
               {/* Modal Body */}
@@ -83,7 +83,7 @@ export default function AdminModal({
                    </div>
                  )}
               </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

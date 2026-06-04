@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Plus, Info, Clock, Printer, Car, Search, X, ShoppingBag } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import PosTopNavbar from '../../components/PosTopNavbar';
 import { usePos } from '../../context/PosContext';
 import { printKOTReceipt } from '../../utils/printKOT';
@@ -98,7 +98,7 @@ export default function TableView() {
           TABLE VIEW
         </h1>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button
+          <button type="button"
             onClick={() => sync()}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
           >
@@ -119,7 +119,7 @@ export default function TableView() {
            >
               Dine In
            </div>
-           <button 
+           <button type="button" 
              onClick={() => navigate('/pos/order/Takeaway')}
              className="px-6 py-2.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors"
            >
@@ -157,7 +157,7 @@ export default function TableView() {
                 const total = order?.total || order?.items?.reduce((s, i) => s + i.price * i.quantity, 0) || 0;
 
                 return (
-                  <motion.div
+                  <m.div
                     key={`${id}-${idx}`}
                     whileHover={{ scale: 1.05, zIndex: 5 }}
                     whileTap={{ scale: 0.96 }}
@@ -188,7 +188,7 @@ export default function TableView() {
                     ) : (
                       <span style={{ fontWeight: 800, fontSize: 12, color: cfg.text, letterSpacing: '-0.01em' }}>{id}</span>
                     )}
-                  </motion.div>
+                  </m.div>
                 );
               })}
             </div>
@@ -208,18 +208,18 @@ export default function TableView() {
               {Object.values(carOrders)
                 .filter(c => !carSearch || c.carNumber.toLowerCase().includes(carSearch.toLowerCase()))
                 .map(car => (
-                  <motion.div
+                  <m.div
                     key={car.carNumber}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.96 }}
                     style={{ height: 62, background: S.running.bg, border: `1.5px solid ${S.running.border}`, borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
                   >
                     <span style={{ fontSize: 10, fontWeight: 900, color: '#fff' }}>🚗 {car.carNumber.slice(-4)}</span>
-                    <button onClick={(e) => { e.stopPropagation(); clearCarOrder(car.carNumber); }}
+                    <button type="button" onClick={(e) => { e.stopPropagation(); clearCarOrder(car.carNumber); }}
                       style={{ position: 'absolute', top: 3, right: 3, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                       <X size={10} color="rgba(255,255,255,0.7)" />
                     </button>
-                  </motion.div>
+                  </m.div>
                 ))}
             </div>
           </div>
@@ -230,17 +230,17 @@ export default function TableView() {
       {/* Add Car Modal */}
       <AnimatePresence>
         {showAddCar && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             onClick={() => setShowAddCar(false)}
           >
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+            <m.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
               onClick={e => e.stopPropagation()}
               style={{ background: '#fff', borderRadius: 12, padding: 24, width: 280, boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <h3 style={{ margin: 0, fontSize: 14, fontWeight: 900, textTransform: 'uppercase', color: '#111' }}>New Car Order</h3>
-                <button onClick={() => setShowAddCar(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} color="#9CA3AF" /></button>
+                <button type="button" onClick={() => setShowAddCar(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} color="#9CA3AF" /></button>
               </div>
               <input
                 type="text" autoFocus
@@ -251,18 +251,18 @@ export default function TableView() {
                 style={{ width: '100%', border: '1.5px solid #E5E7EB', borderRadius: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', outline: 'none', marginBottom: 14, boxSizing: 'border-box', background: '#F9FAFB' }}
               />
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setShowAddCar(false)}
+                <button type="button" onClick={() => setShowAddCar(false)}
                   style={{ flex: 1, padding: '10px 0', border: '1.5px solid #E5E7EB', borderRadius: 8, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', background: '#fff', cursor: 'pointer', color: '#6B7280' }}>
                   Cancel
                 </button>
-                <button
+                <button type="button"
                   onClick={() => { if (!newCarNum.trim()) return; addCarOrder(newCarNum); setNewCarNum(''); setShowAddCar(false); }}
                   style={{ flex: 1, padding: '10px 0', border: 'none', borderRadius: 8, fontWeight: 800, fontSize: 11, textTransform: 'uppercase', background: 'var(--pos-sidebar-color, var(--primary-color, #F57C00))', color: '#fff', cursor: 'pointer' }}>
                   🚗 Create
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 

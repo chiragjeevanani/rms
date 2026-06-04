@@ -5,7 +5,7 @@ import {
   Search, Plus, Filter, CheckCircle2,
   XCircle, ArrowRight, User, Menu
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { usePos } from '../../context/PosContext';
 import PosTopNavbar from '../../components/PosTopNavbar';
 
@@ -69,14 +69,14 @@ export default function Reservations() {
             </div>
           </div>
           <div className="flex bg-slate-50 p-1 border border-slate-100 rounded">
-            <button 
+            <button type="button" 
               onClick={() => setActiveView('upcoming')}
               style={activeView === 'upcoming' ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
               className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${activeView === 'upcoming' ? 'text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
             >
               List View
             </button>
-            <button 
+            <button type="button" 
               onClick={() => setActiveView('calendar')}
               style={activeView === 'calendar' ? { backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' } : {}}
               className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded transition-all ${activeView === 'calendar' ? 'text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
@@ -105,7 +105,7 @@ export default function Reservations() {
               className="w-full bg-slate-50 border border-slate-100 rounded py-2.5 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none transition-all underline decoration-transparent"
             />
           </div>
-          <button 
+          <button type="button" 
             onClick={() => setIsModalOpen(true)}
             style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
             className="h-10 px-6 text-white rounded text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2 outline-none"
@@ -128,7 +128,7 @@ export default function Reservations() {
                 {filteredReservations.map(res => {
                   const order = orders[res.tableName];
                   return (
-                    <motion.div 
+                    <m.div 
                       key={res._id}
                       whileHover={{ scale: 1.01, x: 4 }}
                       className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:border-blue-300 transition-all group relative overflow-hidden"
@@ -207,7 +207,7 @@ export default function Reservations() {
 
                       <div className="mt-4 flex items-center gap-2 pt-4 border-t border-slate-50 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
                          {res.status === 'Confirmed' && (
-                            <button 
+                            <button type="button" 
                               onClick={() => updateReservationStatus(res._id, 'Seated')}
                               style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
                               className="flex-1 py-1.5 text-white rounded text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
@@ -216,14 +216,14 @@ export default function Reservations() {
                             </button>
                          )}
                          {res.status === 'Pending' && (
-                            <button 
+                            <button type="button" 
                               onClick={() => updateReservationStatus(res._id, 'Confirmed')}
                               className="flex-1 py-1.5 bg-emerald-500 text-white rounded text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all"
                             >
                                Confirm
                             </button>
                          )}
-                         <button 
+                         <button type="button" 
                            onClick={() => updateReservationStatus(res._id, 'Cancelled')}
                            className="flex-1 py-1.5 bg-slate-50 text-slate-400 border border-slate-200 rounded text-[8px] font-black uppercase tracking-widest hover:text-rose-600 transition-all flex items-center justify-center gap-2"
                          >
@@ -231,7 +231,7 @@ export default function Reservations() {
                             No Show
                          </button>
                       </div>
-                    </motion.div>
+                    </m.div>
                   );
                 })}
               </div>
@@ -242,10 +242,10 @@ export default function Reservations() {
       {/* Register Booking Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-           <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-white rounded-2xl w-full max-w-md p-8">
+           <m.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-white rounded-2xl w-full max-w-md p-8">
               <div className="flex justify-between items-center mb-6">
                  <h2 className="text-sm font-black uppercase tracking-widest">New Reservation</h2>
-                 <button onClick={() => setIsModalOpen(false)}><XCircle size={20} className="text-slate-400" /></button>
+                 <button type="button" onClick={() => setIsModalOpen(false)}><XCircle size={20} className="text-slate-400" /></button>
               </div>
               <form onSubmit={handleCreate} className="space-y-4">
                  <div className="space-y-1">
@@ -310,7 +310,7 @@ export default function Reservations() {
                     Confirm Booking
                   </button>
               </form>
-           </motion.div>
+           </m.div>
         </div>
       )}
     </div>

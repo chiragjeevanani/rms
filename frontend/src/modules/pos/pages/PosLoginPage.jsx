@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Zap, RefreshCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -98,7 +98,7 @@ export default function PosLoginPage() {
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10">
         
         {/* Left Side: System Information & Branding */}
-        <motion.div 
+        <m.div 
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           className="hidden lg:flex flex-col gap-10"
@@ -142,10 +142,10 @@ export default function PosLoginPage() {
             <Shield size={20} className="text-brand-500" />
             <span className="text-xs font-bold text-charcoal-300 uppercase tracking-widest">SECURE CONNECTION</span>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Right Side: Login Interface */}
-        <motion.div 
+        <m.div 
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="w-full max-w-md mx-auto"
@@ -200,7 +200,7 @@ export default function PosLoginPage() {
                 </div>
               </div>
 
-              <motion.button
+              <m.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={isLoading}
@@ -211,7 +211,7 @@ export default function PosLoginPage() {
                 ) : (
                   <>Login <ArrowRight size={18} /></>
                 ) }
-              </motion.button>
+              </m.button>
             </form>
 
             <div className="mt-8 pt-8 border-t border-white/5 text-center">
@@ -221,7 +221,7 @@ export default function PosLoginPage() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Footer System Branding for Mobile */}

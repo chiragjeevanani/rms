@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, DatabaseZap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export default function EmptyState({ 
   title = "No data found", 
@@ -9,7 +9,7 @@ export default function EmptyState({
   actionLabel = "Add New Record" 
 }) {
   return (
-    <motion.div 
+    <m.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center justify-center p-20 bg-white border border-slate-50 rounded-[3rem] shadow-sm"
@@ -25,7 +25,7 @@ export default function EmptyState({
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 mb-8">{subtitle}</p>
       
       {onAction && (
-        <button 
+        <button type="button" 
           onClick={onAction}
           className="px-8 py-4 bg-[#2C2C2C] text-white rounded-[2rem] text-[9px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all flex items-center gap-2 active:scale-95"
         >
@@ -33,7 +33,7 @@ export default function EmptyState({
           {actionLabel}
         </button>
       )}
-    </motion.div>
+    </m.div>
   );
 }
 

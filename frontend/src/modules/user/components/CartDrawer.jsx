@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Plus, Minus, ArrowRight, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,7 @@ export function CartDrawer({ isOpen, onClose }) {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -23,7 +23,7 @@ export function CartDrawer({ isOpen, onClose }) {
           />
 
           {/* Drawer */}
-          <motion.div
+          <m.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -41,7 +41,7 @@ export function CartDrawer({ isOpen, onClose }) {
                   <div className="flex items-center gap-2">
                     <p className="text-[10px] font-black text-charcoal-400 uppercase tracking-widest">{itemCount} Items Added</p>
                     {items.length > 0 && (
-                      <button 
+                      <button type="button" 
                         onClick={() => { if(window.confirm('Clear your entire cart?')) clearCart(); }}
                         className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline decoration-2 underline-offset-4"
                       >
@@ -51,7 +51,7 @@ export function CartDrawer({ isOpen, onClose }) {
                   </div>
                 </div>
               </div>
-              <button 
+              <button type="button" 
                 onClick={onClose}
                 className="p-2 hover:bg-charcoal-100 dark:hover:bg-white/5 rounded-full transition-colors"
               >
@@ -76,7 +76,7 @@ export function CartDrawer({ isOpen, onClose }) {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
                         <h4 className="text-sm font-bold truncate pr-2">{item.name}</h4>
-                        <button 
+                        <button type="button" 
                           onClick={() => removeFromCart(item.cartId)}
                           className="text-charcoal-300 hover:text-red-500 transition-colors"
                         >
@@ -87,14 +87,14 @@ export function CartDrawer({ isOpen, onClose }) {
                       
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center gap-3 bg-charcoal-100 dark:bg-white/5 rounded-lg p-1 px-2 border border-charcoal-200/10">
-                          <button 
+                          <button type="button" 
                             onClick={() => updateQuantity(item.cartId, item.quantity - 1)}
                             className="p-1 hover:text-brand-500 transition-colors"
                           >
                             <Minus size={10} />
                           </button>
                           <span className="text-xs font-black w-4 text-center">{item.quantity}</span>
-                          <button 
+                          <button type="button" 
                             onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
                             className="p-1 hover:text-brand-500 transition-colors"
                           >
@@ -116,7 +116,7 @@ export function CartDrawer({ isOpen, onClose }) {
                   <span className="text-[10px] font-black uppercase tracking-widest text-charcoal-400">Total Amount</span>
                   <span className="text-2xl font-display font-bold text-brand-500">₹{total}</span>
                 </div>
-                <button 
+                <button type="button" 
                   onClick={() => {
                     onClose();
                     navigate('/checkout');
@@ -128,7 +128,7 @@ export function CartDrawer({ isOpen, onClose }) {
                 </button>
               </div>
             )}
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

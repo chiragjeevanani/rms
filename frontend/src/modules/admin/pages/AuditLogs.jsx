@@ -6,7 +6,7 @@ import {
   User, Database, Globe, AlertTriangle,
   Clock, Activity, X
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const MOCK_AUDIT_LOGS = [
   { id: 'LOG-4401', event: 'Menu Update', user: 'Anita Verma', role: 'Admin', module: 'Catalog', time: '10:15 AM', status: 'success', ip: '192.168.1.45' },
@@ -45,7 +45,7 @@ export default function AuditLogs() {
            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Immutable registry of all system interactions and terminal events</p>
         </div>
         <div className="flex items-center gap-3">
-           <button 
+           <button type="button" 
              onClick={handleExport}
              className="h-9 px-4 bg-white border border-slate-200 text-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all"
            >
@@ -156,7 +156,7 @@ export default function AuditLogs() {
             </table>
          </div>
          <div className="p-4 bg-slate-50/50 border-t border-slate-50 flex items-center justify-center">
-            <button className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+            <button type="button" className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
                Load Historical Archive
                <Activity size={10} />
             </button>

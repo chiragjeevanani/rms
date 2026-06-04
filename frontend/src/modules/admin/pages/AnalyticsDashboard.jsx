@@ -6,7 +6,7 @@ import {
   PieChart, Activity, Globe, Zap,
   Download, Calendar, Filter, ChevronRight
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export default function AnalyticsDashboard() {
   return (
@@ -19,10 +19,10 @@ export default function AnalyticsDashboard() {
         </div>
         <div className="flex items-center gap-3">
            <div className="flex bg-white p-1 border border-slate-200 rounded-sm">
-              <button className="px-4 py-1.5 text-[9px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-sm rounded-sm">Period View</button>
-              <button className="px-4 py-1.5 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all">Matrix View</button>
+              <button type="button" className="px-4 py-1.5 text-[9px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-sm rounded-sm">Period View</button>
+              <button type="button" className="px-4 py-1.5 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all">Matrix View</button>
            </div>
-           <button className="h-9 px-4 bg-white border border-slate-200 text-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all">
+           <button type="button" className="h-9 px-4 bg-white border border-slate-200 text-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all">
               <Download size={14} />
               Export Intelligence
            </button>
@@ -71,7 +71,7 @@ export default function AnalyticsDashboard() {
                            UNIT {h}
                         </div>
                      </div>
-                     <motion.div 
+                     <m.div 
                         initial={{ height: 0 }}
                         animate={{ height: `${h}%` }}
                         transition={{ delay: i * 0.05 }}
@@ -111,7 +111,7 @@ export default function AnalyticsDashboard() {
                         <span className="text-[10px] font-black text-slate-400">{item.val}%</span>
                      </div>
                      <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
-                        <motion.div 
+                        <m.div 
                            initial={{ width: 0 }}
                            animate={{ width: `${item.val}%` }}
                            transition={{ delay: 0.5 + idx * 0.1 }}

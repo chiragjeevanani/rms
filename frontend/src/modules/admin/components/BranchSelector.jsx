@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Building2, ChevronDown, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const BranchSelector = ({ branches, selectedBranch, onSelect, showAll = true }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +40,7 @@ const BranchSelector = ({ branches, selectedBranch, onSelect, showAll = true }) 
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -75,7 +75,7 @@ const BranchSelector = ({ branches, selectedBranch, onSelect, showAll = true }) 
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

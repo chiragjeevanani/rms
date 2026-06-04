@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, SlidersHorizontal, Sparkles, Sun, Moon, Loader2, ShoppingBag, Eye, Grid, ChevronRight, Hash, CheckCircle2 } from 'lucide-react';
 import { FoodCard } from '../components/FoodCard';
 import { CategoryScroller } from '../components/CategoryScroller';
@@ -201,7 +201,7 @@ export default function MenuPage() {
              <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
                 <div className="grid grid-cols-1 gap-4">
                    {tables.filter(t => t.status === 'Available').map((table) => (
-                      <motion.button
+                      <m.button
                         key={table._id}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleSelectTable(table.tableCode)}
@@ -220,7 +220,7 @@ export default function MenuPage() {
                          <div className="w-10 h-10 bg-charcoal-50 dark:bg-white/5 rounded-full flex items-center justify-center text-charcoal-300 dark:text-charcoal-600 group-hover:bg-brand-500 group-hover:text-charcoal-900 transition-all">
                             <ChevronRight size={20} />
                          </div>
-                      </motion.button>
+                      </m.button>
                    ))}
                 </div>
              </div>
@@ -263,7 +263,7 @@ export default function MenuPage() {
             </div>
             
             <div className="flex items-center gap-3">
-              <motion.button
+              <m.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsCartOpen(true)}
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors bg-brand-500/10 text-brand-500 hover:bg-brand-500 hover:text-charcoal-900 relative"
@@ -274,13 +274,13 @@ export default function MenuPage() {
                     {itemCount}
                   </span>
                 )}
-              </motion.button>
+              </m.button>
             </div>
           </div>
 
           {/* Online Toggle */}
           <div className="mb-6 px-1">
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.98 }}
               onClick={() => setOrderingMode(!isOrderOnline)}
               className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
@@ -299,9 +299,9 @@ export default function MenuPage() {
                 </div>
               </div>
               <div className={`w-10 h-6 rounded-full relative transition-colors ${isOrderOnline ? 'bg-charcoal-900/20' : 'bg-charcoal-200 dark:bg-white/10'}`}>
-                <motion.div animate={{ x: isOrderOnline ? 18 : 2 }} className={`w-4 h-4 rounded-full mt-1 bg-white shadow-sm`} />
+                <m.div animate={{ x: isOrderOnline ? 18 : 2 }} className={`w-4 h-4 rounded-full mt-1 bg-white shadow-sm`} />
               </div>
-            </motion.button>
+            </m.button>
           </div>
 
           <div className="flex gap-2 mb-4">
@@ -315,7 +315,7 @@ export default function MenuPage() {
                 className="w-full pl-11 pr-4 py-3 bg-white border border-charcoal-900/10 dark:bg-white/5 dark:border-white/5 rounded-xl text-xs font-medium focus:bg-charcoal-900/5 dark:focus:bg-white/10 outline-none transition-all text-charcoal-900 dark:text-white"
               />
             </div>
-            <button 
+            <button type="button" 
               onClick={() => setIsVegOnly(!isVegOnly)}
               className={`p-3 border rounded-xl transition-all duration-300 ${isVegOnly ? 'bg-brand-500 border-brand-500 text-charcoal-900 ring-4 ring-brand-500/20' : 'bg-white border-charcoal-900/10 dark:bg-white/5 dark:border-white/5'}`}
             >
@@ -335,9 +335,9 @@ export default function MenuPage() {
            <div className="space-y-5">
             <AnimatePresence mode="popLayout">
               {filteredItems.map((item, idx) => (
-                <motion.div key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: idx * 0.03 }}>
+                <m.div key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: idx * 0.03 }}>
                   <FoodCard item={item} onAdd={() => setIsCartOpen(true)} />
-                </motion.div>
+                </m.div>
               ))}
             </AnimatePresence>
           </div>
@@ -348,13 +348,13 @@ export default function MenuPage() {
         {/* Floating Cart Button */}
         <AnimatePresence>
           {itemCount > 0 && isOrderOnline && (
-            <motion.div
+            <m.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
               className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-50"
             >
-              <button
+              <button type="button"
                 onClick={() => setIsCartOpen(true)}
                 className="w-full bg-brand-500 text-charcoal-900 h-16 rounded-[2rem] shadow-2xl shadow-brand-500/40 flex items-center justify-between px-6 border-4 border-white dark:border-charcoal-800 transition-transform active:scale-95"
               >
@@ -375,7 +375,7 @@ export default function MenuPage() {
                    <ChevronRight size={18} />
                 </div>
               </button>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

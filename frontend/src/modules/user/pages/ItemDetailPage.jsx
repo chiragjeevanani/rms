@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, Clock, ShoppingBag, Plus, Minus, Check, Sparkles } from 'lucide-react';
 import { QuantityStepper } from '../components/QuantityStepper';
 import { useCart } from '../context/CartContext';
@@ -271,11 +271,11 @@ export default function ItemDetailPage() {
         <div className="relative w-full aspect-[4/5] overflow-hidden rounded-b-[4rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
           <img src={item?.image?.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item?.image?.startsWith('/') ? '' : '/'}${item?.image}`} className="w-full h-full object-cover" alt={item?.name} />
           <div className="absolute inset-0 bg-gradient-to-t from-cream-50 dark:from-charcoal-900 via-transparent to-black/20" />
-          <button onClick={() => navigate(-1)} className="absolute top-10 left-6 w-12 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-2xl flex items-center justify-center text-charcoal-900 dark:text-white border border-charcoal-900/10 dark:border-white/10 z-20">
+          <button type="button" onClick={() => navigate(-1)} className="absolute top-10 left-6 w-12 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-2xl flex items-center justify-center text-charcoal-900 dark:text-white border border-charcoal-900/10 dark:border-white/10 z-20">
             <ArrowLeft size={20} />
           </button>
 
-          <button 
+          <button type="button" 
             onClick={() => setIsCartOpen(true)} 
             className="absolute top-10 right-6 w-12 h-12 bg-brand-500 rounded-2xl flex items-center justify-center text-charcoal-900 border border-brand-500/20 shadow-lg shadow-brand-500/20 z-20"
           >
@@ -345,10 +345,10 @@ export default function ItemDetailPage() {
                      {mod?.options?.map((opt) => {
                        const isSelected = selectedModifiers[mod.name] === opt._id;
                        return (
-                         <motion.button key={opt._id} onClick={() => handleModifierSelect(mod.name, opt._id)} whileTap={{ scale: 0.95 }} className={`p-4 rounded-3xl font-bold transition-all border-2 text-left group ${isSelected ? 'border-brand-500 bg-brand-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`}>
+                         <m.button key={opt._id} onClick={() => handleModifierSelect(mod.name, opt._id)} whileTap={{ scale: 0.95 }} className={`p-4 rounded-3xl font-bold transition-all border-2 text-left group ${isSelected ? 'border-brand-500 bg-brand-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`}>
                             <p className={`text-sm mb-0.5 transition-colors ${isSelected ? 'text-white' : 'text-charcoal-400'}`}>{opt.name}</p>
                             {opt.price > 0 ? <span className="text-[9px] font-black uppercase tracking-widest text-brand-500">+₹{opt.price}</span> : <span className="text-[9px] font-black uppercase tracking-widest text-charcoal-600">Free</span>}
-                         </motion.button>
+                         </m.button>
                        );
                      })}
                   </div>
@@ -386,14 +386,14 @@ export default function ItemDetailPage() {
           <div className="border-t border-white/5 pt-8 text-white">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-sm font-black font-display uppercase tracking-[0.2em]">Guest Reviews</h2>
-              <button onClick={() => setShowReviewForm(true)} className="text-brand-500 text-[10px] font-black uppercase tracking-widest border border-brand-500/20 px-4 py-2 rounded-xl bg-brand-500/5 hover:bg-brand-500 hover:text-charcoal-900 transition-all">Write Review</button>
+              <button type="button" onClick={() => setShowReviewForm(true)} className="text-brand-500 text-[10px] font-black uppercase tracking-widest border border-brand-500/20 px-4 py-2 rounded-xl bg-brand-500/5 hover:bg-brand-500 hover:text-charcoal-900 transition-all">Write Review</button>
             </div>
 
             <AnimatePresence>
               {showReviewForm && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowReviewForm(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-                  <motion.form initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onSubmit={handleReviewSubmit} className="relative w-full max-w-sm bg-charcoal-900 border border-white/10 p-8 rounded-[3rem] shadow-2xl space-y-6">
+                  <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowReviewForm(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+                  <m.form initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onSubmit={handleReviewSubmit} className="relative w-full max-w-sm bg-charcoal-900 border border-white/10 p-8 rounded-[3rem] shadow-2xl space-y-6">
                     <div className="text-center">
                        <h3 className="text-2xl font-bold font-display uppercase tracking-widest text-brand-500">Your Feedback</h3>
                        <p className="text-[10px] text-charcoal-400 mt-2 font-black uppercase tracking-[0.2em]">We value your taste!</p>
@@ -416,9 +416,9 @@ export default function ItemDetailPage() {
                     </div>
                     <div className="flex gap-3">
                       <button type="button" onClick={() => setShowReviewForm(false)} className="flex-1 bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">Cancel</button>
-                      <button disabled={submittingReview} className="flex-[2] bg-brand-500 text-charcoal-900 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand-500/20 disabled:opacity-50 font-display">{submittingReview ? 'Posting...' : 'Submit'}</button>
+                      <button type="button" disabled={submittingReview} className="flex-[2] bg-brand-500 text-charcoal-900 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand-500/20 disabled:opacity-50 font-display">{submittingReview ? 'Posting...' : 'Submit'}</button>
                     </div>
-                  </motion.form>
+                  </m.form>
                 </div>
               )}
             </AnimatePresence>
@@ -452,7 +452,7 @@ export default function ItemDetailPage() {
 
       <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-charcoal-900/80 backdrop-blur-3xl border-t border-charcoal-900/10 dark:border-white/5 p-4 z-50 transition-colors duration-300">
          <div className="max-w-lg mx-auto flex items-center gap-4 px-6 py-2">
-            <motion.button 
+            <m.button 
                onClick={() => {
                   handleAddToCart();
                   setIsCartOpen(true);
@@ -462,9 +462,9 @@ export default function ItemDetailPage() {
             >
                <ShoppingBag size={14} className="mb-0.5 group-hover:scale-110 transition-transform" />
                <span className="text-[10px] uppercase tracking-widest">Add to Cart</span>
-            </motion.button>
+            </m.button>
 
-            <motion.button 
+            <m.button 
                onClick={handleMainOrderAction} 
                disabled={isBooking}
                whileTap={{ scale: 0.95 }} 
@@ -472,23 +472,23 @@ export default function ItemDetailPage() {
             >
               <AnimatePresence mode="wait">
                  {isBooking ? (
-                   <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                   <m.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-charcoal-900/20 border-t-charcoal-900 rounded-full animate-spin" />
                       <span className="text-xs uppercase tracking-widest">Processing</span>
-                   </motion.div>
+                   </m.div>
                  ) : addedToCart ? (
-                   <motion.div key="conf" initial={{ y: 20 }} animate={{ y: 0 }} className="flex items-center gap-2">
+                   <m.div key="conf" initial={{ y: 20 }} animate={{ y: 0 }} className="flex items-center gap-2">
                       <Check size={18} strokeWidth={4} /> 
                       <span className="text-xs uppercase tracking-widest">Added</span>
-                   </motion.div>
+                   </m.div>
                  ) : (
-                   <motion.div key="order" initial={{ y: 20 }} animate={{ y: 0 }} className="flex flex-col items-center leading-none">
+                   <m.div key="order" initial={{ y: 20 }} animate={{ y: 0 }} className="flex flex-col items-center leading-none">
                       <span className="text-[10px] uppercase tracking-[0.2em] opacity-60 mb-1">Direct Order</span>
                       <span className="text-sm font-bold">₹{currentPrice * quantity}</span>
-                   </motion.div>
+                   </m.div>
                  )}
               </AnimatePresence>
-            </motion.button>
+            </m.button>
          </div>
       </div>
 
@@ -497,8 +497,8 @@ export default function ItemDetailPage() {
       <AnimatePresence>
         {showTableModal && (
           <div className="fixed inset-0 z-[110] flex items-end justify-center sm:items-center p-0 sm:p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowTableModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="relative w-full max-w-lg bg-charcoal-900 border-t sm:border border-white/10 rounded-t-[3rem] sm:rounded-[3rem] p-8 max-h-[85vh] overflow-y-auto">
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowTableModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+            <m.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="relative w-full max-w-lg bg-charcoal-900 border-t sm:border border-white/10 rounded-t-[3rem] sm:rounded-[3rem] p-8 max-h-[85vh] overflow-y-auto">
                <div className="text-center mb-8">
                   <h3 className="text-3xl font-bold font-display uppercase tracking-widest text-brand-500">Pick Your Table</h3>
                   <p className="text-[10px] text-charcoal-400 mt-2 font-black uppercase tracking-[0.2em]">Select an available spot to feast</p>
@@ -511,7 +511,7 @@ export default function ItemDetailPage() {
                       const isOccupied = table.status === 'Occupied' || table.status === 'Reserved';
                       const isSelected = tempTable === table.tableName;
                       return (
-                        <button 
+                        <button type="button" 
                           key={table._id} 
                           disabled={isOccupied || isBooking} 
                           onClick={() => setTempTable(table.tableName)} 
@@ -538,8 +538,8 @@ export default function ItemDetailPage() {
 
                <AnimatePresence>
                  {tempTable && (
-                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
-                     <button 
+                   <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+                     <button type="button" 
                        onClick={handleBookTable}
                        disabled={isBooking}
                        className="w-full py-5 bg-brand-500 text-charcoal-900 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-500/20 mb-4 flex items-center justify-center gap-3 font-display"
@@ -553,12 +553,12 @@ export default function ItemDetailPage() {
                          <>Confirm Booking & Order</>
                        )}
                      </button>
-                   </motion.div>
+                   </m.div>
                  )}
                </AnimatePresence>
                
-               <button onClick={() => { setShowTableModal(false); setTempTable(null); }} className="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] text-charcoal-500 hover:text-white transition-colors">Cancel</button>
-            </motion.div>
+               <button type="button" onClick={() => { setShowTableModal(false); setTempTable(null); }} className="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] text-charcoal-500 hover:text-white transition-colors">Cancel</button>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

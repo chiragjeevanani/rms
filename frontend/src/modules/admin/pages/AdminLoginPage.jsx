@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Mail, Lock, ArrowRight, ShieldCheck, HelpCircle, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -49,20 +49,20 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-slate-100 dark:bg-charcoal-900 text-charcoal-900 dark:text-white flex items-center justify-center p-6 selection:bg-brand-500 font-sans">
       <div className="w-full max-w-sm">
         <header className="text-center mb-10">
-          <motion.div 
+          <m.div 
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-20 h-20 bg-charcoal-900 dark:bg-brand-500 rounded-[2rem] mx-auto mb-6 flex items-center justify-center shadow-2xl"
           >
             <ShieldCheck size={40} className="text-brand-500 dark:text-charcoal-900" strokeWidth={2.5} />
-          </motion.div>
+          </m.div>
           <h1 className="text-3xl font-display font-black tracking-tight text-charcoal-900 dark:text-white uppercase leading-none">Security Portal</h1>
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 bg-brand-500/10 dark:bg-brand-500/20 rounded-full border border-brand-500/10">
             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-500">Restricted Admin Access</p>
           </div>
         </header>
 
-        <motion.div 
+        <m.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="bg-white dark:bg-charcoal-800 rounded-[3rem] p-10 border border-charcoal-900/5 dark:border-white/5 shadow-2xl relative overflow-hidden"
@@ -126,11 +126,11 @@ export default function AdminLoginPage() {
                 <ShieldAlert size={12} className="text-amber-500" />
                 <span className="text-[8px] font-black uppercase tracking-tighter">Level 4 Clearance</span>
              </div>
-             <button className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-brand-500 hover:underline">
+             <button type="button" className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-brand-500 hover:underline">
                 <HelpCircle size={10} /> Support
              </button>
           </div>
-        </motion.div>
+        </m.div>
 
         <footer className="mt-12 text-center opacity-40">
            <p className="text-[9px] font-bold text-charcoal-500 uppercase tracking-[0.4em]">

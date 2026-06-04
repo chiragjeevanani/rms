@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Truck, Utensils, Car, User, Phone } from 'lucide-react';
 
 const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
-  const [orderType, setOrderType] = useState('Dine-In');
-  const [selectedTable, setSelectedTable] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [carNumber, setCarNumber] = useState('');
+  const [formState, setFormState] = useState({
+    orderType: 'Dine-In',
+    selectedTable: '',
+    customerName: '',
+    customerPhone: '',
+    carNumber: ''
+  });
+
+  const { orderType, selectedTable, customerName, customerPhone, carNumber } = formState;
+
+  const setOrderType = (val) => setFormState(prev => ({ ...prev, orderType: val }));
+  const setSelectedTable = (val) => setFormState(prev => ({ ...prev, selectedTable: val }));
+  const setCustomerName = (val) => setFormState(prev => ({ ...prev, customerName: val }));
+  const setCustomerPhone = (val) => setFormState(prev => ({ ...prev, customerPhone: val }));
+  const setCarNumber = (val) => setFormState(prev => ({ ...prev, carNumber: val }));
 
   const freeTables = tables.filter(t => t.status === 'Available' || t.status === 'blank' || !t.status);
 
@@ -53,7 +63,7 @@ const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
   return (
     <AnimatePresence>
       <div className="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center p-4 backdrop-blur-sm">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -64,7 +74,7 @@ const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
             <h3 className="text-sm font-black uppercase tracking-widest text-gray-800 italic flex items-center gap-2">
               <ShoppingBag size={18} className="text-orange-500" /> Quick Order Entry
             </h3>
-            <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
+            <button type="button" onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
               <X size={20} className="text-gray-400" />
             </button>
           </div>
@@ -78,7 +88,7 @@ const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
                 { id: 'Delivery', icon: <Truck size={14} />, label: 'Delivery' },
                 { id: 'Car Service', icon: <Car size={14} />, label: 'Car' }
               ].map(type => (
-                <button
+                <button type="button"
                   key={type.id}
                   onClick={() => setOrderType(type.id)}
                   className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all font-bold text-[10px] uppercase tracking-wider ${
@@ -96,13 +106,14 @@ const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
             {/* Dine-In specific: Table Selection */}
             {orderType === 'Dine-In' && (
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Select Table</label>
+                <label htmlFor="table-select" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Select Table</label>
                 <select
+                  id="table-select"
                   value={selectedTable}
                   onChange={(e) => setSelectedTable(e.target.value)}
                   className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl py-3 px-4 text-xs font-black focus:border-orange-500 outline-none transition-all"
                 >
-                  <option value="">Choose a table...</option>
+                  <option value="">Choose a table…</option>
                   {freeTables.map(t => (
                     <option key={t._id} value={t.tableName}>{t.tableName} ({t.area || 'General'})</option>
                   ))}
@@ -113,8 +124,9 @@ const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
             {/* Car Service specific: Car Number */}
             {orderType === 'Car Service' && (
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Car Number</label>
+                <label htmlFor="car-number" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Car Number</label>
                 <input
+                  id="car-number"
                   type="text"
                   value={carNumber}
                   onChange={(e) => setCarNumber(e.target.value.toUpperCase())}
@@ -127,10 +139,11 @@ const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
             {/* Common: Customer Details */}
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Customer Name (Optional)</label>
+                <label htmlFor="customer-name" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Customer Name (Optional)</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                   <input
+                    id="customer-name"
                     type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
@@ -140,10 +153,11 @@ const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mobile Number (Optional)</label>
+                <label htmlFor="customer-phone" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mobile Number (Optional)</label>
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                   <input
+                    id="customer-phone"
                     type="text"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
@@ -154,14 +168,14 @@ const QuickOrderModal = ({ isOpen, onClose, tables, onStartOrder }) => {
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={handleStart}
               className="w-full py-4 bg-orange-500 text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-orange-500/30 hover:bg-orange-600 active:scale-95 transition-all mt-2"
             >
               Start Order Process
             </button>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </AnimatePresence>
   );

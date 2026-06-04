@@ -4,7 +4,7 @@ import {
   Printer, ChevronRight, Filter, MoreVertical,
   Timer, AlertCircle, Utensils, Zap, Car, X, Check
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { usePos } from '../../context/PosContext';
 import { TABLE_STATUS_COLORS } from '../../data/tableStatusColors';
@@ -92,7 +92,7 @@ export default function TableList() {
       {/* 1. Sub-Header Toolbar */}
       <header className="bg-white border-b border-gray-200 px-6 py-3 shrink-0 flex items-center justify-between gap-6 z-20 shadow-sm">
         <div className="flex items-center gap-6">
-           <button 
+           <button type="button" 
              onClick={() => navigate('/pos/tables')}
              className="p-2 text-gray-400 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
            >
@@ -131,7 +131,7 @@ export default function TableList() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
            </div>
-            <button 
+            <button type="button" 
               onClick={() => {
                 const nextId = tables.length + 1;
                 setNewTableData(prev => ({ 
@@ -146,14 +146,14 @@ export default function TableList() {
                <Plus size={14} />
                Add Table
             </button>
-            <button 
+            <button type="button" 
               onClick={() => setIsQuickOrderModalOpen(true)}
               className="flex items-center gap-2 px-4 py-1.5 bg-[var(--primary-color)] text-white rounded-lg text-xs font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg"
             >
                <Plus size={14} />
                New Order
             </button>
-           <button 
+           <button type="button" 
              onClick={fetchActiveTableOrders}
              className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
            >
@@ -165,7 +165,7 @@ export default function TableList() {
       {/* 2. Area Filter Tabs */}
       <div className="bg-white px-6 py-2 border-b border-gray-200 flex items-center gap-2 shrink-0 overflow-x-auto no-scrollbar">
         {areas.map(area => (
-          <button 
+          <button type="button" 
             key={area}
             onClick={() => setActiveArea(area)}
             className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
@@ -220,7 +220,7 @@ export default function TableList() {
                 const cfg = TABLE_STATUS_COLORS[status] || TABLE_STATUS_COLORS.blank;
 
                 return (
-                  <motion.div
+                  <m.div
                     key={table._id}
                     layoutId={table._id}
                     whileHover={{ scale: 1.05, zIndex: 10 }}
@@ -269,7 +269,7 @@ export default function TableList() {
                         
                         {/* Hover Actions */}
                         <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 flex flex-col p-1 gap-1 transition-opacity">
-                           <button 
+                           <button type="button" 
                              onClick={(e) => { 
                                e.stopPropagation(); 
                                const billingDetails = {
@@ -286,7 +286,7 @@ export default function TableList() {
                            >
                               <Printer size={10} /> PRINT
                            </button>
-                           <button 
+                           <button type="button" 
                              onClick={(e) => { e.stopPropagation(); navigate(`/pos/order/${table.tableName}`); }}
                              className="flex-1 py-1.5 bg-[var(--primary-color)] text-white rounded text-[8px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[var(--primary-color)]/10 transition-all flex items-center justify-center gap-1.5"
                            >
@@ -295,7 +295,7 @@ export default function TableList() {
                         </div>
                       </div>
                     )}
-                  </motion.div>
+                  </m.div>
                 );
               })}
             </div>
@@ -310,7 +310,7 @@ export default function TableList() {
                   <Car size={14} /> Car Service
                </div>
                <div className="h-px bg-gray-200 flex-1" />
-               <button 
+               <button type="button" 
                 onClick={() => setIsAddCarModalOpen(true)}
                 className="p-1 px-3 bg-[var(--primary-color)] text-white text-[9px] font-black uppercase rounded shadow-lg shadow-[var(--primary-color)]/10 active:scale-95"
                >
@@ -320,7 +320,7 @@ export default function TableList() {
 
             <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 2xl:grid-cols-16 gap-3">
                {activeCarOrders.map(order => (
-                 <motion.div
+                 <m.div
                    key={order._id}
                    whileHover={{ scale: 1.05 }}
                    onClick={() => navigate(`/pos/order/${order.tableName}`)}
@@ -335,9 +335,9 @@ export default function TableList() {
                     <span className="text-[10px] font-bold text-[var(--primary-color)] mt-1">₹{order.grandTotal}</span>
 
                     <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 flex flex-col p-1 gap-1 transition-opacity">
-                        <button className="flex-1 bg-white/90 rounded text-[8px] font-black text-slate-700 hover:bg-white">VIEW</button>
+                        <button type="button" className="flex-1 bg-white/90 rounded text-[8px] font-black text-slate-700 hover:bg-white">VIEW</button>
                     </div>
-                 </motion.div>
+                 </m.div>
                ))}
                {activeCarOrders.length === 0 && (
                  <div className="col-span-full py-8 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center opacity-30">
@@ -365,8 +365,8 @@ export default function TableList() {
       <AnimatePresence>
         {isAddTableModalOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddTableModalOpen(false)} className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm" />
-            <motion.div 
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddTableModalOpen(false)} className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm" />
+            <m.div 
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-8 w-96 z-[101] border border-gray-100"
             >
@@ -430,7 +430,7 @@ export default function TableList() {
                      <button type="submit" className="flex-1 py-3 bg-[var(--primary-color)] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[var(--primary-color)]/20 active:scale-95 transition-all">Add Table</button>
                   </div>
                </form>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>
@@ -439,8 +439,8 @@ export default function TableList() {
       <AnimatePresence>
         {isAddCarModalOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddCarModalOpen(false)} className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm" />
-            <motion.div 
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddCarModalOpen(false)} className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm" />
+            <m.div 
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 w-80 z-[101] border border-gray-100"
             >
@@ -461,11 +461,11 @@ export default function TableList() {
                      />
                   </div>
                   <div className="flex gap-3 pt-2">
-                     <button onClick={() => setIsAddCarModalOpen(false)} className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 bg-gray-50 rounded-xl transition-all">Cancel</button>
-                     <button onClick={handleAddCar} className="flex-1 py-3 bg-[var(--primary-color)] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[var(--primary-color)]/20 active:scale-95 transition-all">Create Session</button>
+                     <button type="button" onClick={() => setIsAddCarModalOpen(false)} className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 bg-gray-50 rounded-xl transition-all">Cancel</button>
+                     <button type="button" onClick={handleAddCar} className="flex-1 py-3 bg-[var(--primary-color)] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[var(--primary-color)]/20 active:scale-95 transition-all">Create Session</button>
                   </div>
                </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

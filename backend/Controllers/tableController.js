@@ -31,10 +31,19 @@ const getTables = async (req, res) => {
 // @route   POST /api/table
 const addTable = async (req, res) => {
   try {
-    const { tableName } = req.body;
-    const existingTable = await Table.findOne({ tableName });
+    const { tableName, tableCode, branchId } = req.body;
+    if (!branchId) {
+      return res.status(400).json({ message: 'Branch ID is required' });
+    }
+    const existingTable = await Table.findOne({ tableName, branchId });
     if (existingTable) {
-      return res.status(400).json({ message: 'Table name already exists' });
+      return res.status(400).json({ message: 'Table name already exists in this branch' });
+    }
+    if (tableCode) {
+      const existingCode = await Table.findOne({ tableCode, branchId });
+      if (existingCode) {
+        return res.status(400).json({ message: 'Table code already exists in this branch' });
+      }
     }
 
     const newTable = new Table(req.body);
@@ -49,14 +58,33 @@ const addTable = async (req, res) => {
 // @route   PUT /api/table/:id
 const updateTable = async (req, res) => {
   try {
+    const { tableName, tableCode, branchId } = req.body;
+    const currentTable = await Table.findById(req.params.id);
+    if (!currentTable) {
+      return res.status(404).json({ message: 'Table not found' });
+    }
+
+    const targetBranch = branchId || currentTable.branchId;
+
+    if (tableName && (tableName !== currentTable.tableName || (branchId && branchId !== currentTable.branchId.toString()))) {
+      const existingTable = await Table.findOne({ tableName, branchId: targetBranch });
+      if (existingTable && existingTable._id.toString() !== req.params.id) {
+        return res.status(400).json({ message: 'Table name already exists in this branch' });
+      }
+    }
+
+    if (tableCode && (tableCode !== currentTable.tableCode || (branchId && branchId !== currentTable.branchId.toString()))) {
+      const existingCode = await Table.findOne({ tableCode, branchId: targetBranch });
+      if (existingCode && existingCode._id.toString() !== req.params.id) {
+        return res.status(400).json({ message: 'Table code already exists in this branch' });
+      }
+    }
+
     const table = await Table.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
-    if (!table) {
-      return res.status(404).json({ message: 'Table not found' });
-    }
     res.json(table);
   } catch (error) {
     res.status(500).json({ message: 'Error updating table' });

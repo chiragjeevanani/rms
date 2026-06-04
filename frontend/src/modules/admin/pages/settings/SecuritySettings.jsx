@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, ShieldCheck, ShieldAlert, Key, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function SecuritySettings() {
@@ -44,7 +44,7 @@ export default function SecuritySettings() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 lg:p-10">
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-stone-200"
@@ -129,7 +129,7 @@ export default function SecuritySettings() {
             {isChanging ? <Loader2 className="animate-spin" size={18} /> : <><ShieldCheck size={18} /> Update Password</>}
           </button>
         </form>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

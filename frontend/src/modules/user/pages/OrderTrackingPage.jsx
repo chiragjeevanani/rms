@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowLeft, Phone, MapPin, Clock, MessageSquare, AlertCircle } from 'lucide-react';
 import { OrderTimeline } from '../components/OrderTimeline';
 import { BottomNav } from '../components/BottomNav';
@@ -12,7 +12,7 @@ export default function OrderTrackingPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white selection:bg-brand-500 selection:text-charcoal-900 transition-colors duration-300">
       <div className="max-w-lg mx-auto px-6 pt-8 pb-40">
         <header className="flex items-center gap-6 mb-12">
-           <button 
+           <button type="button" 
              onClick={() => navigate('/menu')}
              className="w-12 h-12 bg-white border border-charcoal-900/10 dark:bg-white/5 dark:border-white/5 rounded-2xl flex items-center justify-center text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white transition-colors shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
            >
@@ -38,10 +38,10 @@ export default function OrderTrackingPage() {
               </div>
 
               <div className="flex gap-4 mt-10">
-                 <button className="flex-1 bg-charcoal-900 dark:bg-charcoal-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                 <button type="button" className="flex-1 bg-charcoal-900 dark:bg-charcoal-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
                     <Phone size={14} /> Call Desk
                  </button>
-                 <button className="flex-1 bg-white/90 dark:bg-white text-charcoal-900 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                 <button type="button" className="flex-1 bg-white/90 dark:bg-white text-charcoal-900 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
                     <MessageSquare size={14} /> Message
                  </button>
               </div>

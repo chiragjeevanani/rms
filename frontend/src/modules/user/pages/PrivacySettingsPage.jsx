@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Lock, EyeOff, FileText, ChevronRight } from 'lucide-react';
 import { BottomNav } from '../components/BottomNav';
@@ -16,7 +16,7 @@ export default function PrivacySettingsPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white selection:bg-brand-500 transition-colors duration-300">
       <div className="max-w-lg mx-auto px-6 pt-8 pb-40">
         <header className="flex items-center gap-6 mb-12">
-           <button onClick={() => navigate(-1)} className="w-12 h-12 bg-white dark:bg-white/5 border border-charcoal-900/10 rounded-2xl flex items-center justify-center">
+           <button type="button" onClick={() => navigate(-1)} className="w-12 h-12 bg-white dark:bg-white/5 border border-charcoal-900/10 rounded-2xl flex items-center justify-center">
               <ArrowLeft size={22} />
            </button>
            <h1 className="text-4xl font-display font-bold tracking-tight">Privacy</h1>
@@ -35,7 +35,7 @@ export default function PrivacySettingsPage() {
 
            <div className="bg-white dark:bg-charcoal-800 rounded-[2.5rem] border border-charcoal-900/10 dark:border-white/5 overflow-hidden shadow-sm">
               {settings.map((item, idx) => (
-                <button 
+                <button type="button" 
                   key={idx}
                   className={`w-full p-6 flex items-center justify-between ${idx !== settings.length - 1 ? 'border-b border-charcoal-900/5 dark:border-white/5' : ''}`}
                 >

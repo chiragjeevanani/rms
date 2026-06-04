@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useOrders } from '../../../context/OrderContext';
@@ -63,7 +63,7 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white selection:bg-brand-500 selection:text-charcoal-900 transition-colors duration-300">
       <div className="max-w-lg mx-auto px-6 pt-8 pb-32">
         <header className="flex items-center gap-6 mb-12">
-           <button 
+           <button type="button" 
              onClick={() => navigate(-1)}
              className="w-12 h-12 bg-white border border-charcoal-900/10 dark:bg-white/5 dark:border-white/5 rounded-2xl flex items-center justify-center text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white transition-colors shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
            >
@@ -163,7 +163,7 @@ export default function CheckoutPage() {
                 </div>
              </div>
 
-             <motion.button 
+             <m.button 
                 whileTap={{ scale: 0.97 }}
                 onClick={handlePlaceOrder}
                 className="w-full bg-brand-500 text-charcoal-900 py-5 rounded-[1.5rem] font-black shadow-xl shadow-brand-500/20 disabled:opacity-50 group flex items-center justify-center gap-3"
@@ -174,21 +174,21 @@ export default function CheckoutPage() {
                 ) : (
                   <>Confirm Order <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
                 )}
-             </motion.button>
+             </m.button>
           </div>
         </main>
       </div>
 
       <AnimatePresence>
         {isProcessing && (
-           <motion.div 
+           <m.div 
              initial={{ opacity: 0 }} 
              animate={{ opacity: 1 }} 
              exit={{ opacity: 0 }}
              className="fixed inset-0 z-[100] bg-charcoal-900 flex flex-col items-center justify-center p-8 text-center"
            >
               <div className="relative mb-12">
-                 <motion.div
+                 <m.div
                    animate={{ rotate: 360 }}
                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                    className="w-24 h-24 border-2 border-white/5 border-t-brand-500 rounded-full"
@@ -201,7 +201,7 @@ export default function CheckoutPage() {
               <p className="text-charcoal-500 max-w-xs font-medium italic opacity-80 leading-relaxed">
                  "Patience is the secret ingredient for a perfect meal."
               </p>
-           </motion.div>
+           </m.div>
         )}
       </AnimatePresence>
     </div>

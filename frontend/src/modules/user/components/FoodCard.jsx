@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -19,7 +19,7 @@ export function FoodCard({ item, onAdd }) {
   };
 
   return (
-    <motion.div 
+    <m.div 
       whileHover={isOrderOnline ? { y: -4 } : {}}
       onClick={() => isOrderOnline && navigate(`/item/${item.id}`)}
       className={`bg-white border-charcoal-900/10 dark:bg-white/5 backdrop-blur-md rounded-[2.5rem] p-5 border dark:border-white/5 transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl ${
@@ -29,7 +29,7 @@ export function FoodCard({ item, onAdd }) {
       <div className="flex gap-5">
         {/* Image Area */}
         <div className="relative w-28 h-36 rounded-[1.5rem] overflow-hidden bg-charcoal-100 dark:bg-charcoal-800 shrink-0">
-          <motion.img
+          <m.img
             layoutId={`img-${item.id}`}
             src={item.image?.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.image?.startsWith('/') ? '' : '/'}${item.image}`}
             alt={item.name}
@@ -88,7 +88,7 @@ export function FoodCard({ item, onAdd }) {
                    )}
                 </div>
 
-                <motion.button
+                <m.button
                   whileTap={{ scale: 0.95 }}
                   onClick={handleQuickAdd}
                   disabled={!isOrderOnline || isAdding}
@@ -100,16 +100,16 @@ export function FoodCard({ item, onAdd }) {
                 >
                   <AnimatePresence mode="wait">
                     {isAdding ? (
-                      <motion.div key="check" initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }} className="flex items-center gap-2">
+                      <m.div key="check" initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }} className="flex items-center gap-2">
                          <CheckCircle2 size={12} strokeWidth={3} /> Added
-                      </motion.div>
+                      </m.div>
                     ) : (
-                      <motion.div key="add" initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }} className="flex items-center gap-2">
+                      <m.div key="add" initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }} className="flex items-center gap-2">
                          <Plus size={12} strokeWidth={3} /> Add
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
-                </motion.button>
+                </m.button>
              </div>
              
              <p className="text-xs text-charcoal-500 font-medium line-clamp-2 mt-2 leading-relaxed italic opacity-80">
@@ -118,7 +118,7 @@ export function FoodCard({ item, onAdd }) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

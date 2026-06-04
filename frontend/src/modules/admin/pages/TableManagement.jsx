@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, Trash2, Edit2, Grid, ChevronLeft, ChevronRight, CheckCircle2, Square, Circle, RectangleVertical as Rect, AlertTriangle, Hash, RefreshCw, QrCode, StickyNote, Copy } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import QRCode from 'react-qr-code';
@@ -150,7 +150,6 @@ export default function TableManagement() {
     }
     setIsModalOpen(true);
   };
-
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.branchId) return toast.error('Branch selection required');
@@ -176,12 +175,14 @@ export default function TableManagement() {
         toast.success(editingTable ? 'Updated' : 'Created');
         fetchTables();
         setIsModalOpen(false);
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Failed to save table');
       }
     } catch (err) {
       toast.error('Failed to save');
     }
   };
-
   const downloadQR = () => {
     const svg = document.getElementById("TableQRCode");
     if (!svg) return;
@@ -282,7 +283,7 @@ export default function TableManagement() {
             onSelect={setSelectedBranchFilter}
           />
 
-          <button 
+          <button type="button" 
             onClick={async () => {
               const status = window.confirm("Reset all tables to Available?") ? "Available" : (window.confirm("Set all tables to Occupied?") ? "Occupied" : null);
               if (!status) return;
@@ -301,7 +302,7 @@ export default function TableManagement() {
             Bulk
           </button>
 
-          <button 
+          <button type="button" 
             onClick={() => handleOpenModal()}
             className="h-10 px-5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg hover:scale-105 transition-all"
           >
@@ -322,7 +323,7 @@ export default function TableManagement() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 content-start">
              {filteredTables.map((table) => (
-               <motion.div 
+               <m.div 
                  layout
                  initial={{ opacity: 0, scale: 0.95 }}
                  animate={{ opacity: 1, scale: 1 }}
@@ -334,7 +335,7 @@ export default function TableManagement() {
                        <span className="p-1.5 bg-slate-50 text-slate-400 rounded-lg border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm shrink-0">
                           {getShapeIcon(table.shape)}
                        </span>
-                       <button 
+                       <button type="button" 
                           onClick={(e) => toggleStatus(e, table)}
                           className={`px-2 py-0.5 rounded-lg border font-black text-[7px] uppercase tracking-widest flex items-center gap-1.5 transition-all active:scale-95 whitespace-nowrap shrink-0 shadow-sm ${getStatusStyle(table.status)}`}
                        >
@@ -354,13 +355,13 @@ export default function TableManagement() {
 
                   <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-50 gap-2">
                      <div className="flex gap-1.5">
-                       <button onClick={() => handleOpenModal(table)} className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                       <button type="button" onClick={() => handleOpenModal(table)} className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm">
                           <Edit2 size={12} strokeWidth={2.5} />
                        </button>
-                       <button onClick={() => { setTableToDelete(table); setIsDeleteModalOpen(true); }} className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                       <button type="button" onClick={() => { setTableToDelete(table); setIsDeleteModalOpen(true); }} className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-rose-500 hover:text-white transition-all shadow-sm">
                           <Trash2 size={12} strokeWidth={2.5} />
                        </button>
-                       <button 
+                       <button type="button" 
                           onClick={() => setSelectedQrTable(table)}
                           className="p-2 bg-slate-900 text-amber-400 rounded-lg hover:bg-slate-800 transition-all shadow-lg active:scale-95"
                        >
@@ -370,7 +371,7 @@ export default function TableManagement() {
                   </div>
                   
                   <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-slate-50 rounded-full group-hover:scale-[2.5] transition-all duration-700 opacity-20" />
-               </motion.div>
+               </m.div>
              ))}
           </div>
         )}
@@ -412,13 +413,13 @@ export default function TableManagement() {
            </div>
 
            <div className="grid grid-cols-2 gap-4 w-full">
-              <button 
+              <button type="button" 
                 onClick={downloadQR}
                 className="py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2"
               >
                 Download PNG
               </button>
-              <button 
+              <button type="button" 
                 onClick={() => setSelectedQrTable(null)}
                 className="py-4 bg-white text-slate-900 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest"
               >
@@ -507,7 +508,7 @@ export default function TableManagement() {
            <div className="p-8 bg-rose-50 rounded-[2.5rem] border border-rose-100 text-center">
               <p className="text-xs font-black text-rose-600 uppercase tracking-widest">Confirm permanent removal of node {tableToDelete?.tableCode}</p>
            </div>
-           <button onClick={confirmDelete} className="w-full py-4 bg-rose-500 text-white font-black text-[10px] uppercase rounded-xl shadow-lg">Confirm Delete</button>
+           <button type="button" onClick={confirmDelete} className="w-full py-4 bg-rose-500 text-white font-black text-[10px] uppercase rounded-xl shadow-lg">Confirm Delete</button>
         </div>
       </AdminModal>
     </div>

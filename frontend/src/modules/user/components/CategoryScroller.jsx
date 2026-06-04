@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export function CategoryScroller({ categories, activeCategory, onSelect }) {
   const containerRef = useRef(null);
@@ -19,7 +19,7 @@ export function CategoryScroller({ categories, activeCategory, onSelect }) {
       {categories.map((cat) => {
         const isActive = activeCategory === cat.id;
         return (
-          <motion.button
+          <m.button
             key={cat.id}
             data-active={isActive}
             onClick={() => onSelect(cat.id)}
@@ -33,13 +33,13 @@ export function CategoryScroller({ categories, activeCategory, onSelect }) {
             <span className="relative z-10">{cat.label}</span>
             
             {isActive && (
-              <motion.div
+              <m.div
                 layoutId="active-pill"
                 className="absolute inset-0 bg-brand-500 shadow-[0_8px_20px_rgba(255,122,0,0.3)] rounded-xl"
                 transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
               />
             )}
-          </motion.button>
+          </m.button>
         );
       })}
     </div>

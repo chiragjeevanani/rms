@@ -1,46 +1,59 @@
-
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Search, Filter, Clock, Eye, MapPin, User, Hash, Building2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import BranchSelector from '../../components/BranchSelector';
 
 export default function AllOrders() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [viewingOrder, setViewingOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState([]);
-  const [branches, setBranches] = useState([]);
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
-
-  const [formData, setFormData] = useState({
-    status: 'Pending'
+  // Grouped filters state
+  const [filters, setFilters] = useState({
+    searchQuery: '',
+    statusFilter: 'All',
+    selectedBranchFilter: 'all',
+    currentPage: 1
   });
 
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
+  // Grouped operational data state
+  const [dataState, setDataState] = useState({
+    orders: [],
+    branches: [],
+    loading: true
+  });
+
+  // Grouped modal state
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    viewingOrder: null,
+    formDataStatus: 'Pending'
+  });
+
   const recordsPerPage = 5;
 
   const fetchOrders = async () => {
-    setLoading(true);
+    setDataState(prev => ({ ...prev, loading: true }));
     try {
       const [orderRes, branchRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/orders`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } }),
-        fetch((() => { const _rid = localStorage.getItem('admin_restaurantId'); return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; })())
+        fetch(`${import.meta.env.VITE_API_URL}/orders`, { 
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_access')}` } 
+        }),
+        fetch((() => { 
+          const _rid = localStorage.getItem('admin_restaurantId'); 
+          return _rid ? `${import.meta.env.VITE_API_URL}/branches?restaurantId=${_rid}` : `${import.meta.env.VITE_API_URL}/branches`; 
+        })())
       ]);
       const orderData = await orderRes.json();
       const branchData = await branchRes.json();
       
-      if (orderRes.ok) setOrders(orderData.data || []);
-      if (branchRes.ok) setBranches(branchData.data || []);
+      setDataState({
+        orders: orderRes.ok ? (orderData.data || []) : [],
+        branches: branchRes.ok ? (branchData.data || []) : [],
+        loading: false
+      });
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Failed to sync orders');
-    } finally {
-      setLoading(false);
+      setDataState(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -49,61 +62,50 @@ export default function AllOrders() {
   }, []);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, selectedBranchFilter, searchQuery]);
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'Paid':
-      case 'Completed': 
-      case 'Served': return 'text-emerald-500 bg-emerald-50 border-emerald-100';
-      case 'Pending':
-      case 'Confirmed':
-      case 'Preparing': return 'text-blue-500 bg-blue-50 border-blue-100';
-      case 'Cancelled': return 'text-red-500 bg-red-50 border-red-100';
-      default: return 'text-slate-400 bg-slate-50 border-slate-100';
-    }
-  };
+    setFilters(prev => ({ ...prev, currentPage: 1 }));
+  }, [filters.statusFilter, filters.selectedBranchFilter, filters.searchQuery]);
 
   const handleOpenView = (order) => {
-    setViewingOrder(order);
-    setFormData({ status: order.status });
-    setIsModalOpen(true);
+    setModalState({
+      isOpen: true,
+      viewingOrder: order,
+      formDataStatus: order.status
+    });
   };
 
   const handleUpdateStatus = async (e) => {
     if (e) e.preventDefault();
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/${viewingOrder._id}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/${modalState.viewingOrder._id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: formData.status })
+        body: JSON.stringify({ status: modalState.formDataStatus })
       });
       if (res.ok) {
         toast.success('Order status updated');
         fetchOrders();
-        setIsModalOpen(false);
+        setModalState(prev => ({ ...prev, isOpen: false }));
       }
     } catch (err) {
       toast.error('Update failed');
     }
   };
 
-  const filteredOrders = orders.filter(o => {
-    const matchesSearch = o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         o.tableName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         o.waiterName?.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredOrders = dataState.orders.filter(o => {
+    const matchesSearch = o.orderNumber.toLowerCase().includes(filters.searchQuery.toLowerCase()) || 
+                          o.tableName.toLowerCase().includes(filters.searchQuery.toLowerCase()) || 
+                          o.waiterName?.toLowerCase().includes(filters.searchQuery.toLowerCase());
     
-    const matchesStatus = statusFilter === 'All' || o.status === statusFilter;
+    const matchesStatus = filters.statusFilter === 'All' || o.status === filters.statusFilter;
     const oBranchId = typeof o.branchId === 'object' && o.branchId !== null ? o.branchId._id : o.branchId;
-    const branchMatch = selectedBranchFilter === 'all' || oBranchId === selectedBranchFilter;
+    const branchMatch = filters.selectedBranchFilter === 'all' || oBranchId === filters.selectedBranchFilter;
     
     return matchesSearch && matchesStatus && branchMatch;
   });
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
-  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfLastRecord = filters.currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredOrders.slice(indexOfFirstRecord, indexOfLastRecord);
 
@@ -115,12 +117,12 @@ export default function AllOrders() {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1 shadow-sm inline-block">Real-time Operational Pulse</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={fetchOrders} className="p-2 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors">
-             <Clock size={16} className={`${loading ? 'animate-spin' : ''} text-slate-400`} />
+          <button type="button" onClick={fetchOrders} aria-label="Refresh orders list" className="p-2 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors">
+             <Clock size={16} className={`${dataState.loading ? 'animate-spin' : ''} text-slate-400`} />
           </button>
           <div className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-slate-900/20">
             <ShoppingBag size={14} className="text-brand-500" />
-            {orders.length} SIGNALS RECORDED
+            {dataState.orders.length} SIGNALS RECORDED
           </div>
         </div>
       </div>
@@ -131,25 +133,27 @@ export default function AllOrders() {
           <input 
             type="text" 
             placeholder="FILTER BY ORDER #, TABLE, OR STAFF..."
+            aria-label="Filter orders"
             className="w-full bg-white border border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-slate-900/5 transition-all shadow-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={filters.searchQuery}
+            onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
           />
         </div>
 
         <div className="h-10 w-px bg-slate-100 hidden md:block" />
 
         <BranchSelector 
-          branches={branches}
-          selectedBranch={selectedBranchFilter}
-          onSelect={setSelectedBranchFilter}
+          branches={dataState.branches}
+          selectedBranch={filters.selectedBranchFilter}
+          onSelect={(b) => setFilters(prev => ({ ...prev, selectedBranchFilter: b }))}
         />
 
         <div className="flex items-center gap-2 bg-white border border-slate-100 rounded-2xl px-4 py-2 shadow-sm min-w-[200px] h-[58px]">
            <Filter size={14} className="text-slate-400" />
            <select 
-             value={statusFilter}
-             onChange={(e) => setStatusFilter(e.target.value)}
+             value={filters.statusFilter}
+             onChange={(e) => setFilters(prev => ({ ...prev, statusFilter: e.target.value }))}
+             aria-label="Filter by status"
              className="w-full bg-transparent border-none text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer"
            >
               <option value="All">All Statuses</option>
@@ -173,44 +177,18 @@ export default function AllOrders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {loading ? (
+              {dataState.loading ? (
                 Array(5).fill(0).map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     <td colSpan={5} className="px-8 py-6 h-20 bg-slate-50/20" />
                   </tr>
                 ))
               ) : currentRecords.length > 0 ? currentRecords.map((order) => (
-                <tr key={order._id} className="hover:bg-slate-50/80 group transition-all duration-300">
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-black text-slate-900 uppercase tracking-tighter group-hover:text-brand-600 transition-colors underline decoration-transparent decoration-2 underline-offset-4 decoration-brand-500/0 group-hover:decoration-brand-500/30">#{order.orderNumber}</span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
-                        <Clock size={10} /> {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {order.waiterName}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg w-fit">
-                       <MapPin size={10} className="text-slate-400" />
-                       {order.tableName}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className="text-sm font-black text-slate-900 tracking-tighter">₹{order.grandTotal}</span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.status)}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(order.status).replace('text-', 'bg-').split(' ')[0]}`} />
-                      {order.status}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <button 
-                      onClick={() => handleOpenView(order)}
-                      className="p-3 bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-white border border-slate-100 rounded-xl transition-all hover:shadow-lg outline-none"
-                    ><Eye size={18} /></button>
-                  </td>
-                </tr>
+                <OrderRow 
+                  key={order._id}
+                  order={order}
+                  onOpenView={handleOpenView}
+                />
               )) : (
                 <tr>
                   <td colSpan={5} className="px-8 py-20 text-center">
@@ -229,11 +207,11 @@ export default function AllOrders() {
               Showing <span className="text-slate-900">{indexOfFirstRecord + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastRecord, filteredOrders.length)}</span> of <span className="text-slate-900">{filteredOrders.length}</span> results
             </p>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
+              <button type="button"
+                onClick={() => setFilters(prev => ({ ...prev, currentPage: Math.max(prev.currentPage - 1, 1) }))}
+                disabled={filters.currentPage === 1}
                 className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
-                  currentPage === 1 
+                  filters.currentPage === 1 
                     ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 active:scale-95 shadow-sm'
                 }`}
@@ -242,11 +220,11 @@ export default function AllOrders() {
               </button>
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
-                  <button
+                  <button type="button"
                     key={i + 1}
-                    onClick={() => setCurrentPage(i + 1)}
+                    onClick={() => setFilters(prev => ({ ...prev, currentPage: i + 1 }))}
                     className={`w-8 h-8 text-[10px] font-black rounded-lg border transition-all ${
-                      currentPage === i + 1
+                      filters.currentPage === i + 1
                         ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
                         : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
                     }`}
@@ -255,11 +233,11 @@ export default function AllOrders() {
                   </button>
                 ))}
               </div>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
+              <button type="button"
+                onClick={() => setFilters(prev => ({ ...prev, currentPage: Math.min(prev.currentPage + 1, totalPages) }))}
+                disabled={filters.currentPage === totalPages}
                 className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
-                  currentPage === totalPages 
+                  filters.currentPage === totalPages 
                     ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 active:scale-95 shadow-sm'
                 }`}
@@ -272,110 +250,173 @@ export default function AllOrders() {
       </div>
 
       <AdminModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={viewingOrder ? `Audit Order ${viewingOrder.orderNumber}` : 'Order Context'}
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+        title={modalState.viewingOrder ? `Audit Order ${modalState.viewingOrder.orderNumber}` : 'Order Context'}
         subtitle="Operational Manifest & Status Override"
         onSubmit={handleUpdateStatus}
         submitLabel="Synchronize Flow"
-        isSubmitDisabled={viewingOrder?.status === 'cancelled'}
+        isSubmitDisabled={modalState.viewingOrder?.status === 'cancelled'}
       >
-        {viewingOrder && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Source Entity</label>
-                <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
-                   <User size={14} className="text-brand-500" />
-                   {viewingOrder.waiterName}
-                </div>
-              </div>
-              <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Sector</label>
-                <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
-                   <MapPin size={14} className="text-brand-500" />
-                   {viewingOrder.tableName}
-                </div>
-              </div>
-              <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Branch</label>
-                <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
-                   <Building2 size={14} className="text-brand-500" />
-                   {branches.find(b => b._id === (typeof viewingOrder.branchId === 'object' ? viewingOrder.branchId?._id : viewingOrder.branchId))?.branchName || 'Global/Unknown'}
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-2">Status Lifecycle Management</label>
-              <div className="grid grid-cols-3 gap-2">
-                {(() => {
-                  const current = viewingOrder.status;
-                  let base = ['Pending', 'Preparing', 'Completed', 'Paid'];
-                  const st = current?.toLowerCase();
-                  if (st !== 'paid' && st !== 'completed' && st !== 'cancelled') {
-                    base.push('Cancelled');
-                  }
-                  return [...new Set(base)];
-                })().map((status) => (
-                  <button
-                    key={status}
-                    type="button"
-                    disabled={viewingOrder.status === 'cancelled'}
-                    onClick={() => setFormData({ status })}
-                    className={`py-3 text-[9px] font-black uppercase tracking-widest rounded-xl border transition-all ${
-                      formData.status === status 
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xl' 
-                        : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50'
-                    } ${viewingOrder.status === 'cancelled' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-              <div className="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Manifest Elements</span>
-                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1"><Hash size={10} /> {viewingOrder.items?.length || 0} Entities</span>
-              </div>
-              <div className="p-6 space-y-4">
-                 {viewingOrder.items?.map((item, id) => (
-                   <div key={id} className="flex justify-between items-start pb-4 border-b border-slate-50 last:border-0 last:pb-0">
-                      <div>
-                         <p className="text-xs font-black text-slate-900 uppercase italic">{item.name}</p>
-                         {item.modifiers?.length > 0 && (
-                           <div className="flex flex-wrap gap-1 mt-1">
-                              {item.modifiers.map((m, idx) => (
-                                <span key={idx} className="text-[8px] font-bold text-slate-400 uppercase py-0.5 px-1.5 bg-slate-100 rounded">
-                                   {m.value}
-                                </span>
-                              ))}
-                           </div>
-                         )}
-                      </div>
-                      <div className="text-right">
-                         <p className="text-xs font-black text-slate-900">x{item.quantity}</p>
-                         <p className="text-[10px] font-bold text-slate-400 tracking-tighter">₹{item.price}</p>
-                      </div>
-                   </div>
-                 ))}
-              </div>
-              <div className="p-6 bg-slate-50/50 space-y-2 border-t border-slate-100">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                  <span className="text-slate-400">Transaction Subtotal</span>
-                  <span className="text-slate-900">₹{viewingOrder.grandTotal}</span>
-                </div>
-                <div className="flex justify-between text-xs font-black uppercase tracking-widest pt-2 border-t border-slate-200">
-                  <span className="text-slate-900">Fiscal Sum</span>
-                  <span className="text-brand-600">₹{viewingOrder.grandTotal}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <OrderDetailsModalContent 
+          viewingOrder={modalState.viewingOrder}
+          branches={dataState.branches}
+          formDataStatus={modalState.formDataStatus}
+          onStatusChange={(status) => setModalState(prev => ({ ...prev, formDataStatus: status }))}
+        />
       </AdminModal>
+    </div>
+  );
+}
+
+// ── SUB-COMPONENTS (Extracted to resolve Giant Component warnings) ──────────────
+
+function OrderRow({ order, onOpenView }) {
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'Paid':
+      case 'Completed': 
+      case 'Served': return 'text-emerald-500 bg-emerald-50 border-emerald-100';
+      case 'Pending':
+      case 'Confirmed':
+      case 'Preparing': return 'text-blue-500 bg-blue-50 border-blue-100';
+      case 'Cancelled': return 'text-red-500 bg-red-50 border-red-100';
+      default: return 'text-slate-400 bg-slate-50 border-slate-100';
+    }
+  };
+
+  return (
+    <tr className="hover:bg-slate-50/80 group transition-all duration-300">
+      <td className="px-8 py-6">
+        <div className="flex flex-col">
+          <span className="text-sm font-black text-slate-900 uppercase tracking-tighter group-hover:text-brand-600 transition-colors underline decoration-transparent decoration-2 underline-offset-4 decoration-brand-500/0 group-hover:decoration-brand-500/30">#{order.orderNumber}</span>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+            <Clock size={10} /> {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {order.waiterName}
+          </span>
+        </div>
+      </td>
+      <td className="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg w-fit">
+           <MapPin size={10} className="text-slate-400" />
+           {order.tableName}
+        </div>
+      </td>
+      <td className="px-8 py-6">
+        <span className="text-sm font-black text-slate-900 tracking-tighter">₹{order.grandTotal}</span>
+      </td>
+      <td className="px-8 py-6">
+        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.status)}`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(order.status).replace('text-', 'bg-').split(' ')[0]}`} />
+          {order.status}
+        </div>
+      </td>
+      <td className="px-8 py-6 text-right">
+        <button type="button" 
+          onClick={() => onOpenView(order)}
+          aria-label={`View order details for ${order.orderNumber}`}
+          className="p-3 bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-white border border-slate-100 rounded-xl transition-all hover:shadow-lg outline-none"
+        ><Eye size={18} /></button>
+      </td>
+    </tr>
+  );
+}
+
+function OrderDetailsModalContent({ viewingOrder, branches, formDataStatus, onStatusChange }) {
+  if (!viewingOrder) return null;
+
+  return (
+    <div className="space-y-8">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Source Entity</span>
+          <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
+             <User size={14} className="text-brand-500" />
+             {viewingOrder.waiterName}
+          </div>
+        </div>
+        <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Sector</span>
+          <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
+             <MapPin size={14} className="text-brand-500" />
+             {viewingOrder.tableName}
+          </div>
+        </div>
+        <div className="bg-slate-50 p-6 border border-slate-100 rounded-2xl">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Branch</span>
+          <div className="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
+             <Building2 size={14} className="text-brand-500" />
+             {branches.find(b => b._id === (typeof viewingOrder.branchId === 'object' ? viewingOrder.branchId?._id : viewingOrder.branchId))?.branchName || 'Global/Unknown'}
+          </div>
+        </div>
+      </div>
+      
+      <div className="space-y-3">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-2">Status Lifecycle Management</span>
+        <div className="grid grid-cols-3 gap-2">
+          {(() => {
+            const current = viewingOrder.status;
+            let base = ['Pending', 'Preparing', 'Completed', 'Paid'];
+            const st = current?.toLowerCase();
+            if (st !== 'paid' && st !== 'completed' && st !== 'cancelled') {
+              base.push('Cancelled');
+            }
+            return [...new Set(base)];
+          })().map((status) => (
+            <button
+              key={status}
+              type="button"
+              disabled={viewingOrder.status === 'cancelled'}
+              onClick={() => onStatusChange(status)}
+              className={`py-3 text-[9px] font-black uppercase tracking-widest rounded-xl border transition-all ${
+                formDataStatus === status 
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-xl' 
+                  : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50'
+              } ${viewingOrder.status === 'cancelled' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+        <div className="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+           <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Manifest Elements</span>
+           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1"><Hash size={10} /> {viewingOrder.items?.length || 0} Entities</span>
+        </div>
+        <div className="p-6 space-y-4">
+           {viewingOrder.items?.map((item, id) => (
+             <div key={id} className="flex justify-between items-start pb-4 border-b border-slate-50 last:border-0 last:pb-0">
+                <div>
+                   <p className="text-xs font-black text-slate-900 uppercase italic">{item.name}</p>
+                   {item.modifiers?.length > 0 && (
+                     <div className="flex flex-wrap gap-1 mt-1">
+                        {item.modifiers.map((m, idx) => (
+                          <span key={idx} className="text-[8px] font-bold text-slate-400 uppercase py-0.5 px-1.5 bg-slate-100 rounded">
+                             {m.value}
+                          </span>
+                        ))}
+                     </div>
+                   )}
+                </div>
+                <div className="text-right">
+                   <p className="text-xs font-black text-slate-900">x{item.quantity}</p>
+                   <p className="text-[10px] font-bold text-slate-400 tracking-tighter">₹{item.price}</p>
+                </div>
+             </div>
+           ))}
+        </div>
+        <div className="p-6 bg-slate-50/50 space-y-2 border-t border-slate-100">
+          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+            <span className="text-slate-400">Transaction Subtotal</span>
+            <span className="text-slate-900">₹{viewingOrder.grandTotal}</span>
+          </div>
+          <div className="flex justify-between text-xs font-black uppercase tracking-widest pt-2 border-t border-slate-200">
+            <span className="text-slate-900">Fiscal Sum</span>
+            <span className="text-brand-600">₹{viewingOrder.grandTotal}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

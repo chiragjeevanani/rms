@@ -7,7 +7,7 @@ import {
   MapPin, Phone, Hash, CreditCard, Banknote, Smartphone,
   Plus, Trash2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { usePos } from '../../context/PosContext';
 import { jsPDF } from "jspdf";
@@ -20,7 +20,14 @@ export default function GenerateInvoice() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [branchInfo, setBranchInfo] = useState(null);
+  const [branchInfo, setBranchInfo] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pos_branch_info');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [customInvoice, setCustomInvoice] = useState({
     billNumber: '',
@@ -54,51 +61,52 @@ export default function GenerateInvoice() {
     }
   }, [isCustomMode]);
 
-  const fetchCompletedOrders = async () => {
-    try {
-      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const bId = typeof staffInfo.branchId === 'object' ? staffInfo.branchId?._id : staffInfo.branchId;
-      const branchQuery = bId ? `?branchId=${bId}` : '';
-      
-      // Fetch only COMPLETED orders as per user request
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/completed${branchQuery}`);
-      const result = await response.json();
-      if (result.success) {
-        setOrders(result.data);
-      }
-    } catch (err) {
-      if (dbClient.isElectron) {
-        console.log('[GenerateInvoice] Network fetch failed, loading completed orders from SQLite.');
-        try {
-          const localOrders = await dbClient.getOrders({ status: 'paid' });
-          setOrders(localOrders);
-        } catch (localErr) {
-          console.error('[GenerateInvoice] Failed to fetch local orders:', localErr);
-          toast.error('Failed to load completed orders locally');
+  const fetchCompletedOrders = () => {
+    const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+    const bId = typeof staffInfo.branchId === 'object' ? staffInfo.branchId?._id : staffInfo.branchId;
+
+    loadCompletedOrders(bId)
+      .then(result => {
+        if (result.success) {
+          setOrders(result.data);
         }
-      } else {
-        toast.error('Failed to sync completed orders');
-      }
-    } finally {
-      setLoading(false);
-    }
+      })
+      .catch(async (err) => {
+        if (dbClient.isElectron) {
+          try {
+            const localOrders = await dbClient.getOrders({ status: 'paid' });
+            setOrders(localOrders);
+          } catch (localErr) {
+            console.error('[GenerateInvoice] Failed to fetch local orders:', localErr);
+            toast.error('Failed to load completed orders locally');
+          }
+        } else {
+          toast.error('Failed to sync completed orders');
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  const fetchBranchInfo = async () => {
-    try {
-      const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
-      const bId = typeof staffInfo.branchId === 'object' ? staffInfo.branchId?._id : staffInfo.branchId;
-      if (!bId) return;
+  const fetchBranchInfo = () => {
+    const staffInfo = JSON.parse(localStorage.getItem('staff_info') || '{}');
+    const bId = typeof staffInfo.branchId === 'object' ? staffInfo.branchId?._id : staffInfo.branchId;
+    if (!bId) return;
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
-      const result = await response.json();
-      if (result.success) {
-        const currentBranch = result.data.find(b => b._id === bId);
-        if (currentBranch) setBranchInfo(currentBranch);
-      }
-    } catch (err) {
-      console.error('Branch info fetch failed');
-    }
+    loadBranches()
+      .then(result => {
+        if (result.success) {
+          const currentBranch = result.data.find(b => b._id === bId);
+          if (currentBranch) {
+            setBranchInfo(currentBranch);
+            localStorage.setItem('pos_branch_info', JSON.stringify(currentBranch));
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Branch info fetch failed', err);
+      });
   };
 
   useEffect(() => {
@@ -108,14 +116,20 @@ export default function GenerateInvoice() {
 
   const getMappedCustomOrder = () => {
     const sub = customInvoice.items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
-    const tx = sub * (Number(customInvoice.taxRate || 0) / 100);
-    const gt = sub + tx - Number(customInvoice.discountAmount || 0);
+    const disc = Number(customInvoice.discountAmount || 0);
+    const taxable = Math.max(0, sub - disc);
+    const tx = taxable * (Number(customInvoice.taxRate || 0) / 100);
+    const gt = taxable + tx;
 
     return {
       orderNumber: customInvoice.billNumber || `CUST-${Date.now().toString().slice(-6)}`,
       createdAt: customInvoice.createdAt ? new Date(customInvoice.createdAt).toISOString() : new Date().toISOString(),
       tableName: customInvoice.tableName || 'Table 1',
       orderType: customInvoice.orderType || 'Dine-In',
+      customer: {
+        name: customInvoice.customerName || 'Walk-in Guest',
+        mobile: customInvoice.customerPhone || ''
+      },
       items: customInvoice.items.map(item => ({
         name: item.name || 'Custom Item',
         quantity: Number(item.quantity || 1),
@@ -180,16 +194,30 @@ export default function GenerateInvoice() {
     doc.text(`Date: ${dateString}`, 5, 31);
     doc.text(`Table: ${order.tableName}`, 5, 35);
     doc.text(`Type: ${order.orderType}`, 45, 35);
+
+    let nextY = 35;
+    if (order.customer?.name || order.customer?.mobile) {
+      nextY += 4;
+      const cName = order.customer?.name || 'Walk-in Guest';
+      const cMobile = order.customer?.mobile || '';
+      doc.text(`Cust: ${cName}`, 5, nextY);
+      if (cMobile) {
+        doc.text(`Phone: ${cMobile}`, 45, nextY);
+      }
+    }
     
-    doc.line(5, 38, 75, 38);
+    const line1Y = nextY + 3;
+    doc.line(5, line1Y, 75, line1Y);
     doc.setFont("helvetica", "bold");
-    doc.text('Item', 5, 42);
-    doc.text('Qty', 45, 42, { align: 'center' });
-    doc.text('Amount', 75, 42, { align: 'right' });
-    doc.line(5, 44, 75, 44);
+    const textY = line1Y + 4;
+    doc.text('Item', 5, textY);
+    doc.text('Qty', 45, textY, { align: 'center' });
+    doc.text('Amount', 75, textY, { align: 'right' });
+    const line2Y = textY + 2;
+    doc.line(5, line2Y, 75, line2Y);
 
     doc.setFont("helvetica", "normal");
-    let y = 48;
+    let y = line2Y + 4;
     order.items.forEach(item => {
       const name = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
       doc.text(name, 5, y);
@@ -262,12 +290,12 @@ export default function GenerateInvoice() {
     <div className="h-full flex flex-col bg-[#F8F9FB] animate-in fade-in duration-500 overflow-hidden font-sans select-none relative">
       
       {/* Hidden Print Layer */}
-      <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-8 text-slate-900" id="printable-receipt">
+      <div className="hidden print:block absolute inset-0 bg-white text-slate-900" id="printable-receipt">
          {selectedOrder && (
-            <div className="max-w-[80mm] mx-auto font-mono text-[10px]">
-               <div className="text-center mb-4 border-b border-dashed pb-4">
-                  <h1 className="text-base font-black uppercase">{branchInfo?.branchName || 'RESTAURANT'}</h1>
-                  <p className="text-[8px] mt-1">{branchInfo?.address}</p>
+            <div className="w-full max-w-[70mm] mx-auto font-mono text-[10px] px-2">
+               <div className="text-center mb-4 border-b border-dashed pb-4 px-2">
+                  <h1 className="text-base font-black uppercase break-words">{branchInfo?.branchName || 'RESTAURANT'}</h1>
+                  <p className="text-[8px] mt-1 break-words leading-relaxed whitespace-normal text-center">{branchInfo?.address}</p>
                   <p className="text-[8px] mt-0.5">Ph: {branchInfo?.phone}</p>
                   {branchInfo?.gstNumber && <p className="text-[8px] font-bold">GST: {branchInfo.gstNumber}</p>}
                </div>
@@ -275,10 +303,16 @@ export default function GenerateInvoice() {
                   <span>Bill: {selectedOrder.orderNumber}</span>
                   <span>{isNaN(new Date(selectedOrder.createdAt).getTime()) ? new Date().toLocaleDateString() : new Date(selectedOrder.createdAt).toLocaleDateString()}</span>
                </div>
-               <div className="flex justify-between mb-4">
+               <div className="flex justify-between mb-1">
                   <span>Table: {selectedOrder.tableName}</span>
                   <span>{isNaN(new Date(selectedOrder.createdAt).getTime()) ? new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : new Date(selectedOrder.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                </div>
+               {(selectedOrder.customer?.name || selectedOrder.customer?.mobile) && (
+                  <div className="flex justify-between mb-4 border-t border-dashed pt-1 mt-1">
+                     <span className="truncate pr-2">Cust: {selectedOrder.customer?.name || 'Walk-in Guest'}</span>
+                     {selectedOrder.customer?.mobile && <span className="shrink-0">Ph: {selectedOrder.customer.mobile}</span>}
+                  </div>
+               )}
                <div className="border-y border-dashed py-2 mb-4">
                   <div className="flex font-bold mb-1">
                      <span className="flex-1">Item</span>
@@ -314,7 +348,7 @@ export default function GenerateInvoice() {
 
       <header className="px-8 py-6 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between print:hidden">
         <div className="flex items-center gap-5">
-          <button onClick={toggleSidebar} style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }} className="p-2.5 text-white rounded-xl shadow-lg transition-all hover:opacity-90">
+          <button type="button" onClick={toggleSidebar} style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }} className="p-2.5 text-white rounded-xl shadow-lg transition-all hover:opacity-90">
              <Menu size={18} />
           </button>
           <div className="space-y-0.5">
@@ -334,11 +368,11 @@ export default function GenerateInvoice() {
               </div>
            )}
            {!isCustomMode && (
-              <button onClick={fetchCompletedOrders} className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-all">
+              <button type="button" onClick={fetchCompletedOrders} className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-all">
                  <RefreshCw size={18} />
               </button>
            )}
-           <button 
+           <button type="button" 
              onClick={() => setIsCustomMode(!isCustomMode)}
              style={{ backgroundColor: 'var(--pos-sidebar-color, var(--primary-color))' }}
              className="h-10 px-5 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg active:scale-95 transition-all hover:opacity-90"
@@ -361,6 +395,7 @@ export default function GenerateInvoice() {
                       <input 
                         type="text" 
                         placeholder="Search by table or bill number..."
+                        aria-label="Search orders"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onFocus={() => setIsSearchFocused(true)}
@@ -389,7 +424,7 @@ export default function GenerateInvoice() {
                                        className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" 
                                        style={{ borderColor: 'var(--pos-sidebar-color, var(--primary-color))', borderTopColor: 'transparent' }}
                                      />
-                                     <span className="text-[10px] font-black uppercase text-slate-400">Loading history...</span>
+                                     <span className="text-[10px] font-black uppercase text-slate-400">Loading history…</span>
                                   </td>
                                </tr>
                             ) : filteredOrders.length === 0 ? (
@@ -401,55 +436,81 @@ export default function GenerateInvoice() {
                                </tr>
                             ) : (
                                filteredOrders.map(order => (
-                                 <tr key={order._id} className="group hover:bg-slate-50/80 transition-all">
-                                    <td className="px-8 py-6">
-                                       <span className="text-sm font-black text-slate-900">#{order.orderNumber.split('-').pop()}</span>
-                                       <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
-                                    </td>
-                                    <td className="px-8 py-6">
-                                       <div className="flex items-center gap-3">
-                                          <div 
-                                             style={{
-                                               backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)',
-                                               borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 15%, transparent)',
-                                               color: 'var(--pos-sidebar-color, var(--primary-color))'
-                                             }}
-                                             className="w-10 h-10 rounded-xl border flex items-center justify-center transition-all"
-                                          >
-                                             <TableIcon size={18} />
-                                          </div>
-                                          <span className="text-sm font-black text-slate-700 uppercase">{order.tableName}</span>
-                                       </div>
-                                    </td>
-                                    <td className="px-8 py-6 text-center">
-                                       <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-lg border ${
-                                          order.payments?.[0]?.method === 'UPI' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                          order.payments?.[0]?.method === 'Cash' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                          'bg-amber-50 text-amber-600 border-amber-100'
-                                       }`}>
-                                          {order.payments?.[0]?.method || 'Paid'}
-                                       </span>
-                                    </td>
-                                    <td className="px-8 py-6 text-right">
-                                       <span className="text-xl font-black text-slate-950 italic">₹{order.grandTotal.toFixed(2)}</span>
-                                    </td>
-                                    <td className="px-8 py-6 text-center">
-                                       <div className="flex items-center justify-center gap-2">
-                                          <button 
-                                            onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); setTimeout(handlePrint, 100); }}
-                                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 rounded-xl hover:bg-slate-950 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
-                                          >
-                                             <Printer size={14} /> Print
-                                          </button>
-                                          <button 
-                                            onClick={(e) => { e.stopPropagation(); generatePDF(order); }}
-                                            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
-                                          >
-                                             <Download size={14} /> PDF
-                                          </button>
-                                       </div>
-                                    </td>
-                                 </tr>
+                                  <React.Fragment key={order._id}>
+                                     <tr onClick={() => setSelectedOrder(order)} className="group hover:bg-slate-50/80 transition-all cursor-pointer">
+                                        <td className="px-8 py-6">
+                                           <div className="flex flex-col">
+                                              <span className="text-sm font-black text-slate-900">#{order.orderNumber.split('-').pop()}</span>
+                                              <span className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                           </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                           <div className="flex items-center gap-3">
+                                              <div 
+                                                 style={{
+                                                   backgroundColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 8%, transparent)',
+                                                   borderColor: 'color-mix(in srgb, var(--pos-sidebar-color, var(--primary-color)) 15%, transparent)',
+                                                   color: 'var(--pos-sidebar-color, var(--primary-color))'
+                                                 }}
+                                                 className="w-10 h-10 rounded-xl border flex items-center justify-center transition-all"
+                                              >
+                                                 <TableIcon size={18} />
+                                              </div>
+                                              <span className="text-sm font-black text-slate-700 uppercase">{order.tableName}</span>
+                                           </div>
+                                        </td>
+                                        <td className="px-8 py-6 text-center">
+                                           <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-lg border ${
+                                              order.payments?.[0]?.method === 'UPI' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                              order.payments?.[0]?.method === 'Cash' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                              'bg-amber-50 text-amber-600 border-amber-100'
+                                           }`}>
+                                              {order.payments?.[0]?.method || 'Paid'}
+                                           </span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                           <span className="text-xl font-black text-slate-950 italic">₹{order.grandTotal.toFixed(2)}</span>
+                                        </td>
+                                        <td className="px-8 py-6 text-center">
+                                           <div className="flex items-center justify-center gap-2">
+                                              <button type="button" 
+                                                onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); setTimeout(handlePrint, 100); }}
+                                                className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 rounded-xl hover:bg-slate-950 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                              >
+                                                 <Printer size={14} /> Print
+                                              </button>
+                                              <button type="button" 
+                                                onClick={(e) => { e.stopPropagation(); generatePDF(order); }}
+                                                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                              >
+                                                 <Download size={14} /> PDF
+                                              </button>
+                                           </div>
+                                        </td>
+                                     </tr>
+                                     <tr className="bg-slate-50/40 border-b border-slate-100">
+                                        <td colSpan="5" className="px-8 py-3">
+                                           <div className="flex items-center gap-8 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                              <div className="flex items-center gap-1.5">
+                                                 <span className="text-slate-400">Customer:</span>
+                                                 <span className="text-blue-600 font-black">
+                                                    {order.customer?.name 
+                                                       ? `${order.customer.name} ${order.customer.mobile ? `(${order.customer.mobile})` : ''}` 
+                                                       : 'Walk-in Guest'}
+                                                 </span>
+                                              </div>
+                                              <div className="flex items-center gap-1.5 border-l border-slate-200 pl-8">
+                                                 <span className="text-slate-400">Discount:</span>
+                                                 <span className={`${order.discount?.amount > 0 ? 'text-rose-600' : 'text-slate-600'} font-black`}>
+                                                    {order.discount?.amount > 0 
+                                                       ? `${order.discount.type === 'percentage' ? 'Percentage' : 'Flat'} (₹${order.discount.amount.toFixed(2)})`
+                                                       : 'None'}
+                                                 </span>
+                                              </div>
+                                           </div>
+                                        </td>
+                                     </tr>
+                                  </React.Fragment>
                                ))
                             )}
                          </tbody>
@@ -582,7 +643,7 @@ export default function GenerateInvoice() {
                            {branchInfo?.gstNumber && <p className="text-[8px] font-black text-slate-900 uppercase mt-0.5">GST: {branchInfo.gstNumber}</p>}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 mb-4 text-[9px] font-bold text-slate-500 uppercase">
+                        <div className="grid grid-cols-2 gap-2 text-[9px] font-bold text-slate-500 uppercase">
                            <div>
                               <p>Bill: <span className="text-slate-900 font-black">{customInvoice.billNumber}</span></p>
                               <p>Table: <span className="text-slate-900 font-black">{customInvoice.tableName}</span></p>
@@ -592,6 +653,14 @@ export default function GenerateInvoice() {
                               <p>Type: <span className="text-slate-900 font-black">{customInvoice.orderType}</span></p>
                            </div>
                         </div>
+
+                        {(customInvoice.customerName || customInvoice.customerPhone) && (
+                           <div className="border-t border-dashed pt-2 mt-2 text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                              <span>Cust: <span className="text-slate-900 font-black">{customInvoice.customerName || 'Walk-in Guest'}</span></span>
+                              {customInvoice.customerPhone && <span>Ph: <span className="text-slate-900 font-black">{customInvoice.customerPhone}</span></span>}
+                           </div>
+                        )}
+                        <div className="mt-4"></div>
 
                         <div className="border-y border-dashed py-2 mb-4">
                            <div className="flex font-black text-slate-400 mb-1 uppercase tracking-widest text-[8px]">
@@ -614,9 +683,11 @@ export default function GenerateInvoice() {
 
                         {/* Calculations block */}
                         {(() => {
-                           const sub = customInvoice.items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
-                           const tx = sub * (Number(customInvoice.taxRate || 0) / 100);
-                           const gt = sub + tx - Number(customInvoice.discountAmount || 0);
+                            const sub = customInvoice.items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+                            const disc = Number(customInvoice.discountAmount || 0);
+                            const taxable = Math.max(0, sub - disc);
+                            const tx = taxable * (Number(customInvoice.taxRate || 0) / 100);
+                            const gt = taxable + tx;
                            return (
                               <div className="space-y-1 text-right mb-6 font-bold text-slate-600">
                                  <div className="flex justify-between"><span>Subtotal:</span><span>₹{sub.toFixed(2)}</span></div>
@@ -640,13 +711,13 @@ export default function GenerateInvoice() {
 
                      {/* Action buttons below sticky preview */}
                      <div className="grid grid-cols-2 gap-4">
-                        <button 
+                        <button type="button" 
                            onClick={handlePrintCustomInvoice}
                            className="h-12 bg-white border border-slate-200 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-50 active:scale-95 transition-all shadow-sm"
                         >
                            <Printer size={16} /> Print Custom
                         </button>
-                        <button 
+                        <button type="button" 
                            onClick={handlePDFCustomInvoice}
                            className="h-12 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-95 transition-all shadow-xl shadow-blue-600/20"
                         >
@@ -663,14 +734,14 @@ export default function GenerateInvoice() {
       <AnimatePresence>
          {selectedOrder && !window.matchMedia('print').matches && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 print:hidden">
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setSelectedOrder(null)}
                   className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
                 />
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0, scale: 0.95, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -686,29 +757,44 @@ export default function GenerateInvoice() {
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">#{selectedOrder.orderNumber}</p>
                          </div>
                       </div>
-                      <button onClick={() => setSelectedOrder(null)} className="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center justify-center">
+                      <button type="button" onClick={() => setSelectedOrder(null)} className="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center justify-center">
                          <X size={20} />
                       </button>
                    </div>
 
                    <div className="flex-1 overflow-y-auto p-10 no-scrollbar space-y-8">
-                      <div className="text-center py-6 border-b-2 border-dashed border-slate-100">
-                         <h3 className="text-3xl font-black text-slate-900 italic tracking-tighter">₹{selectedOrder.grandTotal.toFixed(2)}</h3>
-                         <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-2 flex items-center justify-center gap-2">
-                            <BadgeCheck size={14} /> Payment Settled via {selectedOrder.payments?.[0]?.method || 'Cash'}
-                         </p>
-                      </div>
+                       <div className="text-center py-6 border-b-2 border-dashed border-slate-100">
+                          <h3 className="text-3xl font-black text-slate-900 italic tracking-tighter">₹{selectedOrder.grandTotal.toFixed(2)}</h3>
+                          <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-2 flex items-center justify-center gap-2">
+                             <BadgeCheck size={14} /> Payment Settled via {selectedOrder.payments?.[0]?.method || 'Cash'}
+                          </p>
+                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <p className="mb-1 opacity-50">Table</p>
-                            <span className="text-slate-900 font-black">{selectedOrder.tableName}</span>
-                         </div>
-                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <p className="mb-1 opacity-50">Date & Time</p>
-                            <span className="text-slate-900 font-black">{new Date(selectedOrder.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
-                         </div>
-                      </div>
+                       <div className="grid grid-cols-2 gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                             <p className="mb-1 opacity-50">Table</p>
+                             <span className="text-slate-900 font-black">{selectedOrder.tableName}</span>
+                          </div>
+                          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                             <p className="mb-1 opacity-50">Date & Time</p>
+                             <span className="text-slate-900 font-black">{new Date(selectedOrder.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                          </div>
+                       </div>
+
+                       {(selectedOrder.customer?.name || selectedOrder.customer?.mobile) && (
+                          <div className="grid grid-cols-2 gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                             <div>
+                                <p className="mb-1 opacity-50">Customer</p>
+                                <span className="text-slate-900 font-black">{selectedOrder.customer.name || 'Walk-in Guest'}</span>
+                             </div>
+                             {selectedOrder.customer.mobile && (
+                                <div>
+                                   <p className="mb-1 opacity-50">Phone</p>
+                                   <span className="text-slate-900 font-black">{selectedOrder.customer.mobile}</span>
+                                </div>
+                             )}
+                          </div>
+                       )}
 
                       <div className="space-y-4">
                          <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-1">Ordered Items</p>
@@ -727,14 +813,14 @@ export default function GenerateInvoice() {
                    </div>
 
                    <div className="p-8 bg-slate-50 border-t border-slate-100 grid grid-cols-2 gap-4">
-                      <button onClick={handlePrint} className="h-14 bg-white border-2 border-slate-900 text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-950 hover:text-white transition-all flex items-center justify-center gap-2">
+                      <button type="button" onClick={handlePrint} className="h-14 bg-white border-2 border-slate-900 text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-950 hover:text-white transition-all flex items-center justify-center gap-2">
                          <Printer size={18} /> Print
                       </button>
-                      <button onClick={() => generatePDF(selectedOrder)} className="h-14 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 flex items-center justify-center gap-2">
+                      <button type="button" onClick={() => generatePDF(selectedOrder)} className="h-14 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 flex items-center justify-center gap-2">
                          <Download size={18} /> PDF
                       </button>
                    </div>
-                </motion.div>
+                </m.div>
             </div>
          )}
       </AnimatePresence>
@@ -748,15 +834,28 @@ export default function GenerateInvoice() {
             visibility: visible;
           }
           #printable-receipt {
-            position: fixed;
+            position: absolute;
             left: 0;
             top: 0;
-            width: 80mm;
+            width: 100%;
             margin: 0;
-            padding: 10px;
+            padding: 0;
           }
         }
       `}} />
     </div>
   );
 }
+
+const loadCompletedOrders = async (bId) => {
+  const branchQuery = bId ? `?branchId=${bId}` : '';
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/completed${branchQuery}`);
+  if (!response.ok) throw new Error('Failed to fetch completed orders');
+  return response.json();
+};
+
+const loadBranches = async () => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/branches`);
+  if (!response.ok) throw new Error('Failed to fetch branches');
+  return response.json();
+};

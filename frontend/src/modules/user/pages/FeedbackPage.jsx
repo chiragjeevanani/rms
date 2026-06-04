@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -37,7 +37,7 @@ export default function FeedbackPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white selection:bg-brand-500 selection:text-charcoal-900 transition-colors duration-300">
       <div className="max-w-lg mx-auto px-6 pt-8 pb-40">
         <header className="flex items-center gap-6 mb-12">
-           <button 
+           <button type="button" 
              onClick={() => navigate(-1)}
              className="w-12 h-12 bg-white border border-charcoal-900/10 dark:bg-white/5 dark:border-white/5 rounded-2xl flex items-center justify-center text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white transition-colors shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
            >
@@ -49,7 +49,7 @@ export default function FeedbackPage() {
         <main className="bg-white dark:bg-charcoal-800 rounded-[3rem] p-10 border border-charcoal-900/10 dark:border-white/5 shadow-2xl relative overflow-hidden">
           <AnimatePresence mode="wait">
             {isSubmitted ? (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-20 text-center"
@@ -59,9 +59,9 @@ export default function FeedbackPage() {
                 </div>
                 <h2 className="text-2xl font-display font-bold mb-2">Thank You!</h2>
                 <p className="text-xs font-black uppercase tracking-widest text-charcoal-500 italic">Your feedback helps us grow.</p>
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.form 
+              <m.form 
                 onSubmit={handleSubmit}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -131,7 +131,7 @@ export default function FeedbackPage() {
                 >
                   Submit Feeling <Send size={16} className="inline-block ml-3" />
                 </button>
-              </motion.form>
+              </m.form>
             )}
           </AnimatePresence>
         </main>

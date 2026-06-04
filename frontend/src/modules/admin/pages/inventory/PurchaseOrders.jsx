@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Search, Download, Clock, CheckCircle, Trash2, Edit2, Package, IndianRupee, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import AdminModal from '../../components/ui/AdminModal';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
@@ -264,7 +264,7 @@ export default function PurchaseOrders() {
            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Track and manage your orders from vendors</p>
         </div>
         
-        <button 
+        <button type="button" 
           onClick={() => handleOpenModal()}
           className="h-14 px-8 bg-[#2C2C2C] text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all group"
         >
@@ -310,7 +310,7 @@ export default function PurchaseOrders() {
         <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-slate-200">
            <ShoppingCart size={64} className="mx-auto text-slate-200 mb-6" strokeWidth={1} />
            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No purchase orders found</p>
-           <button onClick={() => handleOpenModal()} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Create Your First PO</button>
+           <button type="button" onClick={() => handleOpenModal()} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Create Your First PO</button>
         </div>
       ) : (
         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden overflow-x-auto no-scrollbar">
@@ -356,19 +356,19 @@ export default function PurchaseOrders() {
                   </td>
                   <td className="px-8 py-6 text-right">
                    <div className="flex items-center justify-end gap-2 text-slate-400 group-hover:text-slate-900 transition-colors">
-                      <button 
+                      <button type="button" 
                         onClick={() => handleDownloadPDF(order)}
                         className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                       >
                         <Download size={14} />
                       </button>
-                      <button 
+                      <button type="button" 
                         onClick={() => handleOpenModal(order)}
                         className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                       >
                          <Edit2 size={14} strokeWidth={2.5} />
                       </button>
-                      <button 
+                      <button type="button" 
                         onClick={() => handleDeleteClick(order)}
                          className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                       >
@@ -390,7 +390,7 @@ export default function PurchaseOrders() {
              Showing <span className="text-slate-900">{indexOfFirstItem + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastItem, filteredOrders.length)}</span> of <span className="text-slate-900">{filteredOrders.length}</span> Orders
            </p>
            <div className="flex items-center gap-2">
-              <button 
+              <button type="button" 
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="p-3 bg-white text-slate-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-900 hover:text-white transition-all border border-slate-100 shadow-sm"
@@ -400,7 +400,7 @@ export default function PurchaseOrders() {
               
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
-                  <button 
+                  <button type="button" 
                     key={i}
                     onClick={() => handlePageChange(i + 1)}
                     className={`w-10 h-10 rounded-xl text-[10px] font-black uppercase transition-all
@@ -411,7 +411,7 @@ export default function PurchaseOrders() {
                 ))}
               </div>
 
-              <button 
+              <button type="button" 
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="p-3 bg-white text-slate-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-900 hover:text-white transition-all border border-slate-100 shadow-sm"
@@ -510,11 +510,11 @@ export default function PurchaseOrders() {
               </p>
            </div>
            <div className="flex gap-3">
-              <button 
+              <button type="button" 
                 onClick={() => setIsDeleteModalOpen(false)}
                 className="flex-1 py-4 bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-100 transition-all shadow-sm"
               >Cancel</button>
-              <button 
+              <button type="button" 
                 onClick={confirmDelete}
                 className="flex-[2] py-4 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-rose-600 transition-all shadow-xl shadow-rose-200"
               >Confirm Delete</button>

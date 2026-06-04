@@ -1,10 +1,10 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export default function Skeleton({ className, circle = false }) {
   return (
     <div className={`relative overflow-hidden bg-slate-100 ${circle ? 'rounded-full' : 'rounded-2xl'} ${className}`}>
-      <motion.div
+      <m.div
         animate={{
           x: ['-100%', '100%'],
         }}

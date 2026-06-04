@@ -4,7 +4,7 @@ import {
   Clock, X, Phone, ShoppingCart, Wallet, ChevronDown,
   FileText, History, Palette
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { usePos } from '../context/PosContext';
 import { playClickSound } from '../utils/sounds';
@@ -54,7 +54,7 @@ export default function PosTopNavbar() {
 
       {/* Left: Hamburger + Logo + New Order + Search */}
       <div className="flex items-center gap-2">
-        <button
+        <button type="button"
           onClick={() => { playClickSound(); toggleSidebar(); }}
           className="p-2 hover:bg-black/10 rounded-md transition-colors"
         >
@@ -72,7 +72,7 @@ export default function PosTopNavbar() {
           </div>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => { playClickSound(); setIsQuickOrderModalOpen(true); }}
           className="font-black text-white text-sm uppercase tracking-widest hover:opacity-90 transition-opacity px-1"
         >
@@ -85,6 +85,7 @@ export default function PosTopNavbar() {
           <input
             type="text"
             placeholder="Bill No"
+            aria-label="Search by Bill Number"
             className="pl-8 pr-3 py-1.5 bg-white/20 border border-white/30 rounded-md text-sm text-white placeholder-white/60 focus:outline-none focus:bg-white/30 w-36 transition-all"
           />
         </div>
@@ -137,7 +138,7 @@ export default function PosTopNavbar() {
 
             {/* Navbar Color Selector */}
             <div className="space-y-2">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Navbar Color</label>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Navbar Color</span>
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { name: 'System', value: 'var(--primary-color)' },
@@ -166,6 +167,7 @@ export default function PosTopNavbar() {
                   type="color"
                   value={navbarColor.startsWith('#') ? navbarColor : '#ff7a00'}
                   onChange={(e) => handleNavbarChange(e.target.value)}
+                  aria-label="Navbar custom color"
                   className="w-8 h-6 border border-slate-200 rounded cursor-pointer p-0"
                 />
               </div>
@@ -173,7 +175,7 @@ export default function PosTopNavbar() {
 
             {/* Sidebar Menu Color Selector */}
             <div className="space-y-2">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Left Menu Color</label>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Left Menu Color</span>
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { name: 'System', value: 'var(--primary-color)' },
@@ -202,6 +204,7 @@ export default function PosTopNavbar() {
                   type="color"
                   value={menuBarColor.startsWith('#') ? menuBarColor : '#ff7a00'}
                   onChange={(e) => handleMenuBarChange(e.target.value)}
+                  aria-label="Left menu custom color"
                   className="w-8 h-6 border border-slate-200 rounded cursor-pointer p-0"
                 />
               </div>
@@ -224,7 +227,7 @@ export default function PosTopNavbar() {
 
 function NavIcon({ icon, onClick }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className="p-2 text-white/80 hover:text-white hover:bg-black/10 rounded-md transition-all active:scale-90"
     >
@@ -238,25 +241,25 @@ function RecentOrdersPanel({ onClose }) {
   const tabs = ['Dine In', 'Delivery', 'Pick Up', 'KOT'];
   return (
     <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose} className="fixed inset-0 bg-black/20 z-[100]" />
-      <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
+      <m.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
         className="fixed bottom-6 right-6 w-80 bg-white rounded-xl shadow-2xl overflow-hidden z-[101] font-sans border border-gray-100">
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <span className="text-sm font-semibold text-gray-700">Recent Orders</span>
-          <button onClick={onClose}><X size={18} className="text-gray-400" /></button>
+          <button type="button" onClick={onClose}><X size={18} className="text-gray-400" /></button>
         </div>
         <div className="flex border-b border-gray-100">
           {tabs.map(t => (
-            <button key={t} onClick={() => setTab(t)}
+            <button type="button" key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-tight relative ${tab === t ? 'text-orange-600' : 'text-gray-400'}`}>
               {t}
-              {tab === t && <motion.div layoutId="recTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500" />}
+              {tab === t && <m.div layoutId="recTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500" />}
             </button>
           ))}
         </div>
         <div className="p-8 text-center text-sm text-gray-400 font-bold">No orders available</div>
-      </motion.div>
+      </m.div>
     </>
   );
 }

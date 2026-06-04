@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Lock, ShieldCheck, Eye, EyeOff, Save, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
@@ -152,7 +152,7 @@ export default function KdsAccountSettings() {
             </div>
 
             {message.text && (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`p-4 rounded-xl flex items-center gap-3 text-xs font-black uppercase tracking-widest ${
@@ -163,7 +163,7 @@ export default function KdsAccountSettings() {
               >
                 <AlertCircle size={14} />
                 {message.text}
-              </motion.div>
+              </m.div>
             )}
 
             <button 

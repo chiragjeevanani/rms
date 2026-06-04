@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Camera, Save, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function ProfileUpdate() {
@@ -61,7 +61,7 @@ export default function ProfileUpdate() {
 
   return (
     <div className="max-w-md mx-auto p-6">
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-3xl shadow-xl overflow-hidden border border-stone-200"
@@ -133,7 +133,7 @@ export default function ProfileUpdate() {
             {isSaving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> Save Profile Changes</>}
           </button>
         </form>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

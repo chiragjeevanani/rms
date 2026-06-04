@@ -6,7 +6,7 @@ import {
   Table, Clock, ChevronRight, AlertCircle,
   Calculator, User, MapPin, Phone, Hash
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import dbClient from '../../../../config/dbClient';
 
@@ -158,7 +158,7 @@ export default function GenerateBill() {
           ) : (
             <div className="space-y-4">
                {activeOrders.map(order => (
-                 <motion.button
+                 <m.button
                    key={order._id}
                    whileTap={{ scale: 0.98 }}
                    onClick={() => setSelectedOrder(order)}
@@ -184,7 +184,7 @@ export default function GenerateBill() {
                       </div>
                    </div>
                    {selectedOrder?._id === order._id && <div className="absolute top-2 right-2 p-1 bg-white/20 rounded-full"><ChevronRight size={14} /></div>}
-                 </motion.button>
+                 </m.button>
                ))}
             </div>
           )}
@@ -194,7 +194,7 @@ export default function GenerateBill() {
         <div className="flex-1 overflow-y-auto p-12 no-scrollbar bg-[#F8F9FA] print:p-0 print:bg-white">
           <AnimatePresence mode="wait">
             {!selectedOrder ? (
-               <motion.div 
+               <m.div 
                  initial={{ opacity: 0 }}
                  animate={{ opacity: 1 }}
                  exit={{ opacity: 0 }}
@@ -205,9 +205,9 @@ export default function GenerateBill() {
                   </div>
                   <h3 className="text-xs font-black uppercase tracking-[0.3em]">Select a table for billing</h3>
                   <p className="text-[9px] font-bold uppercase tracking-widest mt-2">Pick an active table from the left to view the invoice</p>
-               </motion.div>
+               </m.div>
             ) : (
-               <motion.div 
+               <m.div 
                  key={selectedOrder._id}
                  initial={{ opacity: 0, x: 20 }}
                  animate={{ opacity: 1, x: 0 }}
@@ -326,7 +326,7 @@ export default function GenerateBill() {
                            { id: 'Card', icon: CreditCard, color: 'text-amber-500' },
                            { id: 'UPI', icon: Smartphone, color: 'text-blue-500' }
                         ].map(method => (
-                           <button 
+                           <button type="button" 
                              key={method.id}
                              onClick={() => setPaymentMethod(method.id)}
                              className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all group ${
@@ -340,14 +340,14 @@ export default function GenerateBill() {
                      </div>
 
                      <div className="flex gap-4">
-                        <button 
+                        <button type="button" 
                           onClick={printBill}
                           className="flex-1 py-4 bg-white border border-slate-200 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all outline-none"
                         >
                            <Printer size={18} />
                            Print Bill
                         </button>
-                        <button 
+                        <button type="button" 
                           onClick={handleSettleOrder}
                           disabled={isProcessing}
                           className="flex-1 py-4 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 hover:bg-blue-700 transition-all outline-none active:scale-95 disabled:opacity-50 disabled:scale-100"
@@ -368,7 +368,7 @@ export default function GenerateBill() {
                         </p>
                      </div>
                   </div>
-               </motion.div>
+               </m.div>
             )}
           </AnimatePresence>
         </div>

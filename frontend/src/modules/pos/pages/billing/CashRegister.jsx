@@ -5,7 +5,7 @@ import {
   AlertTriangle, ArrowUpRight, ArrowDownLeft,
   ShieldCheck, Lock, Unlock, Printer
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export default function CashRegister() {
   const [isLocked, setIsLocked] = useState(false);
@@ -18,7 +18,7 @@ export default function CashRegister() {
             <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">Cash Drawer & EOD Management</h1>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Drawer Reconciliation, Balance Verification & Session Closure</p>
           </div>
-          <button 
+          <button type="button" 
             onClick={() => setIsLocked(!isLocked)}
             className={`h-10 px-6 rounded text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg ${
               isLocked ? 'bg-emerald-600 text-white shadow-emerald-600/20' : 'bg-slate-900 text-white shadow-slate-900/20'
@@ -112,7 +112,7 @@ export default function CashRegister() {
                     ></textarea>
                  </div>
 
-                 <button className="w-full py-4 bg-slate-900 text-white rounded text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
+                 <button type="button" className="w-full py-4 bg-slate-900 text-white rounded text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
                     <ShieldCheck size={18} />
                     Finalize EOD Reconciliation
                  </button>
@@ -129,7 +129,7 @@ export default function CashRegister() {
                  Unreconciled cash variances exceeding 2% of total volume will be flagged for review. Ensure all physical cash is counted accurately.
               </p>
            </div>
-           <button className="ml-auto flex items-center gap-2 px-4 py-2 bg-white border border-amber-200 text-amber-900 rounded text-[9px] font-black uppercase tracking-widest shadow-sm">
+           <button type="button" className="ml-auto flex items-center gap-2 px-4 py-2 bg-white border border-amber-200 text-amber-900 rounded text-[9px] font-black uppercase tracking-widest shadow-sm">
               <Printer size={14} />
               Print Audit Log
            </button>

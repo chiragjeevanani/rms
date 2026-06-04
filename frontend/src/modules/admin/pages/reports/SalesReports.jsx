@@ -4,7 +4,7 @@ import {
   DollarSign, Package, ShoppingBag, Activity, Search, Filter,
   ChevronDown, FileText, File
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import BranchSelector from '../../components/BranchSelector';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -181,7 +181,7 @@ export default function SalesReports() {
           />
 
           <div className="relative">
-            <button 
+            <button type="button" 
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="bg-white px-6 py-3 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm hover:border-slate-400 transition-all group h-[58px]"
             >
@@ -192,7 +192,7 @@ export default function SalesReports() {
 
             <AnimatePresence>
               {isFilterOpen && (
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
@@ -200,7 +200,7 @@ export default function SalesReports() {
                 >
                   <div className="space-y-1">
                     {Object.entries(rangeLabels).map(([key, label]) => (
-                      <button
+                      <button type="button"
                         key={key}
                         onClick={() => {
                           setDateRange(key);
@@ -235,7 +235,7 @@ export default function SalesReports() {
                           className="w-full h-10 px-4 bg-slate-50 border-none rounded-xl text-[10px] font-bold text-slate-900 outline-none"
                         />
                       </div>
-                      <button 
+                      <button type="button" 
                          onClick={() => { fetchSalesData(); setIsFilterOpen(false); }}
                          className="w-full h-10 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest mt-2"
                       >
@@ -243,13 +243,13 @@ export default function SalesReports() {
                       </button>
                     </div>
                   )}
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
 
           <div className="relative">
-            <button 
+            <button type="button" 
               onClick={() => setIsExportOpen(!isExportOpen)}
               className="h-[58px] px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
             >
@@ -260,13 +260,13 @@ export default function SalesReports() {
 
             <AnimatePresence>
               {isExportOpen && (
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
                   className="absolute right-0 mt-3 w-48 bg-white rounded-3xl shadow-2xl border border-slate-100 p-2 z-50"
                 >
-                  <button 
+                  <button type="button" 
                     onClick={handleExportCSV}
                     className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center gap-3"
                   >
@@ -275,7 +275,7 @@ export default function SalesReports() {
                     </div>
                     CSV Format
                   </button>
-                  <button 
+                  <button type="button" 
                     onClick={handleExportPDF}
                     className="w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center gap-3"
                   >
@@ -284,7 +284,7 @@ export default function SalesReports() {
                     </div>
                     PDF Document
                   </button>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
@@ -383,7 +383,7 @@ export default function SalesReports() {
                           </div>
                        </div>
                        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                          <motion.div 
+                          <m.div 
                              initial={{ width: 0 }}
                              animate={{ width: `${(type.revenue / (metrics.filteredRevenue || 1)) * 100}%` }}
                              className={`h-full ${i === 0 ? 'bg-emerald-500' : i === 1 ? 'bg-blue-500' : 'bg-indigo-500'}`}
@@ -421,7 +421,7 @@ export default function SalesReports() {
                  <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Top Performing Products</h3>
               </div>
-              <button onClick={() => navigate('/admin/menu/items')} className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Catalog Insights</button>
+              <button type="button" onClick={() => navigate('/admin/menu/items')} className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Catalog Insights</button>
            </div>
            
            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
@@ -434,7 +434,7 @@ export default function SalesReports() {
                     <span className="text-[10px] font-black text-slate-400">{product.volume} Sold</span>
                   </div>
                   <div className="w-full h-2 bg-slate-50 rounded-full overflow-hidden">
-                    <motion.div 
+                    <m.div 
                        initial={{ width: 0 }}
                        animate={{ width: `${(product.volume / Math.max(...topProducts.map(p => p.volume))) * 100}%` }}
                        className="h-full bg-slate-900 group-hover:bg-emerald-500 transition-colors"

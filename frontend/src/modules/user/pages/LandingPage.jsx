@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, Table2, ChefHat, Leaf } from 'lucide-react';
 
@@ -9,7 +9,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-charcoal-900 text-charcoal-900 dark:text-white relative overflow-hidden flex flex-col transition-colors duration-300">
       {/* Dynamic Background Elements */}
       <div className="absolute inset-0">
-        <motion.div
+        <m.div
           animate={{
             scale: [1, 1.1, 1],
             opacity: [0.3, 0.4, 0.3],
@@ -17,7 +17,7 @@ export default function LandingPage() {
           transition={{ duration: 10, repeat: Infinity }}
           className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-500 rounded-full blur-[120px]"
         />
-        <motion.div
+        <m.div
           animate={{
             scale: [1.1, 1, 1.1],
             opacity: [0.2, 0.3, 0.2],
@@ -30,7 +30,7 @@ export default function LandingPage() {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-8">
         <div className="max-width-4xl w-full">
           {/* Header */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 mb-12"
@@ -39,11 +39,11 @@ export default function LandingPage() {
               <span className="text-2xl">🌾</span>
             </div>
             <span className="text-xl font-display font-bold tracking-tight">RMS Kitchen</span>
-          </motion.div>
+          </m.div>
 
           {/* Main Title */}
           <div className="space-y-6 mb-16">
-            <motion.div
+            <m.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
@@ -52,21 +52,21 @@ export default function LandingPage() {
                 FARM TO TABLE <br />
                 <span className="text-brand-500">FRESHNESS.</span>
               </h1>
-            </motion.div>
+            </m.div>
 
-            <motion.p
+            <m.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
               className="text-xl text-charcoal-400 max-w-xl font-medium"
             >
               Experience the symphony of flavors crafted with ingredients sourced directly from local organic farms.
-            </motion.p>
+            </m.p>
           </div>
 
           {/* Interactive Actions Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl mx-auto">
-            <motion.button
+            <m.button
               whileHover={{ scale: 1.02, backgroundColor: '#ffffff', color: '#121212' }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/menu')}
@@ -79,9 +79,9 @@ export default function LandingPage() {
                 <h3 className="text-3xl font-bold mb-1 uppercase tracking-wider">Dine In</h3>
                 <p className="text-sm font-medium opacity-80">Order now for Table 07</p>
               </div>
-            </motion.button>
+            </m.button>
 
-            <motion.button
+            <m.button
               whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
               whileTap={{ scale: 0.98 }}
               className="relative p-6 px-8 rounded-[2rem] bg-[#1a1a1a] border border-white/5 flex flex-col justify-center items-center h-56 backdrop-blur-md group shadow-premium hover:border-white/20 transition-all duration-300 cursor-default"
@@ -93,7 +93,7 @@ export default function LandingPage() {
                 <h3 className="text-3xl font-bold mb-1 uppercase tracking-wider text-white">Takeaway</h3>
                 <p className="text-sm text-charcoal-400 font-medium group-hover:text-charcoal-300 transition-colors duration-300">Collect from counter</p>
               </div>
-            </motion.button>
+            </m.button>
           </div>
         </div>
       </div>

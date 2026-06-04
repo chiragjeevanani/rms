@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { X, Search, Plus, Minus, Trash2, CreditCard, Receipt, Send, ChefHat } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { POS_CATEGORIES, POS_MENU_ITEMS } from '../data/posMenu';
 
 export default function PosPanel({ table, onClose }) {
@@ -46,7 +46,7 @@ export default function PosPanel({ table, onClose }) {
   const total = subtotal + gst;
 
   return (
-    <motion.div
+    <m.div
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
@@ -67,7 +67,7 @@ export default function PosPanel({ table, onClose }) {
             Running
           </span>
         </div>
-        <button 
+        <button type="button" 
           onClick={onClose}
           className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white"
         >
@@ -81,7 +81,7 @@ export default function PosPanel({ table, onClose }) {
           {/* Categories */}
           <div className="px-4 py-3 flex gap-2 overflow-x-auto no-scrollbar bg-white border-b border-gray-100 shrink-0">
             {POS_CATEGORIES.map(cat => (
-              <button
+              <button type="button"
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
@@ -113,7 +113,7 @@ export default function PosPanel({ table, onClose }) {
           <div className="flex-1 overflow-y-auto p-4 content-start no-scrollbar">
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredItems.map(item => (
-                <motion.button
+                <m.button
                   key={item.id}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => addToCart(item)}
@@ -136,7 +136,7 @@ export default function PosPanel({ table, onClose }) {
                       <Plus size={13} strokeWidth={3} />
                     </div>
                   </div>
-                </motion.button>
+                </m.button>
               ))}
             </div>
           </div>
@@ -168,14 +168,14 @@ export default function PosPanel({ table, onClose }) {
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg p-1">
-                      <button 
+                      <button type="button" 
                         onClick={() => updateQuantity(item.id, -1)}
                         className="w-6 h-6 flex items-center justify-center bg-white rounded-md text-gray-600 shadow-sm hover:text-[#ff7a00] transition-colors"
                       >
                         <Minus size={12} />
                       </button>
                       <span className="w-6 text-center text-xs font-black text-gray-800">{item.quantity}</span>
-                      <button 
+                      <button type="button" 
                         onClick={() => updateQuantity(item.id, 1)}
                         className="w-6 h-6 flex items-center justify-center bg-white rounded-md text-gray-600 shadow-sm hover:text-[#ff7a00] transition-colors"
                       >
@@ -184,7 +184,7 @@ export default function PosPanel({ table, onClose }) {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-black text-gray-800">₹{item.price * item.quantity}</span>
-                      <button 
+                      <button type="button" 
                         onClick={() => removeFromCart(item.id)}
                         className="text-gray-300 hover:text-red-500 transition-colors"
                       >
@@ -216,17 +216,17 @@ export default function PosPanel({ table, onClose }) {
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
-              <button className="flex items-center justify-center gap-2 py-3.5 bg-white border-2 border-gray-300 rounded-xl font-black text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-all text-sm uppercase tracking-tight">
+              <button type="button" className="flex items-center justify-center gap-2 py-3.5 bg-white border-2 border-gray-300 rounded-xl font-black text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-all text-sm uppercase tracking-tight">
                 <Send size={15} /> KOT
               </button>
-              <button className="flex items-center justify-center gap-2 py-3.5 bg-[#ff7a00] text-white rounded-xl font-black hover:bg-[#ea6c00] transition-all shadow-lg shadow-[#ff7a00]/30 text-sm uppercase tracking-tight">
+              <button type="button" className="flex items-center justify-center gap-2 py-3.5 bg-[#ff7a00] text-white rounded-xl font-black hover:bg-[#ea6c00] transition-all shadow-lg shadow-[#ff7a00]/30 text-sm uppercase tracking-tight">
                 <CreditCard size={15} /> Pay
               </button>
             </div>
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
