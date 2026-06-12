@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-const SUPERADMIN_DB_URL = "mongodb://superadmin123!%23:superadmin%40123@127.0.0.1:27017/RMS-Superadmin?authSource=admin";
 
 const connectDB = async () => {
   try {
@@ -24,4 +23,6 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
-connectDB.SUPERADMIN_DB_URL = SUPERADMIN_DB_URL;
+Object.defineProperty(module.exports, 'SUPERADMIN_DB_URL', {
+  get: function() { return process.env.MONGODB_URL; }
+});
