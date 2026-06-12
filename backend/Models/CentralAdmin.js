@@ -17,7 +17,13 @@ const centralAdminSchema = new mongoose.Schema({
   mobileNumber:           { type: String, default: '' },
   profileImg:             { type: String, default: '' },
   status:                 { type: String, default: 'inactive' },
-  isSuperAdminDefault:    { type: Boolean, default: false }
+  isSuperAdminDefault:    { type: Boolean, default: false },
+  
+  // Multi-Tenant SaaS Sync Fields
+  vpsIp:                  { type: String, default: '' },
+  syncToken:              { type: String, default: '' },
+  plan:                   { type: String, default: 'Basic' },
+  expiryDate:             { type: Date }
 });
 
 module.exports = mongoose.model('CentralAdmin', centralAdminSchema, 'admins');

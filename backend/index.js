@@ -9,6 +9,8 @@ const routes = require('./app');
 const initSuperAdmin = require('./Utils/superAdminInit');
 const checkAndProvisionAdmins = require('./Utils/adminProvisionCheck');
 const checkAndProvisionLocalAdmin = require('./Utils/localAdminCheck');
+const { initializeSyncWorker } = require('./Utils/SyncQueue');
+const { startHeartbeatService } = require('./Utils/HeartbeatService');
 // mongodb://mohammadrehan00121_db_user:L4SOVC0ipr5Ez0y3@ac-pxrc1fm-shard-00-00.vydv7ur.mongodb.net:27017,ac-pxrc1fm-shard-00-01.vydv7ur.mongodb.net:27017,ac-pxrc1fm-shard-00-02.vydv7ur.mongodb.net:27017/RMS-Superadmin?ssl=true&replicaSet=atlas-112ag1-shard-0&authSource=admin&appName=Cluster0
 const app = express();
 const server = http.createServer(app);
@@ -39,8 +41,12 @@ connectDB().then(async () => {
   if (isSuperAdmin) {
     await migrateRegistry();
     checkAndProvisionAdmins();
+    // Start BullMQ Worker on SuperAdmin
+    initializeSyncWorker();
   } else {
     checkAndProvisionLocalAdmin();
+    // Start Heartbeat on Admin VPS
+    startHeartbeatService();
   }
 });
 

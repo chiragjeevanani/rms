@@ -10,6 +10,7 @@ const Staff = require('../Models/Staff');
 const Table = require('../Models/Table');
 const mongoose = require('mongoose');
 const { SUPERADMIN_DB_URL } = require('../Config/db');
+const WebhookService = require('../Utils/WebhookService');
 
 // ── Target Database Connections Cache (Performance Optimization) ──────────────
 const targetConnectionsCache = {};
@@ -123,7 +124,7 @@ exports.superAdminLogin = async (req, res) => {
 // ── Create Admin Node ─────────────────────────────────────────────────────────
 exports.createRestaurant = async (req, res) => {
   try {
-    const { name, email, branchLimit, thirdPartyIntegration, mobileNumber, status, dbUrl, apiUrl, appType, adminId, password } = req.body;
+    const { name, email, branchLimit, thirdPartyIntegration, mobileNumber, status, dbUrl, apiUrl, appType, adminId, password, syncToken, plan, expiryDate, vpsIp } = req.body;
 
     // Check duplicate in CentralAdmin (default connection and SuperAdmin DB if different)
     const isDefaultSuperAdmin = (process.env.IS_SUPERADMIN === 'true' || !process.env.MONGODB_URL);
@@ -247,7 +248,11 @@ exports.createRestaurant = async (req, res) => {
       restaurantName: name,
       appType: resolvedAppType,
       mobileNumber: mobileNumber || '',
-      status: nodeStatus
+      status: nodeStatus,
+      syncToken: syncToken || '',
+      plan: plan || 'Basic',
+      expiryDate: expiryDate ? new Date(expiryDate) : null,
+      vpsIp: vpsIp || ''
     });
     await centralAdmin.save();
 
@@ -275,7 +280,11 @@ exports.createRestaurant = async (req, res) => {
           restaurantName: name,
           appType: resolvedAppType,
           mobileNumber: mobileNumber || '',
-          status: nodeStatus
+          status: nodeStatus,
+          syncToken: syncToken || '',
+          plan: plan || 'Basic',
+          expiryDate: expiryDate ? new Date(expiryDate) : null,
+          vpsIp: vpsIp || ''
         });
         await centralAdminSuper.save();
       } catch (err) {
@@ -291,6 +300,13 @@ exports.createRestaurant = async (req, res) => {
     if (io) {
       io.emit('admin_created', { email, adminId: resolvedDeploymentId });
       io.emit('dashboard_stats_updated');
+    }
+
+    // 5. Dispatch Event-Based Webhook
+    try {
+      await WebhookService.dispatchAdminCreated(centralAdmin);
+    } catch (webhookErr) {
+      console.error('Webhook dispatch failed:', webhookErr.message);
     }
 
     res.json({ success: true, message: 'Restaurant created successfully', data: centralAdmin });
@@ -617,7 +633,7 @@ exports.updateSystemTheme = async (req, res) => {
 // ── Update Admin Node ─────────────────────────────────────────────────────────
 exports.updateRestaurant = async (req, res) => {
   const { email } = req.params;
-  const { name, email: newEmail, mobileNumber, branchLimit, status, thirdPartyIntegration, dbUrl, apiUrl, appType, adminId } = req.body;
+  const { name, email: newEmail, mobileNumber, branchLimit, status, thirdPartyIntegration, dbUrl, apiUrl, appType, adminId, plan, expiryDate, syncToken, vpsIp } = req.body;
   let superConn;
 
   try {
@@ -674,6 +690,10 @@ exports.updateRestaurant = async (req, res) => {
     if (adminId) {
       syncData.adminId = adminId;
     }
+    if (plan) syncData.plan = plan;
+    if (expiryDate) syncData.expiryDate = new Date(expiryDate);
+    if (syncToken !== undefined) syncData.syncToken = syncToken;
+    if (vpsIp !== undefined) syncData.vpsIp = vpsIp;
 
     // Apply updates to SuperAdmin DB
     await CentralAdminModel.updateOne({ email }, { $set: syncData });
@@ -775,6 +795,18 @@ exports.updateRestaurant = async (req, res) => {
         syncWarning: true,
         data: syncData
       });
+    }
+
+    // Dispatch Event-Based Webhooks
+    try {
+      const updatedDeployment = await CentralAdminModel.findOne({ email: newEmail || email });
+      if (updatedDeployment) {
+        if (status) await WebhookService.dispatchAdminStatusChange(updatedDeployment, status);
+        if (plan) await WebhookService.dispatchAdminPlanChange(updatedDeployment, plan);
+        if (expiryDate) await WebhookService.dispatchAdminExpiryChange(updatedDeployment, new Date(expiryDate));
+      }
+    } catch (webhookErr) {
+      console.error('Webhook update dispatch failed:', webhookErr.message);
     }
 
     res.json({ success: true, message: 'Node updated successfully', data: syncData });
