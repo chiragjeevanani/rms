@@ -1,7 +1,6 @@
 const Order = require('../Models/Order');
 const Table = require('../Models/Table');
 const mongoose = require('mongoose');
-const { sendToTopic } = require('../Utils/firebaseAdmin');
 const getAdminBranchFilter = require('../Utils/getAdminBranchIds');
 const { upsertCustomerInternal } = require('./customerController');
 
@@ -65,12 +64,6 @@ const createOrder = async (req, res) => {
       
       // Notify KDS via Socket
       if (io) io.emit('statusUpdated', order);
-      
-      // Notify KDS via Firebase
-      const bId = branchId || order.branchId;
-      if (bId) {
-        sendToTopic(`kds_${bId}`, "New KOT Received", `New items added for ${tableName} (Order #${order.orderNumber}).`, { orderId: order._id.toString() });
-      }
 
       // Update table status if dine-in
       if (order.orderType === 'Dine-In') {
@@ -125,11 +118,6 @@ const createOrder = async (req, res) => {
     await newOrder.save();
 
     if (io) io.emit('orderCreated', newOrder);
-
-    // Notify KDS via Firebase
-    if (newOrder.branchId) {
-      sendToTopic(`kds_${newOrder.branchId}`, "New KOT Received", `New order for ${tableName} (Order #${orderNumber}).`, { orderId: newOrder._id.toString() });
-    }
 
     // Update table status if dine-in
     if (orderType === 'Dine-In') {
@@ -306,11 +294,6 @@ const updateOrderStatus = async (req, res) => {
     if (io) {
         io.emit('statusUpdated', order);
         io.emit('tableStatusChanged');
-    }
-
-    // Notify POS via Firebase if status is Ready
-    if (status.toLowerCase() === 'ready' && order.branchId) {
-      sendToTopic(`pos_${order.branchId}`, "Order Ready", `Order #${order.orderNumber} is now ready for service.`, { orderId: order._id.toString() });
     }
 
     res.json({ success: true, data: order });
@@ -738,22 +721,6 @@ const updateItemQuantity = async (req, res) => {
   }
 };
 
-const registerToken = async (req, res) => {
-  try {
-    const { token, topic } = req.body;
-    if (!token || !topic) return res.status(400).json({ success: false, message: 'Token and Topic are required' });
-
-    const admin = require('firebase-admin');
-    await admin.messaging().subscribeToTopic(token, topic);
-    
-    console.log(`Token registered to topic: ${topic}`);
-    res.json({ success: true, message: `Successfully subscribed to ${topic}` });
-  } catch (error) {
-    console.error('Registration Error:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
 module.exports = {
   createOrder,
   getAllOrders,
@@ -767,6 +734,5 @@ module.exports = {
   getKitchenAnalytics,
   getSalesAnalytics,
   getStaffDailyStats,
-  getStaffDashboardSnapshot,
-  registerToken
+  getStaffDashboardSnapshot
 };

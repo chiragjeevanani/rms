@@ -10,18 +10,3 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-// Register Service Worker for Firebase Cloud Messaging
-const isElectron = typeof window !== 'undefined' && !!window.api;
-if ('serviceWorker' in navigator && !isElectron && window.location.protocol !== 'file:') {
-  navigator.serviceWorker
-    .register('/firebase-messaging-sw.js')
-    .then((registration) => {
-      console.log('FCM Service Worker registered with scope:', registration.scope);
-    })
-    .catch((err) => {
-      console.error('FCM Service Worker registration failed:', err);
-    });
-}
-
-
-
