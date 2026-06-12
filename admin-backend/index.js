@@ -6,7 +6,6 @@ const cors = require('cors');
 const path = require('path');
 const connectDB = require('./Config/db');
 const routes = require('./app');
-const checkAndProvisionLocalAdmin = require('./Utils/localAdminCheck');
 const { startHeartbeatService } = require('./Utils/HeartbeatService');
 
 const app = express();
@@ -29,7 +28,6 @@ app.set('socketio', io);
 
 // Database
 connectDB().then(async () => {
-  checkAndProvisionLocalAdmin();
   startHeartbeatService();
 });
 
