@@ -13,14 +13,12 @@ const {
   getKitchenAnalytics,
   getSalesAnalytics,
   getStaffDailyStats,
-  getStaffDashboardSnapshot,
-  registerToken
+  getStaffDashboardSnapshot
 } = require('../Controllers/orderController');
 
 const { protectAdmin, protectStaff, protectAdminOrStaff } = require('../Middleware/authMiddleware');
 
 router.post('/', createOrder);
-router.post('/register-token', registerToken);
 router.get('/', protectAdminOrStaff, getAllOrders);
 router.get('/active', protectAdminOrStaff, getActiveOrders);
 router.get('/completed', protectAdminOrStaff, getCompletedOrders);
