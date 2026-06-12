@@ -5,24 +5,18 @@ import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 
 export default function SuperAdminReports() {
-  const { accentColor, socket } = useOutletContext();
+  const { accentColor } = useOutletContext();
   const [reportType, setReportType] = useState('branches'); // 'branches' | 'database' | 'activity'
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState('all');
 
   // Fetch stats to populate reports
-  const fetchReportData = () => {
-    if (socket) {
-      setIsLoading(true);
-      socket.emit('request_dashboard_stats');
-    }
-  };
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleResponse = (result) => {
+  const fetchReportData = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/dashboard-stats`);
+      const result = await res.json();
       if (result.success) {
         if (reportType === 'branches') {
           // Format branch utilization reports
@@ -61,20 +55,16 @@ export default function SuperAdminReports() {
           setRecords(activityLogs);
         }
       }
+    } catch (err) {
+      console.error('Error fetching report data:', err);
+    } finally {
       setIsLoading(false);
-    };
-
-    socket.on('response_dashboard_stats', handleResponse);
-
-    return () => {
-      socket.off('response_dashboard_stats', handleResponse);
-    };
-  }, [socket, reportType]);
+    }
+  };
 
   useEffect(() => {
-    if (!socket) return;
     fetchReportData();
-  }, [socket, reportType]);
+  }, [reportType]);
 
   // Export to CSV
   const handleExportCSV = () => {

@@ -8,8 +8,7 @@ export default function AdminManagement() {
   const { 
     accentColor,
     toggleApi,
-    fetchData: syncGlobalData, // kept to sync context if needed
-    socket
+    fetchData: syncGlobalData // kept to sync context if needed
   } = useOutletContext();
 
   // Local Paginated States
@@ -47,22 +46,17 @@ export default function AdminManagement() {
   const [resendingEmail, setResendingEmail] = useState(null); // stores email being resent
 
   // Fetch paginated global admins
-  const fetchPaginatedAdmins = () => {
-    if (socket) {
-      setIsLoading(true);
-      socket.emit('request_global_admins', {
+  const fetchPaginatedAdmins = async () => {
+    setIsLoading(true);
+    try {
+      const query = new URLSearchParams({
         page: currentPage,
         limit,
         search,
         status: statusFilter
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleResponse = (result) => {
+      }).toString();
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/global-admins?${query}`);
+      const result = await res.json();
       if (result.success) {
         setAdmins(result.data);
         if (result.pagination) {
@@ -70,23 +64,18 @@ export default function AdminManagement() {
           setTotalCount(result.pagination.totalCount || 0);
         }
       }
+    } catch (err) {
+      console.error('Error fetching paginated admins:', err);
+    } finally {
       setIsLoading(false);
-    };
-
-    socket.on('response_global_admins', handleResponse);
-
-    return () => {
-      socket.off('response_global_admins', handleResponse);
-    };
-  }, [socket]);
+    }
+  };
 
   useEffect(() => {
-    if (!socket) return;
     fetchPaginatedAdmins();
-  }, [socket, currentPage, search, statusFilter]);
+  }, [currentPage, search, statusFilter]);
 
   useEffect(() => {
-    if (!socket) return;
     const handleUpdate = () => {
       fetchPaginatedAdmins();
     };
@@ -94,7 +83,7 @@ export default function AdminManagement() {
     return () => {
       window.removeEventListener('superadmin_admins_updated', handleUpdate);
     };
-  }, [socket, currentPage, search, statusFilter]);
+  }, [currentPage, search, statusFilter]);
 
   // Reset page on search/filter changes
   const handleSearchChange = (val) => {

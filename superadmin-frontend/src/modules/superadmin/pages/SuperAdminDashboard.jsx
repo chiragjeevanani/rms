@@ -6,7 +6,6 @@ import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useSuperAdminTheme } from '../context/SuperAdminThemeContext';
-import { io } from 'socket.io-client';
 
 // Provision Modal remains in the layout shell
 import ProvisionAdminModal from '../components/ProvisionAdminModal';
@@ -24,7 +23,6 @@ export default function SuperAdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
-  const [socket, setSocket] = useState(null);
 
   // Forms
   const [formData, setFormData] = useState({
@@ -58,10 +56,18 @@ export default function SuperAdminDashboard() {
   });
 
   // ── Sync Database ───────────────────────────────────────────────────────────
-  const fetchData = () => {
-    if (socket) {
-      setIsSyncing(true);
-      socket.emit('request_all_admins');
+  const fetchData = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/global-admins`);
+      const result = await res.json();
+      if (result.success) {
+        setAdmins(result.data);
+      }
+    } catch (err) {
+      console.error('Error fetching admins:', err);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -69,45 +75,20 @@ export default function SuperAdminDashboard() {
     const token = localStorage.getItem('superadmin_token');
     if (!token) navigate('/login');
 
-    const socketUrl = (import.meta.env.VITE_API_URL || '').replace('/api', '');
-    const socketInstance = io(socketUrl);
-    setSocket(socketInstance);
+    fetchData();
 
-    socketInstance.on('response_all_admins', (result) => {
-      if (result.success) {
-        setAdmins(result.data);
-      }
-      setIsSyncing(false);
-    });
+    const handleAdminsUpdated = () => {
+      fetchData();
+    };
 
-    socketInstance.on('admin_created', (data) => {
-      console.log('⚡ Admin created in real-time via socket:', data);
-      socketInstance.emit('request_all_admins');
-      window.dispatchEvent(new Event('superadmin_admins_updated'));
-    });
+    window.addEventListener('superadmin_admins_updated', handleAdminsUpdated);
 
-    socketInstance.on('admin_updated', (data) => {
-      console.log('⚡ Admin updated in real-time via socket:', data);
-      socketInstance.emit('request_all_admins');
-      window.dispatchEvent(new Event('superadmin_admins_updated'));
-    });
-
-    socketInstance.on('admin_deleted', (data) => {
-      console.log('⚡ Admin deleted in real-time via socket:', data);
-      socketInstance.emit('request_all_admins');
-      window.dispatchEvent(new Event('superadmin_admins_updated'));
-    });
-
-    socketInstance.on('dashboard_stats_updated', () => {
-      console.log('⚡ Dashboard stats updated in real-time via socket');
-      window.dispatchEvent(new Event('superadmin_stats_updated'));
-    });
-
-    // Initial request
-    socketInstance.emit('request_all_admins');
-
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchData, 30000);
+    
     return () => {
-      socketInstance.disconnect();
+      window.removeEventListener('superadmin_admins_updated', handleAdminsUpdated);
+      clearInterval(interval);
     };
   }, []);
 
@@ -350,8 +331,7 @@ export default function SuperAdminDashboard() {
                 setShowPasswords,
                 handlePasswordChange,
                 loading,
-                fetchData,
-                socket
+                fetchData
               }} />
             </motion.div>
           </AnimatePresence>

@@ -6,38 +6,27 @@ import { useOutletContext } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export default function DashboardOverview() {
-  const { admins, accentColor, socket } = useOutletContext();
+  const { admins, accentColor } = useOutletContext();
   const [registrationPeriod, setRegistrationPeriod] = useState('weekly');
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch Dashboard Stats on Mount
-  const fetchStats = () => {
-    if (socket) {
-      socket.emit('request_dashboard_stats');
+  const fetchStats = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/dashboard-stats`);
+      const result = await res.json();
+      if (result.success) {
+        setStats(result.data);
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!socket) return;
-
-    const handleResponse = (result) => {
-      if (result.success) {
-        setStats(result.data);
-      }
-      setLoading(false);
-    };
-
-    socket.on('response_dashboard_stats', handleResponse);
-
-    return () => {
-      socket.off('response_dashboard_stats', handleResponse);
-    };
-  }, [socket]);
-
-  useEffect(() => {
-    if (!socket) return;
-    
     fetchStats();
     
     const handleUpdate = () => {
@@ -52,7 +41,7 @@ export default function DashboardOverview() {
       window.removeEventListener('superadmin_stats_updated', handleUpdate);
       clearInterval(interval);
     };
-  }, [socket]);
+  }, []);
 
   // Stats Calculations from admins array fallback
   const activeAdminsCount = admins.filter(a => (a.status || '').toLowerCase() !== 'inactive').length;

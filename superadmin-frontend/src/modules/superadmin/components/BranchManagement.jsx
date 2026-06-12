@@ -4,7 +4,7 @@ import { useOutletContext } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export default function BranchManagement() {
-  const { admins, accentColor, socket } = useOutletContext();
+  const { admins, accentColor } = useOutletContext();
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,9 +47,8 @@ export default function BranchManagement() {
     fetchBranches();
   }, []);
 
-  // Listen to socket updates to refresh if nodes change
+  // Listen to global updates to refresh if nodes change
   useEffect(() => {
-    if (!socket) return;
     const handleUpdate = () => {
       fetchBranches();
     };
@@ -57,7 +56,7 @@ export default function BranchManagement() {
     return () => {
       window.removeEventListener('superadmin_admins_updated', handleUpdate);
     };
-  }, [socket]);
+  }, []);
 
   // Calculations based on selection
   const selectedAdminInfo = selectedAdmin !== 'all' ? (admins && admins.find(a => a.email === selectedAdmin)) : null;

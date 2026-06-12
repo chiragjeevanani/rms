@@ -294,11 +294,7 @@ exports.createRestaurant = async (req, res) => {
       }
     }
 
-    const io = req.app.get('socketio');
-    if (io) {
-      io.emit('admin_created', { email, adminId: resolvedDeploymentId });
-      io.emit('dashboard_stats_updated');
-    }
+
 
     // 5. Dispatch Event-Based Webhook
     try {
@@ -412,12 +408,7 @@ exports.toggleThirdPartyApi = async (req, res) => {
       console.error(`Could not toggle API protocol on target DB for ${email}:`, err.message);
     }
 
-    const io = req.app.get('socketio');
-    if (io) {
-      io.emit('admin_updated', { email, thirdPartyIntegration: newThirdParty });
-      io.emit(`admin_status_${email}`, { thirdPartyApi: newThirdParty });
-      io.emit('dashboard_stats_updated');
-    }
+
 
     res.json({ success: true, message: 'API Protocol updated', data: { email, thirdPartyIntegration: newThirdParty } });
   } catch (err) {
@@ -775,16 +766,7 @@ exports.updateRestaurant = async (req, res) => {
       syncErrorMsg = err.message;
     }
 
-    const io = req.app.get('socketio');
-    if (io) {
-      io.emit('admin_updated', { email, ...syncData });
-      io.emit(`admin_status_${email}`, { 
-        isActive: syncData.isActive,
-        status: syncData.status,
-        thirdPartyApi: syncData.thirdPartyIntegration
-      });
-      io.emit('dashboard_stats_updated');
-    }
+
 
     if (!syncSuccess) {
       return res.json({
@@ -877,12 +859,7 @@ exports.deleteRestaurant = async (req, res) => {
       await CentralAdmin.deleteOne({ email });
     }
 
-    const io = req.app.get('socketio');
-    if (io) {
-      io.emit('admin_deleted', { email });
-      io.emit(`admin_status_${email}`, { deleted: true });
-      io.emit('dashboard_stats_updated');
-    }
+
 
     res.json({ success: true, message: 'Node terminated and deleted successfully' });
   } catch (err) {
@@ -1004,11 +981,7 @@ exports.resendCredentials = async (req, res) => {
     });
 
     console.log(`✉ Credentials resent to: ${email}`);
-    const io = req.app.get('socketio');
-    if (io) {
-      io.emit('admin_updated', { email });
-      io.emit('dashboard_stats_updated');
-    }
+
 
     res.json({ success: true, message: `Fresh credentials dispatched to ${email}` });
   } catch (err) {
