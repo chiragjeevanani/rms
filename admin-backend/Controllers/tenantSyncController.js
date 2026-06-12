@@ -1,5 +1,5 @@
 const Admin = require('../Models/Admin');
-const CentralAdmin = require('../Models/CentralAdmin');
+
 
 /**
  * Middleware to verify SYNC_TOKEN
@@ -107,50 +107,12 @@ const handleAdminExpiry = async (req, res) => {
   }
 };
 
-/**
- * Reverse sync endpoint - Receives stats from Admin VPS
- */
-const handleReverseSync = async (req, res) => {
-  try {
-    // This runs on SuperAdmin VPS to receive stats from Admin VPS
-    const { adminId, orderCount, revenue, customerCount } = req.body;
-    
-    // Update CentralAdmin with stats (assuming fields exist or can be updated dynamically)
-    await CentralAdmin.findOneAndUpdate(
-      { adminId },
-      { $set: { lastOrderCount: orderCount, lastRevenue: revenue, lastCustomerCount: customerCount } }
-    );
 
-    res.json({ success: true, message: 'Reverse sync processed' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-/**
- * Heartbeat endpoint - Receives ping from Admin VPS
- */
-const handleHeartbeat = async (req, res) => {
-  try {
-    const { adminId, vpsIp, timestamp } = req.body;
-    
-    await CentralAdmin.findOneAndUpdate(
-      { adminId },
-      { $set: { lastHeartbeat: new Date(timestamp), vpsIp } }
-    );
-
-    res.json({ success: true, message: 'Heartbeat acknowledged' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
 
 module.exports = {
   verifySyncToken,
   handleAdminCreated,
   handleAdminStatus,
   handleAdminPlan,
-  handleAdminExpiry,
-  handleReverseSync,
-  handleHeartbeat
+  handleAdminExpiry
 };

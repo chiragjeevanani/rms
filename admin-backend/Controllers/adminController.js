@@ -1,5 +1,5 @@
 const Admin = require('../Models/Admin');
-const CentralAdmin = require('../Models/CentralAdmin');
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
@@ -96,16 +96,7 @@ const updateProfile = async (req, res) => {
 
     await admin.save();
 
-    // Sync updated profile to admins collection
-    try {
-      const syncData = {};
-      if (name)                       syncData.name         = name;
-      if (profileImg)                 syncData.profileImg   = profileImg;
-      if (mobileNumber !== undefined) syncData.mobileNumber = mobileNumber;
-      await CentralAdmin.updateOne({ email: admin.email }, { $set: syncData });
-    } catch (syncErr) {
-      console.error('CentralAdmin sync error (non-critical):', syncErr.message);
-    }
+    // Note: To sync updated profile to SuperAdmin, a reverse webhook call should be implemented here.
 
     res.json({
       message: 'Profile updated successfully',

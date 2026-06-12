@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Admin = require('../Models/Admin');
 const Restaurant = require('../Models/Restaurant');
-const CentralAdmin = require('../Models/CentralAdmin');
+
 const { SUPERADMIN_DB_URL } = require('../Config/db');
 const bcrypt = require('bcryptjs');
 
@@ -49,7 +49,22 @@ const checkAndProvisionLocalAdmin = async () => {
     }
 
     try {
-      const CentralAdminModel = superadminConn.model('CentralAdmin', CentralAdmin.schema, 'admins');
+      const centralAdminSchema = new mongoose.Schema({
+        adminId: String,
+        email: String,
+        dbUrl: String,
+        dbName: String,
+        branchLimit: Number,
+        thirdPartyIntegration: Boolean,
+        isActive: Boolean,
+        createdAt: Date,
+        name: String,
+        password: String,
+        restaurantName: String,
+        appType: String,
+        status: String
+      }, { strict: false });
+      const CentralAdminModel = superadminConn.model('CentralAdmin', centralAdminSchema, 'admins');
 
       // Look up registry for matching MongoDB URL
       const registryEntry = await CentralAdminModel.findOne({ dbUrl: currentDbUrl });

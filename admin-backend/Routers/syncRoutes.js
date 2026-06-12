@@ -6,9 +6,7 @@ const {
   handleAdminCreated,
   handleAdminStatus,
   handleAdminPlan,
-  handleAdminExpiry,
-  handleReverseSync,
-  handleHeartbeat
+  handleAdminExpiry
 } = require('../Controllers/tenantSyncController');
 
 // Legacy POS sync
@@ -20,8 +18,6 @@ router.post('/admin-status', verifySyncToken, handleAdminStatus);
 router.post('/admin-plan', verifySyncToken, handleAdminPlan);
 router.post('/admin-expiry', verifySyncToken, handleAdminExpiry);
 
-// Multi-Tenant Reverse Sync & Heartbeat (SuperAdmin VPS)
-router.post('/reverse-sync', handleReverseSync);
-router.post('/heartbeat', handleHeartbeat);
+
 
 module.exports = router;
