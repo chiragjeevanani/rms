@@ -95,6 +95,56 @@ export default function SuperAdminDashboard() {
   // ── Provision Node (Admin Management) ───────────────────────────────────────
   const handleCreate = async (e) => {
     e.preventDefault();
+
+    // Name validation
+    if (!formData.name || formData.name.trim().length < 3) {
+      return toast.error('Name must be at least 3 characters long');
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      return toast.error('Please enter a valid email address');
+    }
+
+    // Mobile number validation (10 digits)
+    const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
+    if (phoneDigits.length !== 10) {
+      return toast.error('Mobile number must be exactly 10 digits');
+    }
+
+    // Password validation (8 characters, strong)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!formData.password || !passwordRegex.test(formData.password)) {
+      return toast.error('Password must be at least 8 characters, including uppercase, lowercase, numbers, and special characters');
+    }
+
+    // DB URL validation
+    if (!formData.dbUrl || (!formData.dbUrl.startsWith('mongodb://') && !formData.dbUrl.startsWith('mongodb+srv://'))) {
+      return toast.error('Please enter a valid MongoDB connection URL');
+    }
+
+    // Check for existing Name, Email, Mobile, and DB URL
+    const isNameExists = admins.some(admin => admin.name && admin.name.toLowerCase() === formData.name.toLowerCase());
+    if (isNameExists) {
+      return toast.error('An admin with this name already exists');
+    }
+
+    const isEmailExists = admins.some(admin => admin.email && admin.email.toLowerCase() === formData.email.toLowerCase());
+    if (isEmailExists) {
+      return toast.error('An admin is already using this email address');
+    }
+
+    const isMobileExists = admins.some(admin => admin.mobileNumber && admin.mobileNumber === formData.phone);
+    if (isMobileExists) {
+      return toast.error('An admin is already using this mobile number');
+    }
+
+    const isDbExists = admins.some(admin => admin.dbUrl && admin.dbUrl === formData.dbUrl);
+    if (isDbExists) {
+      return toast.error('An admin is already using this database URL');
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/restaurants`, {

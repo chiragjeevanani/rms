@@ -67,10 +67,14 @@ export default function ProvisionAdminModal({
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mobile Number</label>
                   <input 
                     type="text" 
+                    maxLength="10"
                     value={formData.phone || ''} 
-                    onChange={e => setFormData({...formData, phone: e.target.value})} 
+                    onChange={e => {
+                      const onlyNums = e.target.value.replace(/\D/g, '');
+                      setFormData({...formData, phone: onlyNums});
+                    }} 
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
-                    placeholder="+91 9988776655" 
+                    placeholder="9988776655" 
                   />
                 </div>
                 <div className="space-y-2">
