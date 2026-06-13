@@ -33,7 +33,7 @@ function RootRedirect() {
   const isElectron = typeof window !== 'undefined' && !!window.api;
   if (isElectron) return <Navigate to="/pos/login" replace />;
 
-  return <Navigate to="/welcome" replace />;
+  return <Navigate to="/admin/login" replace />;
 }
 
 const Router = window.location.protocol === 'file:' ? HashRouter : BrowserRouter;
