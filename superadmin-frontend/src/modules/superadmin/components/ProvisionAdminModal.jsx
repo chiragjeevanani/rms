@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProvisionAdminModal({ 
@@ -11,6 +11,8 @@ export default function ProvisionAdminModal({
   loading, 
   accentColor 
 }) {
+  const [showPassword, setShowPassword] = React.useState(false);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -119,14 +121,26 @@ export default function ProvisionAdminModal({
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
-                  <input 
-                    type="password" 
-                    required 
-                    value={formData.password || ''} 
-                    onChange={e => setFormData({...formData, password: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#EF4444]/50 transition-all placeholder:text-slate-300" 
-                    placeholder="Enter admin password..." 
-                  />
+                  <div className="relative group/input">
+                    <input 
+                      type={showPassword ? "text" : "password"} 
+                      required 
+                      value={formData.password || ''} 
+                      onChange={e => setFormData({...formData, password: e.target.value})} 
+                      className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 pr-12 text-xs font-bold text-slate-800 focus:outline-none focus:border-[${accentColor}]/50 transition-all placeholder:text-slate-300 ${!showPassword ? 'tracking-widest' : ''}`} 
+                      placeholder="Enter admin password..." 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors"
+                      style={{ '--hover-color': accentColor }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = accentColor}
+                      onMouseLeave={(e) => e.currentTarget.style.color = ''}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
               </div>
 

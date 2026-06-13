@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, Zap, CheckCircle2, Edit3, Trash2, X, ToggleLeft, ToggleRight, Mail, Loader, ChevronLeft, ChevronRight, Hash, Layers, ChevronDown } from 'lucide-react';
+import { Search, Plus, Zap, CheckCircle2, Edit3, Trash2, X, ToggleLeft, ToggleRight, Mail, Loader, ChevronLeft, ChevronRight, Hash, Layers, ChevronDown, Key, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -44,6 +44,13 @@ export default function AdminManagement() {
   });
   const [actionLoading, setActionLoading] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(null); // stores email being resent
+
+  // Change Password States
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordAdminEmail, setPasswordAdminEmail] = useState('');
+  const [newPasswordData, setNewPasswordData] = useState({ newPassword: '', confirmPassword: '' });
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Fetch paginated global admins
   const fetchPaginatedAdmins = async () => {
@@ -182,6 +189,41 @@ export default function AdminManagement() {
       }
     } catch (err) {
       toast.error('Update failed');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Change Password submit handler
+  const handlePasswordChangeSubmit = async (e) => {
+    e.preventDefault();
+    if (newPasswordData.newPassword !== newPasswordData.confirmPassword) {
+      return toast.error('Passwords do not match');
+    }
+    if (newPasswordData.newPassword.length < 6) {
+      return toast.error('Password must be at least 6 characters');
+    }
+    setActionLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/superadmin/restaurants/${passwordAdminEmail}/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword: newPasswordData.newPassword })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.syncWarning) {
+          toast(data.message, { icon: '⚠️', duration: 6000 });
+        } else {
+          toast.success(data.message || 'Password changed successfully');
+        }
+        setIsPasswordModalOpen(false);
+        setNewPasswordData({ newPassword: '', confirmPassword: '' });
+      } else {
+        toast.error(data.message || 'Password change failed');
+      }
+    } catch (err) {
+      toast.error('Network Error');
     } finally {
       setActionLoading(false);
     }
@@ -476,6 +518,19 @@ export default function AdminManagement() {
                             <Edit3 size={16} />
                           </button>
 
+                          {/* Change Password */}
+                          <button 
+                            onClick={() => {
+                              setPasswordAdminEmail(admin.email);
+                              setNewPasswordData({ newPassword: '', confirmPassword: '' });
+                              setIsPasswordModalOpen(true);
+                            }}
+                            title="Change Password"
+                            className="flex items-center gap-1.5 p-2 px-3 border border-amber-200 hover:border-amber-400 hover:bg-amber-50 rounded-xl text-amber-500 hover:text-amber-600 transition-all shadow-sm cursor-pointer font-bold text-[9px] uppercase tracking-widest"
+                          >
+                            <Key size={14} /> Password
+                          </button>
+
                           {/* Delete Node */}
                           <button 
                             onClick={() => handleDelete(admin.email)}
@@ -689,6 +744,101 @@ export default function AdminManagement() {
                     className="px-8 py-3 text-white font-black rounded-xl shadow-lg uppercase tracking-widest text-[10px] transition-all hover:brightness-95 active:scale-[0.98] cursor-pointer"
                   >
                     {actionLoading ? 'Saving...' : 'Update Admin'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Change Password Modal */}
+      <AnimatePresence>
+        {isPasswordModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200/80 w-full max-w-md overflow-hidden"
+            >
+              <div className="px-8 py-6 bg-slate-950 text-white flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-[0.15em] text-white">Change Password</h3>
+                  <p className="text-[9px] text-amber-500 font-bold uppercase tracking-widest mt-1">For {passwordAdminEmail}</p>
+                </div>
+                <button 
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  className="p-2 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handlePasswordChangeSubmit} className="p-8 space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">New Password</label>
+                    <div className="relative group/input">
+                      <input 
+                        type={showNewPassword ? "text" : "password"} 
+                        required 
+                        value={newPasswordData.newPassword} 
+                        onChange={e => setNewPasswordData({...newPasswordData, newPassword: e.target.value})} 
+                        className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 pr-12 text-xs font-bold text-slate-800 focus:outline-none focus:border-[${accentColor}]/50 transition-all placeholder:text-slate-300 ${!showNewPassword ? 'tracking-widest' : ''}`} 
+                        placeholder="••••••••" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors"
+                        style={{ '--hover-color': accentColor }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = accentColor}
+                        onMouseLeave={(e) => e.currentTarget.style.color = ''}
+                      >
+                        {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm Password</label>
+                    <div className="relative group/input">
+                      <input 
+                        type={showConfirmPassword ? "text" : "password"} 
+                        required 
+                        value={newPasswordData.confirmPassword} 
+                        onChange={e => setNewPasswordData({...newPasswordData, confirmPassword: e.target.value})} 
+                        className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 pr-12 text-xs font-bold text-slate-800 focus:outline-none focus:border-[${accentColor}]/50 transition-all placeholder:text-slate-300 ${!showConfirmPassword ? 'tracking-widest' : ''}`} 
+                        placeholder="••••••••" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors"
+                        onMouseEnter={(e) => e.currentTarget.style.color = accentColor}
+                        onMouseLeave={(e) => e.currentTarget.style.color = ''}
+                      >
+                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordModalOpen(false)}
+                    className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-slate-200 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    disabled={actionLoading} 
+                    type="submit" 
+                    style={{ backgroundColor: accentColor }}
+                    className="px-8 py-3 text-white font-black rounded-xl shadow-lg uppercase tracking-widest text-[10px] transition-all hover:brightness-95 active:scale-[0.98] cursor-pointer"
+                  >
+                    {actionLoading ? 'Updating...' : 'Change Password'}
                   </button>
                 </div>
               </form>

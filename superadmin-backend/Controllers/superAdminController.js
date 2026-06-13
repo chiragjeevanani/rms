@@ -1167,3 +1167,113 @@ exports.getAllBranches = async (req, res) => {
     }
   }
 };
+
+// ── Change Admin Node Password (By SuperAdmin) ────────────────────────────────
+exports.changeAdminPassword = async (req, res) => {
+  const { email } = req.params;
+  const { newPassword } = req.body;
+  let superConn;
+
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
+  }
+
+  try {
+    const isDefaultSuperAdmin = (process.env.IS_SUPERADMIN === 'true' || !process.env.MONGODB_URL);
+    let CentralAdminModel = CentralAdmin;
+
+    if (!isDefaultSuperAdmin) {
+      superConn = await mongoose.createConnection(SUPERADMIN_DB_URL, {
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000
+      }).asPromise();
+      CentralAdminModel = superConn.model('CentralAdmin', CentralAdmin.schema, 'admins');
+    }
+
+    const deployment = await CentralAdminModel.findOne({ email });
+    if (!deployment) {
+      return res.status(404).json({ success: false, message: 'Admin node not found' });
+    }
+
+    const targetDbUrl = deployment.dbUrl;
+    const targetApiUrl = deployment.apiUrl;
+
+    let syncSuccess = true;
+    let syncErrorMsg = '';
+
+    try {
+      await syncToClientNode({
+        apiUrl: targetApiUrl,
+        dbUrl: targetDbUrl,
+        action: 'change-admin-password',
+        payload: { email, newPassword },
+        fallbackFn: async () => {
+          if (!targetDbUrl) return;
+          const targetConn = await mongoose.createConnection(targetDbUrl, {
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000
+          }).asPromise();
+          
+          const AdminSchema = require('../Models/Admin').schema;
+          const RestaurantSchema = require('../Models/Restaurant').schema;
+          const TargetAdmin = targetConn.model('Admin', AdminSchema);
+          const TargetRestaurant = targetConn.model('Restaurant', RestaurantSchema);
+
+          // Update plain password in Restaurant
+          const restDoc = await TargetRestaurant.findOne({ email });
+          if (restDoc) {
+            restDoc.password = newPassword;
+            await restDoc.save();
+          }
+
+          // Update hashed password in Admin (pre-save hook hashes it)
+          const adminDoc = await TargetAdmin.findOne({ email });
+          if (adminDoc) {
+            adminDoc.password = newPassword;
+            await adminDoc.save();
+          }
+
+          await targetConn.close();
+        }
+      });
+    } catch (err) {
+      console.error(`Could not update new password in target DB for ${email}:`, err.message);
+      syncSuccess = false;
+      syncErrorMsg = err.message;
+    }
+
+    // Update hashed password in CentralAdmin (SuperAdmin DB)
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    await CentralAdminModel.updateOne(
+      { email },
+      { $set: { password: hashedPassword } }
+    );
+
+    // Update hashed password in CentralAdmin (default connection if different)
+    if (!isDefaultSuperAdmin) {
+      await CentralAdmin.updateOne(
+        { email },
+        { $set: { password: hashedPassword } }
+      );
+    }
+
+    if (!syncSuccess) {
+      return res.json({
+        success: true,
+        message: `Admin password updated centrally, but failed to sync to client node: ${syncErrorMsg}`,
+        syncWarning: true
+      });
+    }
+
+    res.json({ success: true, message: `Password for ${email} has been changed successfully` });
+  } catch (err) {
+    console.error('Change admin password error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    if (superConn) {
+      try { await superConn.close(); } catch (err) {}
+    }
+  }
+};
+

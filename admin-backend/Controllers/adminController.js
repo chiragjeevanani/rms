@@ -3,6 +3,7 @@ const Admin = require('../Models/Admin');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
+const sendEmail = require('../Utils/sendEmail');
 
 const loginAdmin = async (req, res) => {
   const { email, password } = req.body;
@@ -307,6 +308,98 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: 'No admin found with this email' });
+    }
+
+    // Generate 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    admin.resetPasswordOtp = otp;
+    admin.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+
+    await admin.save();
+    
+    // Log OTP to console for easy testing/debugging
+    console.log(`[TESTING] Password Reset OTP for ${email}: ${otp}`);
+
+    // Send email
+    await sendEmail({
+      email: admin.email,
+      subject: 'Password Reset OTP - RMS',
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>Your OTP to reset your password is <strong>${otp}</strong>.</p>
+        <p>This OTP will expire in 10 minutes.</p>
+      `
+    });
+
+    res.json({ message: 'OTP sent to your email address' });
+  } catch (error) {
+    console.error('Forgot Password Error:', error);
+    res.status(500).json({ message: 'Server error during password reset request' });
+  }
+};
+
+const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    if (!admin.resetPasswordOtp || admin.resetPasswordOtp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (Date.now() > admin.resetPasswordExpires) {
+      return res.status(400).json({ message: 'OTP has expired' });
+    }
+
+    res.json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Verify OTP Error:', error);
+    res.status(500).json({ message: 'Server error during OTP verification' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    if (!admin.resetPasswordOtp || admin.resetPasswordOtp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (Date.now() > admin.resetPasswordExpires) {
+      return res.status(400).json({ message: 'OTP has expired' });
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    admin.password = newPassword;
+    admin.resetPasswordOtp = undefined;
+    admin.resetPasswordExpires = undefined;
+
+    await admin.save();
+
+    res.json({ message: 'Password reset successful. You can now login.' });
+  } catch (error) {
+    console.error('Reset Password Error:', error);
+    res.status(500).json({ message: 'Server error during password reset' });
+  }
+};
+
 module.exports = {
   loginAdmin,
   getProfile,
@@ -314,5 +407,8 @@ module.exports = {
   updateProfile,
   changePassword,
   updateTheme,
-  getDashboardStats
+  getDashboardStats,
+  forgotPassword,
+  verifyOtp,
+  resetPassword
 };

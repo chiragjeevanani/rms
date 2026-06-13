@@ -15,4 +15,6 @@ router.delete('/restaurants/:email', superAdminController.deleteRestaurant);
 router.post('/restaurants/:email/resend-credentials', superAdminController.resendCredentials);
 router.get('/branches', superAdminController.getAllBranches);
 
+router.post('/restaurants/:email/change-password', superAdminController.changeAdminPassword);
+
 module.exports = router;

@@ -11,8 +11,8 @@ export default function StaffLogin() {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: 'waiter@rms.com',
-    password: '123',
+    email: '',
+    password: '',
     otp: '',
     newPassword: '',
     confirmPassword: ''

@@ -5,8 +5,8 @@ import { ChefHat, Lock, ArrowRight, HardDrive, Cpu, Wifi, Eye, EyeOff } from 'lu
 import { toast } from 'react-hot-toast';
 
 export default function KdsLoginPage() {
-  const [email, setEmail] = useState('kds@rms.com');
-  const [password, setPassword] = useState('123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();

@@ -1,15 +1,23 @@
 import { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, Mail, Lock, ArrowRight, ShieldCheck, HelpCircle, Eye, EyeOff } from 'lucide-react';
+import { ShieldAlert, Mail, Lock, ArrowRight, ShieldCheck, HelpCircle, Eye, EyeOff, KeyRound, Key } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('admin@gmail.com');
-  const [password, setPassword] = useState('123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Forgot password states
+  const [view, setView] = useState('login'); // 'login', 'forgot', 'verify-otp', 'new-password'
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -29,7 +37,6 @@ export default function AdminLoginPage() {
       if (response.ok) {
         localStorage.setItem('admin_access', data.token);
         localStorage.setItem('admin_info', JSON.stringify(data.admin));
-        // Save restaurantId separately for easy access in branch filtering
         if (data.admin.restaurantId) {
           localStorage.setItem('admin_restaurantId', data.admin.restaurantId);
         }
@@ -40,6 +47,81 @@ export default function AdminLoginPage() {
       }
     } catch (err) {
       toast.error('Server connection failed. Is the backend running?');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message || 'OTP sent successfully');
+        setView('verify-otp');
+      } else {
+        toast.error(data.message || 'Failed to send OTP');
+      }
+    } catch (err) {
+      toast.error('Network error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message || 'OTP Verified');
+        setView('new-password');
+      } else {
+        toast.error(data.message || 'Invalid OTP');
+      }
+    } catch (err) {
+      toast.error('Network error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      return toast.error('Passwords do not match');
+    }
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, newPassword })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message || 'Password reset successful');
+        setView('login');
+        setOtp('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        toast.error(data.message || 'Failed to reset password');
+      }
+    } catch (err) {
+      toast.error('Network error');
     } finally {
       setIsLoading(false);
     }
@@ -70,56 +152,243 @@ export default function AdminLoginPage() {
           {/* Security Pattern Overlay */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           
-          <form onSubmit={handleLogin} className="space-y-6 relative z-10">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-400 ml-1">Admin Identity</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@restaurant.com"
-                  className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
-                  required
-                />
-              </div>
-            </div>
+          <AnimatePresence mode="wait">
+            {view === 'login' && (
+              <m.form 
+                key="login"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleLogin} 
+                className="space-y-6 relative z-10"
+              >
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-400 ml-1">Admin Identity</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="admin@restaurant.com"
+                      className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
+                      required
+                    />
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-400 ml-1">Security Key</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-400 hover:text-brand-500 transition-colors"
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-400 ml-1">Security Key</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
+                    <input 
+                      type={showPassword ? "text" : "password"} 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-400 hover:text-brand-500 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  <div className="flex justify-end mt-1">
+                    <button 
+                      type="button" 
+                      onClick={() => setView('forgot')}
+                      className="text-[10px] font-bold text-brand-500 hover:text-brand-600 transition-colors uppercase tracking-wider"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-charcoal-900 dark:bg-brand-500 text-white dark:text-charcoal-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white dark:border-charcoal-900/30 dark:border-t-charcoal-900 rounded-full animate-spin" />
+                  ) : (
+                    <>Sign In Securely <ArrowRight size={16} /></>
+                  )}
                 </button>
-              </div>
-            </div>
+              </m.form>
+            )}
 
-            <button 
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-charcoal-900 dark:bg-brand-500 text-white dark:text-charcoal-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white dark:border-charcoal-900/30 dark:border-t-charcoal-900 rounded-full animate-spin" />
-              ) : (
-                <>Sign In Securely <ArrowRight size={16} /></>
-              )}
-            </button>
-          </form>
+            {view === 'forgot' && (
+              <m.form 
+                key="forgot"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleForgotPassword} 
+                className="space-y-6 relative z-10"
+              >
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-400 ml-1">Email Address for OTP</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="admin@restaurant.com"
+                      className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-charcoal-900 dark:bg-brand-500 text-white dark:text-charcoal-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white dark:border-charcoal-900/30 dark:border-t-charcoal-900 rounded-full animate-spin" />
+                  ) : (
+                    <>Send OTP <ArrowRight size={16} /></>
+                  )}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setView('login')}
+                  className="w-full py-4 text-xs font-bold text-charcoal-400 hover:text-charcoal-600 transition-colors uppercase tracking-widest"
+                >
+                  Back to Login
+                </button>
+              </m.form>
+            )}
+
+            {view === 'verify-otp' && (
+              <m.form 
+                key="verify-otp"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleVerifyOtp} 
+                className="space-y-6 relative z-10"
+              >
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-400 ml-1">OTP Received</label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
+                    <input 
+                      type="text" 
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      placeholder="Enter 6-digit OTP"
+                      className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium tracking-[0.5em]"
+                      required
+                      maxLength={6}
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-charcoal-900 dark:bg-brand-500 text-white dark:text-charcoal-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white dark:border-charcoal-900/30 dark:border-t-charcoal-900 rounded-full animate-spin" />
+                  ) : (
+                    <>Verify OTP <ArrowRight size={16} /></>
+                  )}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setView('login')}
+                  className="w-full py-4 text-xs font-bold text-charcoal-400 hover:text-charcoal-600 transition-colors uppercase tracking-widest"
+                >
+                  Cancel
+                </button>
+              </m.form>
+            )}
+
+            {view === 'new-password' && (
+              <m.form 
+                key="new-password"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleResetPassword} 
+                className="space-y-6 relative z-10"
+              >
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-400 ml-1">New Security Key</label>
+                  <div className="relative">
+                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
+                    <input 
+                      type={showNewPassword ? "text" : "password"} 
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-400 hover:text-brand-500 transition-colors"
+                    >
+                      {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal-400 ml-1">Confirm Security Key</label>
+                  <div className="relative">
+                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400" size={18} />
+                    <input 
+                      type={showConfirmPassword ? "text" : "password"} 
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-slate-50 dark:bg-charcoal-900 border border-charcoal-900/5 dark:border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-medium"
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-400 hover:text-brand-500 transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-charcoal-900 dark:bg-brand-500 text-white dark:text-charcoal-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white dark:border-charcoal-900/30 dark:border-t-charcoal-900 rounded-full animate-spin" />
+                  ) : (
+                    <>Reset Security Key <ArrowRight size={16} /></>
+                  )}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setView('login')}
+                  className="w-full py-4 text-xs font-bold text-charcoal-400 hover:text-charcoal-600 transition-colors uppercase tracking-widest"
+                >
+                  Cancel
+                </button>
+              </m.form>
+            )}
+          </AnimatePresence>
 
           <div className="mt-8 pt-6 border-t border-charcoal-900/5 dark:border-white/5 flex items-center justify-between opacity-50">
              <div className="flex items-center gap-2">

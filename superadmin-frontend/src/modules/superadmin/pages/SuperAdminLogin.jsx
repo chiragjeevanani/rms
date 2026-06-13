@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function SuperAdminLogin() {
-  const [email, setEmail] = useState('superadmin@gmail.com');
-  const [password, setPassword] = useState('123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();

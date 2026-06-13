@@ -8,8 +8,8 @@ import dbClient from '../../../config/dbClient';
 
 export default function PosLoginPage() {
   const [formData, setFormData] = useState({
-    email: 'pos@rms.com',
-    password: '123'
+    email: '',
+    password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

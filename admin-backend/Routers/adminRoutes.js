@@ -7,12 +7,18 @@ const {
   updateProfile, 
   changePassword,
   updateTheme,
-  getDashboardStats 
+  getDashboardStats,
+  forgotPassword,
+  verifyOtp,
+  resetPassword
 } = require('../Controllers/adminController');
 const { protectAdmin } = require('../Middleware/authMiddleware');
 const { upload, processImage } = require('../Config/uploadConfig');
 
 router.post('/login', loginAdmin);
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-otp', verifyOtp);
+router.post('/reset-password', resetPassword);
 router.get('/public-info', getPublicRestaurantInfo);
 router.get('/profile', protectAdmin, getProfile);
 router.get('/dashboard-stats', protectAdmin, getDashboardStats);
