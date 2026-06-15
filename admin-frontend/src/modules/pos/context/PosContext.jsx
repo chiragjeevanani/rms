@@ -260,6 +260,29 @@ export function PosProvider({ children }) {
 
   const voidItem = async (orderId, itemId) => {
     try {
+      if (dbClient.isElectron && !navigator.onLine) {
+        const order = orders[Object.keys(orders).find(k => orders[k]._id === orderId || orders[k].id === orderId)];
+        if (!order) throw new Error('Order not found');
+        const newItems = order.items.filter(i => (i._id || i.id) !== itemId);
+        const subTotal = newItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+        let discAmt = 0;
+        if (order.discount?.type === 'percentage') {
+          discAmt = subTotal * ((order.discount.value || order.discount.amount || 0) / 100);
+        } else {
+          discAmt = order.discount?.amount || 0;
+        }
+        const taxable = Math.max(0, subTotal - discAmt);
+        const tax = taxable * 0.05;
+        const grandTotal = taxable + tax;
+        
+        const result = await dbClient.updateOrder(orderId, { items: newItems, subTotal, tax, grandTotal });
+        if (result) {
+          syncAll();
+          return true;
+        }
+        return false;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/item/${itemId}`, {
         method: 'DELETE'
       });
@@ -270,13 +293,36 @@ export function PosProvider({ children }) {
       }
       return false;
     } catch (err) {
-      toast.error('Network error during item voiding');
+      toast.error('Error during item voiding');
       return false;
     }
   };
 
   const updateItemQuantity = async (orderId, itemId, quantity) => {
     try {
+      if (dbClient.isElectron && !navigator.onLine) {
+        const order = orders[Object.keys(orders).find(k => orders[k]._id === orderId || orders[k].id === orderId)];
+        if (!order) throw new Error('Order not found');
+        const newItems = order.items.map(i => (i._id || i.id) === itemId ? { ...i, quantity } : i);
+        const subTotal = newItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+        let discAmt = 0;
+        if (order.discount?.type === 'percentage') {
+          discAmt = subTotal * ((order.discount.value || order.discount.amount || 0) / 100);
+        } else {
+          discAmt = order.discount?.amount || 0;
+        }
+        const taxable = Math.max(0, subTotal - discAmt);
+        const tax = taxable * 0.05;
+        const grandTotal = taxable + tax;
+        
+        const result = await dbClient.updateOrder(orderId, { items: newItems, subTotal, tax, grandTotal });
+        if (result) {
+          syncAll();
+          return true;
+        }
+        return false;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/item/${itemId}/quantity`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

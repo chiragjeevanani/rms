@@ -5,11 +5,11 @@
   "author": "Rehan Multani",
   "main": "electron/main.js",
   "scripts": {
-    "dev:frontend": "npm run dev --prefix frontend",
-    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix admin-frontend",
+    "dev:backend": "npm run dev --prefix admin-backend",
     "dev:electron": "wait-on http://localhost:5173 && electron electron/main.js",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:electron\"",
-    "dist": "npm run build --prefix frontend -- --mode electron && electron-builder"
+    "dist": "npm run build --prefix admin-frontend -- --mode electron && electron-builder"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
@@ -32,7 +32,7 @@
     },
     "files": [
       "electron/**/*",
-      "frontend/dist/**/*",
+      "admin-frontend/dist/**/*",
       "package.json"
     ]
   }

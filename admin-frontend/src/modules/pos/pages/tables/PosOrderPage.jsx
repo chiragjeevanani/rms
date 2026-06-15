@@ -541,18 +541,29 @@ export default function PosOrderPage() {
         customer: { name: customerName, mobile: customerMobile }
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...financials, items })
-      });
-      const result = await response.json();
-      if (result.success) {
-        targetOrder = result.data;
-        setCart([]);
+      if (dbClient.isElectron && !navigator.onLine) {
+        const result = await dbClient.createOrder({ ...financials, items });
+        if (result) {
+          targetOrder = result;
+          setCart([]);
+        } else {
+          toast.error('Failed to save order before settlement locally');
+          return;
+        }
       } else {
-        toast.error('Failed to save order before settlement');
-        return;
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...financials, items })
+        });
+        const result = await response.json();
+        if (result.success) {
+          targetOrder = result.data;
+          setCart([]);
+        } else {
+          toast.error('Failed to save order before settlement');
+          return;
+        }
       }
     }
 

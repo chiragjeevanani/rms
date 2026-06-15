@@ -41,12 +41,12 @@ export default function PosRoutes() {
     <PosProvider>
       {!isPosAuthenticated && location.pathname !== '/pos/login' ? (
         <Routes>
-          <Route path="/login" element={<PosLoginPage />} />
+          <Route path="login" element={<PosLoginPage />} />
           <Route path="*" element={<Navigate to="/pos/login" replace />} />
         </Routes>
       ) : (
         <Routes>
-          <Route path="/login" element={<PosLoginPage />} />
+          <Route path="login" element={<PosLoginPage />} />
           <Route element={<PosLayout />}>
             <Route index element={<Navigate to="/pos/dashboard" replace />} />
 

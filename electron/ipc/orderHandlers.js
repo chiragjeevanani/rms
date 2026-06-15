@@ -169,6 +169,30 @@ function registerOrderHandlers(ipcMain) {
         fields.push('paymentsJson = ?');
         params.push(JSON.stringify(updates.payments));
       }
+      if (updates.items) {
+        fields.push('itemsJson = ?');
+        params.push(JSON.stringify(updates.items));
+      }
+      if (updates.subTotal !== undefined) {
+        fields.push('subTotal = ?');
+        params.push(updates.subTotal);
+      }
+      if (updates.tax !== undefined) {
+        fields.push('tax = ?');
+        params.push(updates.tax);
+      }
+      if (updates.discount) {
+        fields.push('discountJson = ?');
+        params.push(JSON.stringify(updates.discount));
+      }
+      if (updates.grandTotal !== undefined) {
+        fields.push('grandTotal = ?');
+        params.push(updates.grandTotal);
+      }
+      if (updates.customer) {
+        fields.push('customerJson = ?');
+        params.push(JSON.stringify(updates.customer));
+      }
       
       fields.push('updatedAt = ?');
       params.push(new Date().toISOString());
